@@ -102,8 +102,8 @@ print_message "Criando aliases úteis..."
 cat >> ~/.bashrc << 'EOF'
 
 # Aliases para TCC LaTeX
-alias tcc-compile='make pdf'
-alias tcc-quick='make quick'
+alias tcc-compile='make compile'
+alias tcc-beamer='make beamer'
 alias tcc-clean='make clean'
 alias tcc-help='make help'
 
@@ -118,18 +118,18 @@ echo "  tcc-clean    - Limpeza de arquivos"
 echo "  tcc-help     - Ajuda do Makefile"
 
 print_message "Testando compilação do TCC..."
-if [ -f "principal.tex" ]; then
-    print_message "Arquivo principal.tex encontrado. Testando compilação..."
-    make quick
+if [ -f "latex/principal.tex" ]; then
+    print_message "Arquivo latex/principal.tex encontrado. Testando compilação..."
+    make compile
     if [ $? -eq 0 ]; then
         print_success "Compilação de teste bem-sucedida!"
-        print_message "PDF gerado: principal.pdf"
+        print_message "PDF gerado: latex/principal.pdf"
     else
         print_warning "Compilação de teste falhou. Verifique os erros acima."
     fi
 else
-    print_warning "Arquivo principal.tex não encontrado. Execute 'make quick' quando estiver no diretório do projeto."
+    print_warning "Arquivo latex/principal.tex não encontrado. Execute 'make compile' quando estiver no diretório do projeto."
 fi
 
 print_success "Instalação do LaTeX para TCC concluída!"
-print_message "Agora você pode compilar seu TCC usando: make pdf"
+print_message "Agora você pode compilar seu TCC usando: make compile"

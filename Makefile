@@ -139,36 +139,36 @@ install:
 	fi
 	
 	@echo "$(BLUE)[TCC]$(NC) Verificando estrutura de diretórios..."
-	@if [ ! -d "figuras" ]; then \
-		mkdir -p figuras; \
-		echo "$(BLUE)[INFO]$(NC) Diretório figuras criado."; \
+	@if [ ! -d "latex/figuras" ]; then \
+		mkdir -p latex/figuras; \
+		echo "$(BLUE)[INFO]$(NC) Diretório latex/figuras criado."; \
 	fi
-	@if [ ! -d "modulos" ]; then \
-		mkdir -p modulos; \
-		echo "$(BLUE)[INFO]$(NC) Diretório modulos criado."; \
+	@if [ ! -d "latex/modulos" ]; then \
+		mkdir -p latex/modulos; \
+		echo "$(BLUE)[INFO]$(NC) Diretório latex/modulos criado."; \
 	fi
-	@if [ ! -d "referencias" ]; then \
-		mkdir -p referencias; \
-		echo "$(BLUE)[INFO]$(NC) Diretório referencias criado."; \
+	@if [ ! -d "references" ]; then \
+		mkdir -p references; \
+		echo "$(BLUE)[INFO]$(NC) Diretório references criado."; \
 	fi
 	@echo "$(GREEN)[SUCESSO]$(NC) Estrutura de diretórios verificada!"
 
-# 2. Converter PDFs em referencias
+# 2. Converter PDFs em references
 convert:
-	@echo "$(BLUE)[TCC]$(NC) Convertendo PDFs da pasta referencias..."
-	@if [ ! -d "referencias" ]; then \
-		echo "$(YELLOW)[AVISO]$(NC) Pasta referencias não encontrada!"; \
-		mkdir -p referencias; \
-		echo "$(BLUE)[INFO]$(NC) Pasta referencias criada. Adicione seus PDFs e tente novamente."; \
+	@echo "$(BLUE)[TCC]$(NC) Convertendo PDFs da pasta references..."
+	@if [ ! -d "references" ]; then \
+		echo "$(YELLOW)[AVISO]$(NC) Pasta references não encontrada!"; \
+		mkdir -p references; \
+		echo "$(BLUE)[INFO]$(NC) Pasta references criada. Adicione seus PDFs e tente novamente."; \
 		exit 0; \
 	fi
-	@if [ -z "$(shell find referencias -name '*.pdf' 2>/dev/null)" ]; then \
-		echo "$(YELLOW)[AVISO]$(NC) Nenhum arquivo PDF encontrado na pasta referencias."; \
+	@if [ -z "$(shell find references -name '*.pdf' 2>/dev/null)" ]; then \
+		echo "$(YELLOW)[AVISO]$(NC) Nenhum arquivo PDF encontrado na pasta references."; \
 		exit 0; \
 	fi
 	@if command -v python3 >/dev/null 2>&1; then \
-		if [ -d "scripts" ] && [ -f "tools/pdf_to_markdown.py" ]; then \
-			for pdf in referencias/*.pdf; do \
+		if [ -d "tools" ] && [ -f "tools/pdf_to_markdown.py" ]; then \
+			for pdf in references/*.pdf; do \
 				if [ -f "$$pdf" ]; then \
 					echo "$(BLUE)[INFO]$(NC) Convertendo: $$pdf"; \
 					python3 tools/pdf_to_markdown.py --extract-images "$$pdf" || \
@@ -178,8 +178,7 @@ convert:
 			echo "$(GREEN)[SUCESSO]$(NC) Conversão de referências concluída!"; \
 		else \
 			echo "$(YELLOW)[AVISO]$(NC) Script pdf_to_markdown.py não encontrado!"; \
-			echo "$(BLUE)[INFO]$(NC) Crie o diretório scripts e adicione o script de conversão."; \
-			mkdir -p scripts; \
+			echo "$(BLUE)[INFO]$(NC) Verifique se o diretório tools contém o script de conversão."; \
 		fi; \
 	else \
 		echo "$(YELLOW)[AVISO]$(NC) Python3 não encontrado!"; \

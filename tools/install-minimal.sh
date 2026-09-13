@@ -28,8 +28,12 @@ sudo apt install -y texlive-latex-base texlive-latex-extra texlive-bibtex-extra 
 if command -v pdflatex &> /dev/null; then
     print_success "LaTeX instalado com sucesso!"
     print_message "Testando compilação..."
-    make quick
-    print_success "Pronto para usar! Execute 'make pdf' para compilação completa."
+    if [ -f "latex/principal.tex" ]; then
+        make compile
+        print_success "Pronto para usar! Execute 'make compile' para compilação completa."
+    else
+        print_success "Pronto para usar! Execute 'make compile' no diretório do projeto."
+    fi
 else
     echo "Erro na instalação"
     exit 1
