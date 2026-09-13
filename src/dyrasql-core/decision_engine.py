@@ -67,28 +67,29 @@ class DecisionEngine:
         total_size_bytes = sum(m.get("total_size_bytes", 0) for m in metadata.values())
         total_rows = sum(m.get("total_records", 0) for m in metadata.values())
         total_size_gb = total_size_bytes / (1024**3)
-        avg_file_size_mb = 50
-        estimated_files = max(1, int((total_size_gb * 1024) / avg_file_size_mb))
-        effective_files = estimated_files
-        effective_size_gb = total_size_gb
-        max_files = 10000
         max_size_gb = 1000
+        max_rows = 1e9
         optimization_factor = 0.1
 
-        if effective_files < 1:
-            effective_files = 1
-        if effective_size_gb < 0.001:
-            effective_size_gb = 0.001
+        # Valores efetivos (garantindo mínimos para log)
+        effective_size_gb = max(0.001, total_size_gb)
+        effective_rows = max(1, total_rows)
 
-        normalized_files = min(1.0, math.log(effective_files) / math.log(max_files))
+        # Normalização logarítmica conforme artigo (Equação 2)
+        # fv = (log(Te) / log(Tmax) * 0.6 + log(Re) / log(Rmax) * 0.4) * (1 - Fo)
         normalized_size = min(1.0, math.log(effective_size_gb) / math.log(max_size_gb))
-        fv = (normalized_files * 0.3 + normalized_size * 0.7) * (1 - optimization_factor)
+        normalized_rows = min(1.0, math.log(effective_rows) / math.log(max_rows))
+        
+        # Pesos conforme artigo: 0.6 para tamanho, 0.4 para linhas
+        fv = (normalized_size * 0.6 + normalized_rows * 0.4) * (1 - optimization_factor)
         fv = max(0, min(1, fv))
+        
         logger.debug(
-            "Fator volume: files=%s size=%.2fGB rows=%.0f fv=%.3f",
-            estimated_files,
+            "Fator volume: size=%.2fGB rows=%.0f normalized_size=%.3f normalized_rows=%.3f fv=%.3f",
             total_size_gb,
             total_rows,
+            normalized_size,
+            normalized_rows,
             fv,
         )
         return fv

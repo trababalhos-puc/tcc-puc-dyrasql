@@ -21,6 +21,17 @@ O DyraSQL é um framework para roteamento dinâmico de consultas SQL baseado em 
 - **Cache de Decisões**: PostgreSQL para armazenar e reutilizar decisões de roteamento
 - **Arquitetura Modular**: Componentes independentes (Gateway, Core, Proxy) facilitam manutenção e evolução
 
+### Documentação
+
+📚 **Documentação completa disponível em:** [https://trababalhos-puc.github.io/tcc-puc-dyrasql/](https://trababalhos-puc.github.io/tcc-puc-dyrasql/)
+
+A documentação inclui:
+- 🚀 Guia de instalação e configuração
+- 🏗️ Arquitetura detalhada do sistema
+- 📖 Referência completa da API
+- 💻 Exemplos de uso e integração
+- 🛠️ Guia de desenvolvimento e contribuição
+
 ## Estrutura do Repositório
 
 ```

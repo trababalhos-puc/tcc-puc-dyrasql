@@ -1,238 +1,520 @@
-# Arquitetura do Sistema de Roteamento Dinâmico - Fluxo Completo
+# Arquitetura Técnica - DyraSQL
 
-## Diagrama de Arquitetura e Fluxo do Sistema
+## Visão Geral
 
-### Versão Organizada - Fluxo Principal
-
-```mermaid
-C4Component
-    title "Sistema de Roteamento Dinâmico - Fluxo Completo"
-
-    Person(analyst, "Analista de Dados", "Executa consultas SQL para análise")
-    
-    System_Boundary(aws, "Amazon Web Services") {
-        Container_Boundary(trino_gateway, "Trino Gateway") {
-            Component(query_interceptor, "Query Interceptor Plugin", "Python Plugin", "Intercepta consultas SQL<br/>Gera fingerprint único")
-        }
-        
-        Container_Boundary(routing_system, "Sistema de Roteamento Dinâmico") {
-            Component(query_analyzer, "Query Analyzer", "Python", "Coordena processo de decisão<br/>Verifica cache DynamoDB")
-            Component(metadata_connector, "Metadata Connector", "Python", "Extrai metadados Iceberg<br/>file_count, total_size, record_count<br/>partition_info, column_stats")
-            Component(decision_engine, "Decision Engine", "Python", "Algoritmo de pontuação<br/>Score = w₁×f_volume + w₂×f_complex + w₃×f_hist")
-            Component(history_manager, "History Management System", "Python", "Cache TTL 24h<br/>Fingerprints de consultas<br/>Aprendizado contínuo")
-            Component(monitoring_system, "Monitoring System", "Python", "CloudWatch metrics<br/>Auto-scaling ECS/EMR<br/>Correção dinâmica")
-        }
-        
-        Container_Boundary(execution_clusters, "Clusters de Execução") {
-            Component(ecs_clusters, "Clusters ECS", "Docker", "Consultas leves (Score < 0.3)<br/>2-8 vCPUs, 4-32GB RAM<br/>Baixa latência")
-            Component(emr_standard, "EMR Padrão", "Spark/Trino", "Consultas médias (Score 0.3-0.7)<br/>4-12 nós<br/>Processamento distribuído")
-            Component(emr_optimized, "EMR Otimizado", "Spark/Trino", "Consultas pesadas (Score > 0.7)<br/>8-20 nós<br/>Máximo paralelismo")
-        }
-        
-        ContainerDb(iceberg_tables, "Tabelas Apache Iceberg", "S3 + Metadados", "Dados: 10TB+<br/>Metadados: metadata.json<br/>manifest-list, manifest files")
-        ContainerDb(dynamodb, "DynamoDB", "NoSQL", "Cache: TTL 24h<br/>Histórico: fingerprints, métricas<br/>Decisões: scores, clusters")
-    }
-
-    %% Fluxo principal - Entrada
-    Rel(analyst, query_interceptor, "1. Executa consulta SQL", "HTTPS")
-    Rel(query_interceptor, query_analyzer, "2. Intercepta + fingerprint", "HTTP")
-    
-    %% Verificação de cache
-    Rel(query_analyzer, history_manager, "3. Verifica cache", "HTTP")
-    Rel(history_manager, dynamodb, "4. Consulta TTL 24h", "DynamoDB API")
-    
-    %% Cache miss - análise completa
-    Rel(query_analyzer, metadata_connector, "5. Solicita metadados", "HTTP")
-    Rel(metadata_connector, iceberg_tables, "6. Extrai metadados", "S3 API")
-    
-    %% Algoritmo de decisão
-    Rel(query_analyzer, decision_engine, "7. Executa algoritmo", "HTTP")
-    Rel(decision_engine, dynamodb, "8. Consulta histórico", "DynamoDB API")
-    Rel(decision_engine, query_analyzer, "9. Score calculado", "HTTP")
-    
-    %% Roteamento baseado no score
-    Rel(query_analyzer, query_interceptor, "10. Decisão de roteamento", "HTTP")
-    Rel(query_interceptor, ecs_clusters, "11a. Score < 0.3", "HTTP")
-    Rel(query_interceptor, emr_standard, "11b. Score 0.3-0.7", "HTTP")
-    Rel(query_interceptor, emr_optimized, "11c. Score > 0.7", "HTTP")
-    
-    %% Retorno dos resultados
-    Rel(ecs_clusters, analyst, "12a. Resultado consulta", "HTTPS")
-    Rel(emr_standard, analyst, "12b. Resultado consulta", "HTTPS")
-    Rel(emr_optimized, analyst, "12c. Resultado consulta", "HTTPS")
-    
-    %% Coleta de métricas pós-execução
-    Rel(ecs_clusters, monitoring_system, "13a. Métricas de execução", "CloudWatch")
-    Rel(emr_standard, monitoring_system, "13b. Métricas de execução", "CloudWatch")
-    Rel(emr_optimized, monitoring_system, "13c. Métricas de execução", "CloudWatch")
-    
-    %% Salvamento no histórico após cada execução
-    Rel(monitoring_system, history_manager, "14. Salva dados da execução", "HTTP")
-    Rel(history_manager, dynamodb, "15. Atualiza histórico + cache", "DynamoDB API")
-    
-    %% Monitoramento contínuo e escalonamento
-    Rel(monitoring_system, ecs_clusters, "16. Monitora performance", "CloudWatch")
-    Rel(monitoring_system, emr_standard, "16. Monitora performance", "CloudWatch")
-    Rel(monitoring_system, emr_optimized, "16. Monitora performance", "CloudWatch")
-    
-    %% Auto-scaling quando necessário
-    Rel(monitoring_system, ecs_clusters, "17a. Auto-scaling ECS", "AWS API")
-    Rel(monitoring_system, emr_standard, "17b. Auto-scaling EMR", "AWS API")
-    Rel(monitoring_system, emr_optimized, "17c. Auto-scaling EMR", "AWS API")
-    
-    %% Feedback loop para aprendizado
-    Rel(dynamodb, decision_engine, "18. Histórico para aprendizado", "DynamoDB API")
-```
-
-### Versão Simplificada - Fluxo de Decisão
-
-```mermaid
-C4Component
-    title "Sistema de Roteamento Dinâmico - Fluxo Simplificado"
-
-    Person(analyst, "Analista de Dados", "Executa consultas SQL")
-    
-    System_Boundary(aws, "Amazon Web Services") {
-        Container_Boundary(gateway, "Trino Gateway") {
-            Component(interceptor, "Query Interceptor", "Python", "Intercepta consultas<br/>Gera fingerprint")
-        }
-        
-        Container_Boundary(routing, "Sistema de Roteamento") {
-            Component(analyzer, "Query Analyzer", "Python", "Coordena decisão<br/>Verifica cache")
-            Component(metadata, "Metadata Connector", "Python", "Extrai metadados<br/>Iceberg tables")
-            Component(decision, "Decision Engine", "Python", "Algoritmo de pontuação<br/>Score calculation")
-            Component(history, "History Manager", "Python", "Cache TTL 24h<br/>Aprendizado contínuo")
-        }
-        
-        Container_Boundary(clusters, "Clusters de Execução") {
-            Component(ecs, "ECS Clusters", "Docker", "Consultas leves<br/>Score < 0.3")
-            Component(emr_std, "EMR Padrão", "Spark/Trino", "Consultas médias<br/>Score 0.3-0.7")
-            Component(emr_opt, "EMR Otimizado", "Spark/Trino", "Consultas pesadas<br/>Score > 0.7")
-        }
-        
-        ContainerDb(iceberg, "Tabelas Iceberg", "S3 + Metadados", "Dados: 10TB+<br/>Metadados estruturados")
-        ContainerDb(dynamo, "DynamoDB", "NoSQL", "Cache + Histórico<br/>Fingerprints + Métricas")
-    }
-
-    %% Fluxo principal simplificado
-    Rel(analyst, interceptor, "1. Consulta SQL", "HTTPS")
-    Rel(interceptor, analyzer, "2. Fingerprint", "HTTP")
-    
-    %% Cache check
-    Rel(analyzer, history, "3. Verifica cache", "HTTP")
-    Rel(history, dynamo, "4. TTL 24h", "DynamoDB")
-    
-    %% Análise de metadados
-    Rel(analyzer, metadata, "5. Solicita metadados", "HTTP")
-    Rel(metadata, iceberg, "6. Extrai metadados", "S3")
-    
-    %% Decisão
-    Rel(analyzer, decision, "7. Executa algoritmo", "HTTP")
-    Rel(decision, dynamo, "8. Consulta histórico", "DynamoDB")
-    Rel(decision, analyzer, "9. Score", "HTTP")
-    
-    %% Roteamento
-    Rel(analyzer, interceptor, "10. Decisão", "HTTP")
-    Rel(interceptor, ecs, "11a. Score < 0.3", "HTTP")
-    Rel(interceptor, emr_std, "11b. Score 0.3-0.7", "HTTP")
-    Rel(interceptor, emr_opt, "11c. Score > 0.7", "HTTP")
-    
-    %% Resultados
-    Rel(ecs, analyst, "12a. Resultado", "HTTPS")
-    Rel(emr_std, analyst, "12b. Resultado", "HTTPS")
-    Rel(emr_opt, analyst, "12c. Resultado", "HTTPS")
-    
-    %% Feedback loop
-    Rel(ecs, history, "13a. Métricas", "HTTP")
-    Rel(emr_std, history, "13b. Métricas", "HTTP")
-    Rel(emr_opt, history, "13c. Métricas", "HTTP")
-    Rel(history, dynamo, "14. Salva histórico", "DynamoDB")
-    Rel(dynamo, decision, "15. Aprendizado", "DynamoDB")
-```
-
-## Fluxo Detalhado do Sistema
-
-### **Fase 1: Interceptação e Cache (Passos 1-4)**
-1. **Cliente executa consulta SQL** → Query Interceptor Plugin
-2. **Plugin intercepta e gera fingerprint** → Query Analyzer
-3. **Analyzer verifica cache** → History Management System
-4. **Sistema consulta DynamoDB** com TTL de 24 horas
-
-### **Fase 2: Análise de Metadados (Passos 5-6)**
-5. **Cache miss - solicita metadados** → Metadata Connector
-6. **Connector extrai metadados Iceberg** → Tabelas Apache Iceberg
-   - file_count, total_size, record_count
-   - partition_info, column_stats
-
-### **Fase 3: Algoritmo de Decisão (Passos 7-9)**
-7. **Executa algoritmo de pontuação** → Decision Engine
-8. **Consulta histórico para aprendizado** → DynamoDB
-9. **Score calculado** → Query Analyzer
-
-### **Fase 4: Roteamento Inteligente (Passos 10-11)**
-10. **Decisão de roteamento** → Query Interceptor Plugin
-11. **Roteamento baseado no score**:
-    - **Score < 0.3** → Clusters ECS (consultas leves)
-    - **Score 0.3-0.7** → EMR Padrão (consultas médias)
-    - **Score > 0.7** → EMR Otimizado (consultas pesadas)
-
-### **Fase 5: Execução e Coleta de Dados (Passos 12-15)**
-12. **Resultados retornados** → Cliente
-13. **Coleta de métricas pós-execução** → Monitoring System
-    - Tempo de execução, custo, utilização de recursos
-    - Performance do cluster selecionado
-    - Eficácia da decisão de roteamento
-14. **Salvamento no histórico** → History Management System
-15. **Atualização do DynamoDB** → Histórico + cache atualizado
-
-### **Fase 6: Monitoramento e Aprendizado (Passos 16-18)**
-16. **Monitoramento contínuo** → CloudWatch metrics
-17. **Auto-scaling quando necessário** → AWS API
-18. **Feedback loop para aprendizado** → Decision Engine
+O DyraSQL é um framework de roteamento dinâmico de consultas SQL que utiliza análise de metadados Apache Iceberg para direcionar automaticamente consultas para clusters Trino de capacidades distintas. O sistema foi desenvolvido como prova de conceito para validar a viabilidade de roteamento baseado em análise pré-execução.
 
 ## Componentes Principais
 
-### 1. Query Interceptor Plugin
-- **Tecnologia**: Python Plugin
-- **Responsabilidade**: Intercepta consultas SQL antes do roteamento
-- **Integração**: Trino Gateway existente
+### 1. DyraSQL Core
 
-### 2. Query Analyzer
-- **Tecnologia**: Python
-- **Responsabilidade**: Analisa consultas e extrai metadados
-- **Funcionalidades**: Gera fingerprint, verifica cache, coordena processo
+**Tecnologia:** Python 3.11, FastAPI, uvicorn  
+**Porta:** 5000 (interna), 5001 (exposta)  
+**Responsabilidades:**
+- Motor de decisão de roteamento
+- Execução de EXPLAIN (TYPE IO) no Trino
+- Cálculo de scores baseado em metadados
+- Gerenciamento de cache e histórico
+- API REST para integração
 
-### 3. Metadata Connector
-- **Tecnologia**: Python
-- **Responsabilidade**: Conecta com catálogos Iceberg
-- **Funcionalidades**: Extrai metadados (file_count, total_size, record_count, etc.)
+**Módulos:**
 
-### 4. Decision Engine
-- **Tecnologia**: Python
-- **Responsabilidade**: Aplica algoritmo de decisão
-- **Funcionalidades**: Calcula score, considera histórico, toma decisão
+#### app.py
+API principal com os endpoints:
+- `POST /api/v1/route`: Analisa query e retorna decisão
+- `POST /api/v1/metrics`: Salva métricas pós-execução
+- `GET /health`: Health check
+- `POST /v1/statement`: Proxy direto para execução
+- `GET /v1/info`: Informações do Trino
 
-### 5. History Management System
-- **Tecnologia**: Python
-- **Responsabilidade**: Gerencia cache e histórico
-- **Funcionalidades**: TTL 24h, fingerprints, salvamento pós-execução, aprendizado contínuo
+#### decision_engine.py
+Implementa o algoritmo de pontuação descrito no artigo:
 
-### 6. Monitoring System
-- **Tecnologia**: Python
-- **Responsabilidade**: Monitora performance e escalonamento
-- **Funcionalidades**: CloudWatch, auto-scaling, correção dinâmica
+```python
+S = w1 * fv + w2 * fc + w3 * fh
+```
 
-## Fluxo de Decisão Otimizado
+Onde:
+- `S`: Score final (0-1)
+- `fv`: Fator volume (baseado em tamanho e número de linhas)
+- `fc`: Fator complexidade (JOINs, agregações, subconsultas)
+- `fh`: Fator histórico (execuções anteriores)
+- `w1, w2, w3`: Pesos configuráveis (soma = 1.0)
 
-1. **Interceptação**: Query interceptada pelo plugin
-2. **Cache Check**: Verifica DynamoDB para decisão recente (24h)
-3. **Cache Hit**: Roteamento direto para cluster (latência mínima)
-4. **Cache Miss**: Análise completa de metadados Iceberg
-5. **Algoritmo**: Score = w₁×f_volume + w₂×f_complex + w₃×f_hist
-6. **Decisão**: Cluster selecionado baseado no score
-7. **Execução**: Query executada no cluster escolhido
-8. **Coleta Pós-Execução**: Métricas de performance, custo e eficácia coletadas
-9. **Salvamento**: Dados da execução salvos no DynamoDB para histórico
-10. **Monitoramento**: Métricas coletadas em tempo real
-11. **Escalonamento**: Correção automática se necessário
-12. **Aprendizado**: Histórico atualizado, pesos ajustados baseado nos resultados
+**Roteamento:**
+- `score < 0.3` → cluster small
+- `0.3 <= score <= 0.7` → cluster medium
+- `score > 0.7` → cluster large
+
+#### query_analyzer.py
+Responsável por:
+- Geração de fingerprints (SHA-256 de query normalizada)
+- Execução de EXPLAIN (TYPE IO) no Trino
+- Parsing do JSON retornado pelo EXPLAIN
+- Análise de complexidade estrutural via sqlglot
+- Extração de metadados (tamanho, linhas, CPU cost)
+- Salvamento de EXPLAIN para análise posterior
+
+**Análise de Complexidade:**
+Utiliza sqlglot para parsear a AST da query e contar:
+- Número de JOINs
+- Número de agregações (apenas no SELECT principal)
+- Número de subconsultas
+- Filtros particionados vs. não-particionados
+
+#### history_manager.py
+Gerencia cache e histórico no PostgreSQL:
+- Cache de decisões com TTL de 24h
+- Armazenamento de métricas pós-execução
+- Cálculo do fator histórico baseado em sucesso/falha
+
+**Tabela `routing_decisions`:**
+```sql
+CREATE TABLE routing_decisions (
+    fingerprint VARCHAR(64) PRIMARY KEY,
+    cluster VARCHAR(32) NOT NULL,
+    score DOUBLE PRECISION NOT NULL,
+    factors JSONB NOT NULL,
+    success BOOLEAN,
+    execution_time DOUBLE PRECISION,
+    cost DOUBLE PRECISION,
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ,
+    expires_at TIMESTAMPTZ NOT NULL
+);
+```
+
+#### metadata_connector.py
+Stub para integração futura com catálogo Iceberg REST.  
+Atualmente, todos os metadados vêm do EXPLAIN (TYPE IO).
+
+### 2. Trino Gateway Proxy
+
+**Tecnologia:** Python 3.11, FastAPI, httpx  
+**Porta:** 8080  
+**Responsabilidades:**
+- Interceptação de consultas SQL
+- Integração com DyraSQL Core para decisão
+- Reescrita de URLs nas respostas
+- Proxy transparente para nextUri
+
+**Fluxo:**
+1. Cliente → Proxy (POST /v1/statement)
+2. Proxy → DyraSQL Core (POST /api/v1/route)
+3. DyraSQL Core retorna cluster recomendado
+4. Proxy → Cluster Trino selecionado
+5. Resposta → Cliente (com URLs reescritas)
+
+**Otimizações:**
+- Keep-alive queries vão direto para small
+- Queries de metadados vão direto para small
+- Cache de fingerprints para reuso
+
+### 3. Trino Gateway (Oficial)
+
+**Tecnologia:** Java, Maven  
+**Porta:** 8080 (interna), 8085 (exposta)  
+**Responsabilidades:**
+- Balanceamento de carga entre backends
+- Health check dos clusters
+- Interface administrativa
+- Armazenamento de histórico de queries
+
+**Configuração:**
+```yaml
+serverConfig:
+  node.environment: production
+  http-server.http.port: 8080
+
+dataStore:
+  jdbcUrl: jdbc:postgresql://gateway-db:5432/trino_gateway
+  driver: org.postgresql.Driver
+  
+clusterStatsConfiguration:
+  monitorType: INFO_API
+```
+
+**Backends:**
+- small: http://trino-small:8080
+- medium: http://trino-medium:8080
+- large: http://trino-large:8080
+
+### 4. Clusters Trino
+
+**Tecnologia:** Trino (trinodb/trino:latest)  
+**Configuração:** 3 clusters com capacidades distintas
+
+#### Cluster Small
+**Porta:** 8081  
+**Capacidade:** query.max-memory=1GB  
+**Uso:** Queries simples, metadados, keep-alive
+
+#### Cluster Medium
+**Porta:** 8082  
+**Capacidade:** query.max-memory=2GB  
+**Uso:** Queries intermediárias com JOINs e agregações
+
+#### Cluster Large
+**Porta:** 8083  
+**Capacidade:** query.max-memory=4GB  
+**Uso:** Queries complexas com subconsultas e window functions
+
+**Catálogo Iceberg (compartilhado):**
+```properties
+connector.name=iceberg
+iceberg.catalog.type=rest
+iceberg.rest-catalog.uri=http://iceberg-rest:8181
+iceberg.file-format=PARQUET
+fs.native-s3.enabled=true
+s3.endpoint=http://minio:9000
+s3.path-style-access=true
+```
+
+### 5. PostgreSQL
+
+**Tecnologia:** PostgreSQL 16 Alpine  
+**Databases:**
+- `trino_gateway`: usado pelo Trino Gateway oficial
+- `dyrasql`: cache e histórico do DyraSQL Core
+
+**Inicialização:**
+- Script `init-dyrasql.sh` cria user, database e table
+- Índice em `expires_at` para queries rápidas
+
+### 6. MinIO
+
+**Tecnologia:** MinIO (S3-compatible)  
+**Portas:** 9000 (API), 9001 (Console)  
+**Bucket:** warehouse  
+**Uso:** Armazenamento das tabelas Iceberg
+
+**Credentials:**
+- Access Key: dyrasql
+- Secret Key: dyrasql1
+
+### 7. Iceberg REST Catalog
+
+**Tecnologia:** tabulario/iceberg-rest:1.6.0  
+**Porta:** 8181  
+**Responsabilidades:**
+- Catálogo de metadados Iceberg
+- Integração com MinIO
+- Compartilhado por todos os clusters Trino
+
+## Fluxo de Dados
+
+### Primeira Execução (Cache Miss)
+
+```
+┌─────────┐
+│ Cliente │
+└────┬────┘
+     │ 1. POST /v1/statement (SQL query)
+     │
+     ▼
+┌──────────────────────┐
+│ Trino Gateway Proxy  │
+└──────────┬───────────┘
+           │ 2. POST /api/v1/route
+           │
+           ▼
+┌─────────────────────────────┐
+│ DyraSQL Core                │
+│ ┌─────────────────────────┐ │
+│ │ Query Analyzer          │ │
+│ │ - Generate fingerprint  │ │
+│ │ - Check cache (MISS)    │ │
+│ │ - Execute EXPLAIN       │ │
+│ │ - Parse metadata        │ │
+│ │ - Analyze complexity    │ │
+│ └────────┬────────────────┘ │
+│          │                  │
+│          ▼                  │
+│ ┌─────────────────────────┐ │
+│ │ Decision Engine         │ │
+│ │ - Calculate fv          │ │
+│ │ - Calculate fc          │ │
+│ │ - Get fh from history   │ │
+│ │ - Calculate score       │ │
+│ │ - Select cluster        │ │
+│ └────────┬────────────────┘ │
+│          │                  │
+│          ▼                  │
+│ ┌─────────────────────────┐ │
+│ │ History Manager         │ │
+│ │ - Save decision         │ │
+│ │ - Set TTL (24h)         │ │
+│ └─────────────────────────┘ │
+└──────────┬──────────────────┘
+           │ 3. Return {cluster, score, factors}
+           │
+           ▼
+┌──────────────────────┐
+│ Trino Gateway Proxy  │
+└──────────┬───────────┘
+           │ 4. POST to selected cluster
+           │
+           ▼
+┌──────────────────────┐
+│ Trino Cluster        │
+│ (small/medium/large) │
+└──────────┬───────────┘
+           │ 5. Execute query on Iceberg
+           │
+           ▼
+┌──────────────────────┐
+│ Iceberg REST + MinIO │
+└──────────┬───────────┘
+           │ 6. Query result
+           │
+           ▼
+┌─────────┐
+│ Cliente │
+└─────────┘
+```
+
+### Execução com Cache Hit
+
+```
+┌─────────┐
+│ Cliente │
+└────┬────┘
+     │ 1. POST /v1/statement (SQL query)
+     │
+     ▼
+┌──────────────────────┐
+│ Trino Gateway Proxy  │
+└──────────┬───────────┘
+           │ 2. POST /api/v1/route
+           │
+           ▼
+┌─────────────────────────────┐
+│ DyraSQL Core                │
+│ ┌─────────────────────────┐ │
+│ │ Query Analyzer          │ │
+│ │ - Generate fingerprint  │ │
+│ │ - Check cache (HIT!)    │ │
+│ │ - Return cached result  │ │
+│ └─────────────────────────┘ │
+└──────────┬──────────────────┘
+           │ 3. Return {cluster, score} (cached)
+           │
+           ▼
+     (continua como acima)
+```
+
+## Algoritmo de Decisão Detalhado
+
+### Fator Volume (fv)
+
+Calcula a normalização logarítmica do tamanho e número de linhas:
+
+```python
+# Valores obtidos do EXPLAIN (TYPE IO)
+size_gb = outputSizeInBytes / (1024^3)
+rows = outputRowCount
+
+# Normalização logarítmica
+norm_size = log(size_gb) / log(max_size_gb)
+norm_rows = log(rows) / log(max_rows)
+
+# Combinação com pesos e fator de otimização
+fv = (norm_size * 0.7 + norm_rows * 0.3) * (1 - optimization_factor)
+
+# Limites: 0 <= fv <= 1
+```
+
+**Parâmetros padrão:**
+- `max_size_gb = 1000`
+- `max_rows = 1e9`
+- `optimization_factor = 0.1`
+
+### Fator Complexidade (fc)
+
+Analisa a estrutura da query via AST (sqlglot):
+
+```python
+# Contagem de elementos estruturais
+joins = count(JOIN nodes in AST)
+aggs = count(AggFunc in SELECT projections)
+subq = count(Subquery nodes)
+filt_p = count(partitioned column filters in WHERE)
+filt_np = count(non-partitioned filters in WHERE)
+
+# Cálculo com coeficientes
+fc = (
+    joins * 0.2 +
+    aggs * 0.15 +
+    subq * 0.25 +
+    filt_p * 0.02 +
+    filt_np * 0.1
+) / complexity_limit
+
+# Limites: 0 <= fc <= 1
+```
+
+**Coeficientes:**
+- JOIN: 0.2 (alto impacto)
+- Subconsulta: 0.25 (maior impacto)
+- Agregação: 0.15
+- Filtro não-particionado: 0.1
+- Filtro particionado: 0.02 (baixo impacto)
+
+### Fator Histórico (fh)
+
+Baseado em execuções anteriores:
+
+```python
+# Consulta histórico por fingerprint
+prev_exec = SELECT score, success FROM routing_decisions
+            WHERE fingerprint = ? AND expires_at > NOW()
+
+if not prev_exec:
+    fh = 0.5  # Neutro
+elif prev_exec.success:
+    fh = prev_exec.score  # Repetir sucesso
+else:
+    fh = 1.0 - prev_exec.score  # Inverter falha
+```
+
+### Score Final
+
+```python
+S = w1 * fv + w2 * fc + w3 * fh
+
+if S < 0.3:
+    cluster = 'small'
+elif S <= 0.7:
+    cluster = 'medium'
+else:
+    cluster = 'large'
+```
+
+**Pesos padrão:**
+- `w1 = 0.5` (volume - maior peso)
+- `w2 = 0.3` (complexidade)
+- `w3 = 0.2` (histórico)
+
+## EXPLAIN (TYPE IO)
+
+O comando `EXPLAIN (TYPE IO)` do Trino retorna JSON com:
+
+```json
+{
+  "inputTableColumnInfos": [{
+    "table": {
+      "catalog": "iceberg",
+      "schemaTable": {
+        "schema": "analytics",
+        "table": "dados"
+      }
+    },
+    "constraint": {
+      "columnConstraints": [{
+        "columnName": "date",
+        "type": "timestamp(6)",
+        "domain": {
+          "ranges": [{"low": {...}, "high": {...}}]
+        }
+      }]
+    },
+    "estimate": {
+      "outputRowCount": 2500000.0,
+      "outputSizeInBytes": 1342177280.0,
+      "cpuCost": 1342177280.0
+    }
+  }]
+}
+```
+
+**Informações extraídas:**
+- `outputSizeInBytes`: Tamanho estimado pós-filtros
+- `outputRowCount`: Número de linhas estimado
+- `cpuCost`: Custo de CPU estimado
+- `columnConstraints`: Filtros aplicados
+
+## Cache e TTL
+
+**Estratégia:**
+- Fingerprint único (SHA-256) de query normalizada
+- TTL de 24 horas
+- Expira automaticamente via campo `expires_at`
+- Índice em `expires_at` para performance
+
+**Normalização de Query:**
+```python
+# Remove espaços extras
+normalized = re.sub(r'\s+', ' ', query.lower())
+
+# Substitui literais por placeholder
+normalized = re.sub(r"'[^']*'", "'?'", normalized)
+normalized = re.sub(r'\d+', '?', normalized)
+
+# Gera hash
+fingerprint = sha256(normalized).hexdigest()
+```
+
+## Monitoramento e Debugging
+
+### Logs Estruturados
+
+O DyraSQL Core emite logs estruturados:
+```
+INFO - ROUTING DECISION: Query will be executed on cluster 'medium'
+INFO - NEW ANALYSIS: Query analyzed from scratch (not in cache)
+INFO -   Calculated score: 0.440
+INFO -   Factors: volume=0.270, complexity=0.690, historical=0.500
+INFO - CACHE: Using cached decision for fingerprint: abc123...
+```
+
+### EXPLAIN Salvos
+
+Quando `SAVE_EXPLAINS=true`:
+- Cada EXPLAIN é salvo em `/app/explains/`
+- Formato: `{timestamp}_{fingerprint}.json`
+- Inclui query original, normalizada, metadata extraída
+
+### Scripts de Monitoramento
+
+**monitor-routing.sh:**
+```bash
+docker compose logs -f dyrasql-core | grep -E "(ROUTING|Decision|cluster)"
+```
+
+**limpar-cache.sh:**
+```bash
+docker compose exec dyrasql-core python3 -c "from history_manager import HistoryManager; HistoryManager().clear_cache()"
+```
+
+## Limitações Conhecidas
+
+1. **Volume de dados:** Dataset sintético limitado (< 10 GB)
+2. **Histórico:** Fator histórico depende de execuções prévias
+3. **EXPLAIN latency:** EXPLAIN pode ser lento em queries complexas
+4. **Metadados desatualizados:** Iceberg stats podem estar desatualizados
+5. **Elasticidade:** Ambiente local não simula escala de nuvem
+6. **Fallback:** Sem estratégia formal para falha do EXPLAIN
+
+## Trabalhos Futuros
+
+1. **Ajuste automático de pesos:** ML para calibrar w1, w2, w3
+2. **Elasticidade:** Integração com Kubernetes para scaling
+3. **Métricas em tempo real:** Prometheus + Grafana
+4. **Otimização de custos:** Integração com billing APIs
+5. **Fallback robusto:** Cluster padrão quando EXPLAIN falha
+6. **A/B testing:** Comparação de algoritmos em produção
+
+## Referências Técnicas
+
+- [Trino Documentation](https://trino.io/docs/current/)
+- [Apache Iceberg Table Spec](https://iceberg.apache.org/spec/)
+- [Trino Gateway](https://github.com/trinodb/trino-gateway)
+- [FastAPI Documentation](https://fastapi.tiangolo.com/)
+- [sqlglot AST Parser](https://github.com/tobymao/sqlglot)
+
+---
+
+**Desenvolvido por:** Aristides Henrique Gonçalves da Cruz  
+**Orientador:** Prof. Gustavo Luís Soares  
+**Instituição:** PUC Minas - ICEI  
+**Ano:** 2024

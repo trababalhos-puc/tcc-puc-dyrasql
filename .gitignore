@@ -58,3 +58,9 @@ references/*_imagens/
 
 # OS
 Thumbs.db
+tmp
+
+# Sphinx documentation
+docs/_build/
+docs/_static/
+docs/_templates/
