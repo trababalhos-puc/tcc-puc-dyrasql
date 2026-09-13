@@ -1,0 +1,58 @@
+@startuml
+title <size:24>Contexto do Sistema</size>\n<size:24>Analista executa consultas SQL no DyraSQL em ambiente local.</size>
+
+set separator none
+left to right direction
+skinparam ranksep 60
+skinparam nodesep 30
+hide stereotype
+
+<style>
+  root {
+    BackgroundColor: #ffffff;
+    FontColor: #444444;
+  }
+  // Element,Person
+  .Element-RWxlbWVudCxQZXJzb24= {
+    BackgroundColor: #08427b;
+    LineColor: #052e56;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 30;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Software System
+  .Element-RWxlbWVudCxTb2Z0d2FyZSBTeXN0ZW0= {
+    BackgroundColor: #1168bd;
+    LineColor: #0b4884;
+    LineStyle: 0;
+    LineThickness: 2;
+    RoundCorner: 20;
+    FontColor: #ffffff;
+    FontSize: 30;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Relationship
+  .Relationship-UmVsYXRpb25zaGlw {
+    LineThickness: 2;
+    LineStyle: 10-10;
+    LineColor: #444444;
+    FontColor: #444444;
+    FontSize: 30;
+  }
+</style>
+
+person "==Analista de dados\n<size:21>[Person]</size>\n\nExecuta consultas SQL" <<Element-RWxlbWVudCxQZXJzb24=>> as Analistadedados
+rectangle "==Ambiente local\n<size:21>[Software System]</size>\n\nTrino, MinIO, PostgreSQL e catalogo Iceberg" <<Element-RWxlbWVudCxTb2Z0d2FyZSBTeXN0ZW0=>> as Ambientelocal
+rectangle "==DyraSQL\n<size:21>[Software System]</size>\n\nFramework de roteamento dinamico baseado em metadados Iceberg" <<Element-RWxlbWVudCxTb2Z0d2FyZSBTeXN0ZW0=>> as DyraSQL
+
+Analistadedados --> DyraSQL <<Relationship-UmVsYXRpb25zaGlw>> : "Executa consultas SQL"
+DyraSQL --> Ambientelocal <<Relationship-UmVsYXRpb25zaGlw>> : "Utiliza clusters e data lake local"
+DyraSQL --> Analistadedados <<Relationship-UmVsYXRpb25zaGlw>> : "Resultado da consulta"
+
+@enduml

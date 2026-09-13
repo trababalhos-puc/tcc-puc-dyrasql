@@ -1,0 +1,298 @@
+services:
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: dyrasql
+      MINIO_ROOT_PASSWORD: dyrasql1
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    networks:
+      - dyrasql-network
+  minio-init:
+    image: minio/mc:latest
+    container_name: minio-init
+    depends_on:
+      - minio
+    networks:
+      - dyrasql-network
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      for i in $$(seq 1 30); do
+        mc alias set local http://minio:9000 dyrasql dyrasql1 && break
+        sleep 2
+      done
+      mc mb local/warehouse --ignore-existing
+      echo "Bucket warehouse criado"
+    restart: "no"
+
+  iceberg-rest:
+    image: tabulario/iceberg-rest:1.6.0
+    container_name: iceberg-rest
+    depends_on:
+      minio-init:
+        condition: service_completed_successfully
+    environment:
+      AWS_ACCESS_KEY_ID: dyrasql
+      AWS_SECRET_ACCESS_KEY: dyrasql1
+      AWS_REGION: us-east-1
+      CATALOG_WAREHOUSE: s3://warehouse/
+      CATALOG_IO__IMPL: org.apache.iceberg.aws.s3.S3FileIO
+      CATALOG_S3_ENDPOINT: http://minio:9000
+      CATALOG_S3_PATH__STYLE__ACCESS: "true"
+    ports:
+      - "8181:8181"
+    networks:
+      - dyrasql-network
+
+  gateway-db:
+    image: postgres:16-alpine
+    container_name: gateway-db
+    environment:
+      POSTGRES_DB: trino_gateway
+      POSTGRES_USER: gateway
+      POSTGRES_PASSWORD: gateway123
+    volumes:
+      - gateway-db-data:/var/lib/postgresql/data
+      - ./postgres/init-dyrasql.sh:/docker-entrypoint-initdb.d/01-dyrasql.sh:ro
+    networks:
+      - dyrasql-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gateway -d trino_gateway"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  trino-gateway-proxy:
+    build:
+      context: ./trino-gateway-proxy
+      dockerfile: Dockerfile
+    image: dyrasql/trino-gateway-proxy:latest
+    pull_policy: build
+    container_name: trino-gateway-proxy
+    ports:
+      - "8080:8080"
+    environment:
+      DYRASQL_CORE_URL: http://dyrasql-core:5000
+      TRINO_GATEWAY_URL: http://trino-gateway:8080
+      TRINO_SMALL_URL: http://trino-small:8080
+      TRINO_MEDIUM_URL: http://trino-medium:8080
+      TRINO_LARGE_URL: http://trino-large:8080
+      ROUTING_TIMEOUT: 5
+      PORT: 8080
+    depends_on:
+      dyrasql-core:
+        condition: service_healthy
+      trino-small:
+        condition: service_healthy
+      trino-medium:
+        condition: service_healthy
+      trino-large:
+        condition: service_healthy
+    networks:
+      - dyrasql-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  trino-gateway:
+    build:
+      context: ./trino-gateway
+      dockerfile: Dockerfile
+    image: dyrasql/trino-gateway:latest
+    pull_policy: build
+    container_name: trino-gateway
+    ports:
+      - "8085:8080"
+      - "8084:8081"
+    volumes:
+      - ./trino-gateway/config.yaml:/etc/gateway/config.yaml:ro
+    environment:
+      GATEWAY_CONFIG_PATH: /etc/gateway/config.yaml
+      DYRASQL_CORE_URL: http://dyrasql-core:5000
+    depends_on:
+      gateway-db:
+        condition: service_healthy
+      dyrasql-core:
+        condition: service_started
+      trino-small:
+        condition: service_started
+      trino-medium:
+        condition: service_started
+      trino-large:
+        condition: service_started
+    networks:
+      - dyrasql-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/entity?entityType=GATEWAY_BACKEND"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  gateway-setup:
+    image: alpine:latest
+    container_name: gateway-setup
+    volumes:
+      - ./scripts/setup-gateway-backends-auto.sh:/setup.sh:ro
+    environment:
+      GATEWAY_URL: http://trino-gateway:8080
+    depends_on:
+      trino-gateway:
+        condition: service_healthy
+      trino-small:
+        condition: service_healthy
+      trino-medium:
+        condition: service_healthy
+      trino-large:
+        condition: service_healthy
+    networks:
+      - dyrasql-network
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        apk add --no-cache bash curl python3
+        /bin/bash /setup.sh
+        echo "Setup concluido. Mantendo container ativo para logs..."
+        tail -f /dev/null
+    restart: "no"
+
+  dyrasql-core:
+    build:
+      context: ./dyrasql-core
+      dockerfile: Dockerfile
+    image: dyrasql/core:latest
+    pull_policy: build
+    container_name: dyrasql-core
+    ports:
+      - "5001:5000"
+    environment:
+      POSTGRES_HOST: gateway-db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: dyrasql
+      POSTGRES_USER: dyrasql
+      POSTGRES_PASSWORD: dyrasql
+      TRINO_URL: http://trino-small:8080
+      TRINO_USER: admin
+      TRINO_SMALL_URL: http://trino-small:8080
+      TRINO_MEDIUM_URL: http://trino-medium:8080
+      TRINO_LARGE_URL: http://trino-large:8080
+      LOG_LEVEL: INFO
+      DYRASQL_WEIGHT_VOLUME: "0.5"
+      DYRASQL_WEIGHT_COMPLEXITY: "0.3"
+      DYRASQL_WEIGHT_HISTORICAL: "0.2"
+      DYRASQL_SMALL_THRESHOLD: "0.3"
+      DYRASQL_MEDIUM_THRESHOLD: "0.7"
+      SAVE_EXPLAINS: "true"
+      EXPLAINS_DIR: /app/explains
+    volumes:
+      - ./dyrasql-core:/app
+      - ./explains:/app/explains
+    depends_on:
+      gateway-db:
+        condition: service_healthy
+      trino-small:
+        condition: service_healthy
+    networks:
+      - dyrasql-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  trino-small:
+    image: trinodb/trino:latest
+    container_name: trino-small
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./trino/config/small:/etc/trino:ro
+      - trino-small-data:/var/trino/data
+    depends_on:
+      iceberg-rest:
+        condition: service_started
+    networks:
+      - dyrasql-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/v1/info"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 40s
+
+  trino-medium:
+    image: trinodb/trino:latest
+    container_name: trino-medium
+    ports:
+      - "8082:8080"
+    volumes:
+      - ./trino/config/medium:/etc/trino:ro
+      - trino-medium-data:/var/trino/data
+    depends_on:
+      iceberg-rest:
+        condition: service_started
+    networks:
+      - dyrasql-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/v1/info"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 40s
+
+  trino-large:
+    image: trinodb/trino:latest
+    container_name: trino-large
+    ports:
+      - "8083:8080"
+    volumes:
+      - ./trino/config/large:/etc/trino:ro
+      - trino-large-data:/var/trino/data
+    depends_on:
+      iceberg-rest:
+        condition: service_started
+    networks:
+      - dyrasql-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/v1/info"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 40s
+
+  iceberg-init:
+    image: trinodb/trino:latest
+    container_name: iceberg-init
+    user: root
+    volumes:
+      - ./scripts/init-iceberg.sql:/init-iceberg.sql:ro
+      - ./scripts/load-iceberg.sql:/load-iceberg.sql:ro
+      - ./scripts/init-iceberg.sh:/init-iceberg.sh:ro
+    environment:
+      TRINO_URL: http://trino-small:8080
+      TRINO_USER: admin
+    depends_on:
+      trino-small:
+        condition: service_healthy
+    networks:
+      - dyrasql-network
+    entrypoint: ["/bin/bash", "/init-iceberg.sh"]
+    restart: "no"
+
+volumes:
+  trino-small-data:
+  trino-medium-data:
+  trino-large-data:
+  gateway-db-data:
+  minio-data:
+
+networks:
+  dyrasql-network:
+    driver: bridge

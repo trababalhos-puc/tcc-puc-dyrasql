@@ -1,0 +1,61 @@
+@startuml
+set separator none
+title <size:30>Containers do Sistema</size>
+
+top to bottom direction
+
+skinparam {
+  arrowFontSize 18
+  defaultTextAlignment center
+  wrapWidth 200
+  maxMessageSize 80
+}
+
+hide stereotype
+
+skinparam rectangle<<DyraSQL>> {
+  BorderColor #0b4884
+  FontColor #0b4884
+  shadowing false
+}
+skinparam rectangle<<box>> {
+  BackgroundColor #438dd5
+  FontColor #ffffff
+  BorderColor #2e6295
+  roundCorner 20
+  shadowing false
+}
+skinparam database<<box>> {
+  BackgroundColor #438dd5
+  FontColor #ffffff
+  BorderColor #2e6295
+  roundCorner 20
+  shadowing false
+}
+
+rectangle "<size:20>DyraSQL</size>\n<size:22>[Software System]</size>" <<DyraSQL>> {
+  rectangle "==Trino Gateway Proxy\n[Container: FastAPI]\n\nIntercepta consultas" <<box>> as Proxy
+  rectangle "==Trino Gateway\n[Container]\n\nBalanceamento" <<box>> as Gateway
+  rectangle "==DyraSQL Core\n[Container: Python]\n\nAnalise e decisao" <<box>> as Core
+  rectangle "==Cluster leve\n[Container: Trino]\n\nConsultas leves" <<box>> as Leve
+  rectangle "==Cluster intermediario\n[Container: Trino]\n\nConsultas medias" <<box>> as Medio
+  rectangle "==Cluster robusto\n[Container: Trino]\n\nConsultas pesadas" <<box>> as Robusto
+  database "==PostgreSQL\n[Database]\n\nCache e historico" <<box>> as PG
+  rectangle "==Tabelas Apache Iceberg\n[Container]\n\nDados no MinIO" <<box>> as Iceberg
+  database "==Catalogo REST\n[Database]\n\nMetadados Iceberg" <<box>> as Rest
+}
+
+Proxy .[#707070,thickness=2].> Core : "<color:#707070>1. Decisao</color>"
+Core .[#707070,thickness=2].> PG : "<color:#707070>2. Cache</color>"
+Core .[#707070,thickness=2].> Leve : "<color:#707070>3. EXPLAIN</color>"
+Leve .[#707070,thickness=2].> Rest : "<color:#707070>4. Metadados</color>"
+Core .[#707070,thickness=2].> Proxy : "<color:#707070>5. Score</color>"
+Proxy .[#707070,thickness=2].> Gateway : "<color:#707070>6. Balanceamento</color>"
+Proxy .[#707070,thickness=2].> Leve : "<color:#707070>7a. Roteamento</color>"
+Proxy .[#707070,thickness=2].> Medio : "<color:#707070>7b. Roteamento</color>"
+Proxy .[#707070,thickness=2].> Robusto : "<color:#707070>7c. Roteamento</color>"
+Leve .[#707070,thickness=2].> Iceberg : "<color:#707070>8. Dados</color>"
+Medio .[#707070,thickness=2].> Iceberg : "<color:#707070>8. Dados</color>"
+Robusto .[#707070,thickness=2].> Iceberg : "<color:#707070>8. Dados</color>"
+PG .[#707070,thickness=2].> Core : "<color:#707070>9. Historico</color>"
+@enduml

@@ -1,0 +1,48 @@
+\newpage
+
+\begin{center}
+\textbf{APÊNDICE A - EXEMPLO DE REQUISIÇÃO E RESPOSTA DA API DE ROTEAMENTO}
+\end{center}
+
+\vspace{0.5cm}
+
+Os trechos a seguir ilustram um exemplo de requisição e de resposta do \textit{endpoint} POST /api/v1/route do \textit{DyraSQL Core}, descrito na Seção~\ref{sec:metodologia}.
+
+\begin{center}
+\textbf{Quadro 1 - Requisição do \textit{endpoint} POST /api/v1/route}
+\end{center}
+
+\begin{framed}
+\begin{verbatim}
+{
+  "query": "SELECT ... FROM dados d JOIN tenant_info t ..."
+}
+\end{verbatim}
+\end{framed}
+
+\fonte{Elaborado pelo autor.}
+
+\vspace{0.8cm}
+
+\begin{center}
+\textbf{Quadro 2 - Resposta do \textit{endpoint} POST /api/v1/route}
+\end{center}
+
+\begin{framed}
+\begin{verbatim}
+{
+  "fingerprint": "3f2a1c...",
+  "cluster": "medium",
+  "score": 0.44,
+  "factors": {
+    "volume": 0.27,
+    "complexity": 0.69,
+    "historical": 0.5
+  },
+  "cached": false,
+  "cluster_url": "http://trino-medium:8080"
+}
+\end{verbatim}
+\end{framed}
+
+\fonte{Elaborado pelo autor.}

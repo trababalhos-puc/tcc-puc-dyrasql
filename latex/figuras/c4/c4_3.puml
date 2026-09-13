@@ -1,0 +1,69 @@
+@startuml
+set separator none
+title <size:30>Componentes do DyraSQL Core</size>
+
+top to bottom direction
+
+skinparam {
+  arrowFontSize 16
+  defaultTextAlignment center
+  wrapWidth 200
+  maxMessageSize 80
+}
+
+hide stereotype
+
+skinparam rectangle<<corebox>> {
+  BackgroundColor #85bbf0
+  FontColor #000000
+  BorderColor #5d82a8
+  roundCorner 20
+  shadowing false
+}
+skinparam rectangle<<box>> {
+  BackgroundColor #438dd5
+  FontColor #ffffff
+  BorderColor #2e6295
+  roundCorner 20
+  shadowing false
+}
+skinparam database<<box>> {
+  BackgroundColor #438dd5
+  FontColor #ffffff
+  BorderColor #2e6295
+  roundCorner 20
+  shadowing false
+}
+skinparam rectangle<<DyraSQLCore>> {
+  BorderColor #2e6295
+  FontColor #2e6295
+  shadowing false
+}
+
+rectangle "==Trino Gateway Proxy\n[Container: FastAPI]\n\nProxy de roteamento" <<box>> as Proxy
+database "==PostgreSQL\n[Database]\n\nCache e historico" <<box>> as PG
+
+rectangle "<size:20>DyraSQL Core</size>\n[Container: Python]" <<DyraSQLCore>> {
+  rectangle "==API REST\n[Component]\n\nAPI de roteamento" <<corebox>> as API
+  rectangle "==Query Analyzer\n[Component]\n\nAnalise de consultas" <<corebox>> as QA
+  rectangle "==Decision Engine\n[Component]\n\nDecisao de roteamento" <<corebox>> as DE
+  rectangle "==History Manager\n[Component]\n\nHistorico e cache" <<corebox>> as HM
+}
+
+rectangle "==Clusters Trino\n[Container]\n\nLeve, intermediario e robusto" <<box>> as Clusters
+rectangle "==Tabelas Apache Iceberg\n[Container]\n\nDados no MinIO" <<box>> as Iceberg
+database "==Catalogo REST\n[Database]\n\nMetadados Iceberg" <<box>> as Rest
+
+Proxy .[#707070,thickness=2].> API : "<color:#707070>1. Query</color>"
+API .[#707070,thickness=2].> QA : "<color:#707070>2. Fingerprint</color>"
+API .[#707070,thickness=2].> HM : "<color:#707070>3. Cache</color>"
+HM .[#707070,thickness=2].> PG : "<color:#707070>4. TTL</color>"
+QA .[#707070,thickness=2].> Clusters : "<color:#707070>5. EXPLAIN</color>"
+Clusters .[#707070,thickness=2].> Rest : "<color:#707070>6. Metadados</color>"
+Clusters .[#707070,thickness=2].> Iceberg : "<color:#707070>7. Dados</color>"
+QA .[#707070,thickness=2].> DE : "<color:#707070>8. Dados</color>"
+DE .[#707070,thickness=2].> HM : "<color:#707070>9. Historico</color>"
+DE .[#707070,thickness=2].> API : "<color:#707070>10. Decisao</color>"
+API .[#707070,thickness=2].> Proxy : "<color:#707070>11. JSON</color>"
+PG .[#707070,thickness=2].> DE : "<color:#707070>12. Aprendizado</color>"
+@enduml

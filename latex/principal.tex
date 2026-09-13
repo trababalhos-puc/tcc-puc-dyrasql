@@ -1,0 +1,122 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage{abakos}
+\usepackage{abntex2cite}
+\usepackage{placeins}
+\usepackage{framed}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Capa da revista
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\setcounter{page}{80} %iniciar contador de pagina de valor especificado, quando o artigo for alocado a uma edição
+\newcommand{\monog}{Roteamento Dinâmico de Consultas SQL Baseado em Metadados de Tabelas Apache Iceberg}
+\newcommand{\monogES}{Dynamic SQL Query Routing Based on Apache Iceberg Table Metadata}
+\newcommand{\origem}{Brasil}
+\newcommand{\editorial}{} % p. xx-xx — páginas inicial-final do artigo
+% \newcommand{\lcc}{\scriptsize{Licença Creative Commons Attribution-NonCommercial-NoDerivs 3.0 Unported}}
+
+%%%%%%%%%%%%%%%%%INFORMAÇÕES SOBRE AUTORES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\AutorA}{Aristides Henrique Gonçalves da Cruz}
+\newcommand{\funcaoA}{Engenheiro de Dados}
+\newcommand{\cursA}{Sistemas de Informação}
+\newcommand{\emailA}{arihenriquedev@hotmail.com}
+
+%Comentar essas 4 linhas, caso o TCC seja desenvolvido individualmente
+% \newcommand{\AutorB}{Nome do Segundo Autor}
+% \newcommand{\funcaoB}{}
+% \newcommand{\cursB}{Afiliação do autor 2}
+% \newcommand{\emailB}{autor2@email.edu.br}
+
+\newcommand{\AutorC}{Gustavo Luís Soares}
+\newcommand{\funcaoC}{Orientador}
+\newcommand{\cursC}{Instituto de Ciências Exatas e de Informática da PUC Minas}
+\newcommand{\emailC}{gsoares@pucminas.br}
+
+\newcommand{\keyword}[1]{\textsf{#1}}
+\newcommand{\fonte}[1]{\begin{center}\textbf{\footnotesize Fonte: #1}\end{center}}
+
+\begin{document}
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %% Pagina de titulo
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{flushleft}
+%\begin{minipage} [c][5cm][b]{16.5cm} % Cabeçalho da primeira página da revista
+%\includegraphics[scale=1.1]{figuras/pucmg.png} 
+%\end{minipage}
+\vspace{0cm} { %Rodapé das páginas da revista
+\singlespacing \Large{\monog \symbolfootnote[1]{Trabalho de conclusão de curso, Sistemas de Informação, Unidade São Gabriel} \\ }
+\normalsize{\monogES}
+}
+\end{flushleft}
+
+\begin{flushright}
+\singlespacing 
+\normalsize{\AutorA \footnote{\funcaoA, \cursA, \origem -- \emailA }} \\
+
+%Comentar essa linha, caso o TCC seja desenvolvido individualmente
+% \normalsize{\AutorB \footnote{\funcaoB, \cursB, \origem -- \emailB }} \\
+
+ \normalsize{\AutorC \footnote{\funcaoC, \cursC, \origem -- \emailC }} \\
+\end{flushright}
+\thispagestyle{empty}
+
+% Inclusão do resumo
+\input{modulos/resumo}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage 
+
+% Inclusão do abstract em inglês
+\input{modulos/abstract}
+
+\newpage
+
+\selectlanguage{brazilian}
+ \onehalfspace  % espaçamento 1.5 entre linhas
+ \setlength{\parindent}{1.25cm}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% INICIO DO TEXTO
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Inclusão da introdução
+\input{modulos/introducao}
+
+% Inclusão do referencial teórico
+\input{modulos/referencial_teorico}
+
+% Inclusão da revisão bibliográfica
+\input{modulos/revisao_bibliografica}
+
+% Inclusão da metodologia
+\input{modulos/metodologia}
+
+% Inclusão dos experimentos e resultados
+\input{modulos/experimentos}
+
+% Inclusão das conclusões
+\input{modulos/conclusoes}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% FIM DO TEXTO
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Inicio bibliografia
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+
+\bibliographystyle{abntex2-alf}
+\bibliography{bibliografia}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Apêndice
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\input{modulos/apendice_api}
+
+\end{document}

@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="780" viewBox="0 0 1400 780">
+  <rect width="1400" height="780" fill="white"/>
+  <text x="700" y="32" text-anchor="middle" font-family="Helvetica, Arial" font-size="22" fill="#111">Containers do Sistema</text>
+  <rect x="40" y="60" width="1320" height="690" fill="none" stroke="#0b4884" stroke-width="2" rx="12"/>
+  <text x="70" y="88" font-family="Helvetica, Arial" font-size="16" fill="#0b4884">DyraSQL</text>
+  <rect x="80" y="120" rx="12" width="240" height="90" fill="#438dd5"/>
+  <text x="200" y="158" text-anchor="middle" font-family="Helvetica, Arial" font-size="14" fill="white">Trino Gateway Proxy</text>
+  <text x="200" y="178" text-anchor="middle" font-family="Helvetica, Arial" font-size="12" fill="white">Intercepta consultas</text>
+  <rect x="380" y="120" rx="12" width="240" height="90" fill="#438dd5"/>
+  <text x="500" y="158" text-anchor="middle" font-family="Helvetica, Arial" font-size="14" fill="white">DyraSQL Core</text>
+  <text x="500" y="178" text-anchor="middle" font-family="Helvetica, Arial" font-size="12" fill="white">Analise e decisao</text>
+  <rect x="680" y="120" rx="12" width="240" height="90" fill="#438dd5"/>
+  <text x="800" y="158" text-anchor="middle" font-family="Helvetica, Arial" font-size="14" fill="white">Trino Gateway</text>
+  <text x="800" y="178" text-anchor="middle" font-family="Helvetica, Arial" font-size="12" fill="white">Balanceamento</text>
+  <rect x="980" y="120" rx="12" width="240" height="90" fill="#438dd5"/>
+  <text x="1100" y="158" text-anchor="middle" font-family="Helvetica, Arial" font-size="14" fill="white">PostgreSQL</text>
+  <text x="1100" y="178" text-anchor="middle" font-family="Helvetica, Arial" font-size="12" fill="white">Cache e historico</text>
+  <rect x="80" y="320" rx="12" width="240" height="90" fill="#438dd5"/>
+  <text x="200" y="358" text-anchor="middle" font-family="Helvetica, Arial" font-size="14" fill="white">Cluster leve</text>
+  <text x="200" y="378" text-anchor="middle" font-family="Helvetica, Arial" font-size="12" fill="white">Score menor que 0,3</text>
+  <rect x="380" y="320" rx="12" width="240" height="90" fill="#438dd5"/>
+  <text x="500" y="358" text-anchor="middle" font-family="Helvetica, Arial" font-size="14" fill="white">Cluster intermediario</text>
+  <text x="500" y="378" text-anchor="middle" font-family="Helvetica, Arial" font-size="12" fill="white">Score 0,3 a 0,7</text>
+  <rect x="680" y="320" rx="12" width="240" height="90" fill="#438dd5"/>
+  <text x="800" y="358" text-anchor="middle" font-family="Helvetica, Arial" font-size="14" fill="white">Cluster robusto</text>
+  <text x="800" y="378" text-anchor="middle" font-family="Helvetica, Arial" font-size="12" fill="white">Score maior que 0,7</text>
+  <rect x="980" y="320" rx="12" width="240" height="90" fill="#438dd5"/>
+  <text x="1100" y="358" text-anchor="middle" font-family="Helvetica, Arial" font-size="14" fill="white">Catalogo REST</text>
+  <text x="1100" y="378" text-anchor="middle" font-family="Helvetica, Arial" font-size="12" fill="white">Metadados Iceberg</text>
+  <rect x="380" y="520" rx="12" width="540" height="90" fill="#438dd5"/>
+  <text x="650" y="558" text-anchor="middle" font-family="Helvetica, Arial" font-size="14" fill="white">Tabelas Apache Iceberg no MinIO</text>
+  <text x="650" y="578" text-anchor="middle" font-family="Helvetica, Arial" font-size="12" fill="white">Warehouse de objetos local</text>
+  <line x1="320" y1="165" x2="380" y2="165" stroke="#555" stroke-width="2"/>
+  <line x1="620" y1="165" x2="680" y2="165" stroke="#555" stroke-width="2"/>
+  <line x1="500" y1="210" x2="500" y2="320" stroke="#555" stroke-width="2"/>
+  <line x1="1100" y1="210" x2="1100" y2="320" stroke="#555" stroke-width="2"/>
+  <line x1="200" y1="410" x2="200" y2="565" stroke="#555" stroke-width="2"/>
+  <line x1="200" y1="565" x2="380" y2="565" stroke="#555" stroke-width="2"/>
+  <line x1="500" y1="410" x2="500" y2="520" stroke="#555" stroke-width="2"/>
+  <line x1="800" y1="410" x2="800" y2="520" stroke="#555" stroke-width="2"/>
+  <line x1="1100" y1="410" x2="1100" y2="565" stroke="#555" stroke-width="2"/>
+  <line x1="1100" y1="565" x2="920" y2="565" stroke="#555" stroke-width="2"/>
+</svg>

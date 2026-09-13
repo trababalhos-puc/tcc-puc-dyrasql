@@ -1,0 +1,44 @@
+@startuml
+set separator none
+title <size:30>Contexto do Sistema</size>
+
+left to right direction
+
+skinparam {
+  arrowFontSize 15
+  defaultTextAlignment center
+  wrapWidth 200
+  maxMessageSize 100
+}
+
+hide stereotype
+
+skinparam rectangle<<AmbienteLocal>> {
+  BackgroundColor #1168bd
+  FontColor #ffffff
+  BorderColor #0b4884
+  roundCorner 20
+  shadowing false
+}
+skinparam person<<Analistadedados>> {
+  BackgroundColor #08427b
+  FontColor #ffffff
+  BorderColor #052e56
+  shadowing false
+}
+skinparam rectangle<<DyraSQL>> {
+  BackgroundColor #1168bd
+  FontColor #ffffff
+  BorderColor #0b4884
+  roundCorner 20
+  shadowing false
+}
+
+person "==Analista de dados\n<size:22>[Person]</size>\n\n<size:20>Executa consultas SQL</size>" <<Analistadedados>> as Analistadedados
+rectangle "==DyraSQL\n<size:22>[Software System]</size>\n\n<size:20>Roteamento dinamico baseado em metadados Iceberg</size>" <<DyraSQL>> as DyraSQL
+rectangle "==Ambiente local\n<size:22>[Software System]</size>\n\n<size:20>Trino, MinIO, PostgreSQL e catalogo Iceberg</size>" <<AmbienteLocal>> as AmbienteLocal
+
+Analistadedados .[#707070,thickness=2].> DyraSQL : "<color:#707070><size:20>Executa consultas SQL</size>"
+DyraSQL .[#707070,thickness=2].> AmbienteLocal : "<color:#707070><size:20>Utiliza clusters e data lake local</size>"
+DyraSQL .[#707070,thickness=2].> Analistadedados : "<color:#707070><size:20>Resultado da consulta</size>"
+@enduml

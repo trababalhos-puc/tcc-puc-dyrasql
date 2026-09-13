@@ -1,0 +1,117 @@
+@startuml
+title <size:24>Componentes do DyraSQL Core</size>\n<size:24>Fluxo de interceptacao, analise, decisao e historico.</size>
+
+set separator none
+top to bottom direction
+skinparam ranksep 60
+skinparam nodesep 30
+hide stereotype
+
+<style>
+  root {
+    BackgroundColor: #ffffff;
+    FontColor: #444444;
+  }
+  // Element,Component
+  .Element-RWxlbWVudCxDb21wb25lbnQ= {
+    BackgroundColor: #85bbf0;
+    LineColor: #5d82a8;
+    LineStyle: 0;
+    LineThickness: 2;
+    RoundCorner: 20;
+    FontColor: #ffffff;
+    FontSize: 30;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Container
+  .Element-RWxlbWVudCxDb250YWluZXI= {
+    BackgroundColor: #438dd5;
+    LineColor: #2e6295;
+    LineStyle: 0;
+    LineThickness: 2;
+    RoundCorner: 20;
+    FontColor: #ffffff;
+    FontSize: 30;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Container,Database
+  .Element-RWxlbWVudCxDb250YWluZXIsRGF0YWJhc2U= {
+    BackgroundColor: #438dd5;
+    LineColor: #2e6295;
+    LineStyle: 0;
+    LineThickness: 2;
+    RoundCorner: 20;
+    FontColor: #ffffff;
+    FontSize: 30;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Relationship
+  .Relationship-UmVsYXRpb25zaGlw {
+    LineThickness: 2;
+    LineStyle: 10-10;
+    LineColor: #444444;
+    FontColor: #444444;
+    FontSize: 30;
+  }
+  // DyraSQL
+  .Boundary-RHlyYVNRTA== {
+    BackgroundColor: #ffffff;
+    LineColor: #0b4884;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #1168bd;
+    FontSize: 30;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+  }
+  // DyraSQL Core
+  .Boundary-RHlyYVNRTCBDb3Jl {
+    BackgroundColor: #ffffff;
+    LineColor: #2e6295;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #438dd5;
+    FontSize: 30;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+  }
+</style>
+
+rectangle "DyraSQL\n<size:21>[Software System]</size>" <<Boundary-RHlyYVNRTA==>> {
+  rectangle "DyraSQL Core\n<size:21>[Container: Analise e decisao]</size>" <<Boundary-RHlyYVNRTCBDb3Jl>> {
+    rectangle "==History Manager\n<size:21>[Component: Gerenciamento de historico]</size>\n\nPython" <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as DyraSQL.DyraSQLCore.HistoryManager
+    rectangle "==API REST\n<size:21>[Component: API de roteamento]</size>\n\nFastAPI" <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as DyraSQL.DyraSQLCore.APIREST
+    rectangle "==Query Analyzer\n<size:21>[Component: Analise de consultas]</size>\n\nPython" <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as DyraSQL.DyraSQLCore.QueryAnalyzer
+    rectangle "==Decision Engine\n<size:21>[Component: Decisao de roteamento]</size>\n\nPython" <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as DyraSQL.DyraSQLCore.DecisionEngine
+  }
+
+  rectangle "==Cluster Trino leve\n<size:21>[Container: Consultas leves]</size>\n\nCluster leve para consultas com Score menor que 0,3" <<Element-RWxlbWVudCxDb250YWluZXI=>> as DyraSQL.ClusterTrinoleve
+  rectangle "==PostgreSQL\n<size:21>[Container: Cache e historico]</size>\n\nCache TTL 24h, historico de execucoes e metricas" <<Element-RWxlbWVudCxDb250YWluZXIsRGF0YWJhc2U=>> as DyraSQL.PostgreSQL
+  rectangle "==Catalogo Iceberg REST\n<size:21>[Container: Catalogo de metadados]</size>\n\nCatalogo de metadados das tabelas Iceberg" <<Element-RWxlbWVudCxDb250YWluZXIsRGF0YWJhc2U=>> as DyraSQL.CatalogoIcebergREST
+  rectangle "==Tabelas Apache Iceberg\n<size:21>[Container: Dados e metadados]</size>\n\nDados e metadados armazenados no MinIO" <<Element-RWxlbWVudCxDb250YWluZXI=>> as DyraSQL.TabelasApacheIceberg
+  rectangle "==Trino Gateway Proxy\n<size:21>[Container: Proxy de roteamento]</size>\n\nIntercepta consultas SQL e integra-se com DyraSQL Core" <<Element-RWxlbWVudCxDb250YWluZXI=>> as DyraSQL.TrinoGatewayProxy
+}
+
+DyraSQL.ClusterTrinoleve --> DyraSQL.CatalogoIcebergREST <<Relationship-UmVsYXRpb25zaGlw>> : "4. Metadados"
+DyraSQL.TrinoGatewayProxy --> DyraSQL.ClusterTrinoleve <<Relationship-UmVsYXRpb25zaGlw>> : "7a. Roteamento"
+DyraSQL.ClusterTrinoleve --> DyraSQL.TabelasApacheIceberg <<Relationship-UmVsYXRpb25zaGlw>> : "8. Dados"
+DyraSQL.TrinoGatewayProxy --> DyraSQL.DyraSQLCore.APIREST <<Relationship-UmVsYXRpb25zaGlw>> : "1. Query"
+DyraSQL.DyraSQLCore.APIREST --> DyraSQL.DyraSQLCore.QueryAnalyzer <<Relationship-UmVsYXRpb25zaGlw>> : "2. Fingerprint"
+DyraSQL.DyraSQLCore.APIREST --> DyraSQL.DyraSQLCore.HistoryManager <<Relationship-UmVsYXRpb25zaGlw>> : "3. Cache"
+DyraSQL.DyraSQLCore.HistoryManager --> DyraSQL.PostgreSQL <<Relationship-UmVsYXRpb25zaGlw>> : "4. TTL"
+DyraSQL.DyraSQLCore.QueryAnalyzer --> DyraSQL.ClusterTrinoleve <<Relationship-UmVsYXRpb25zaGlw>> : "5. EXPLAIN"
+DyraSQL.ClusterTrinoleve --> DyraSQL.CatalogoIcebergREST <<Relationship-UmVsYXRpb25zaGlw>> : "6. Metadados"
+DyraSQL.ClusterTrinoleve --> DyraSQL.TabelasApacheIceberg <<Relationship-UmVsYXRpb25zaGlw>> : "7. Dados"
+DyraSQL.DyraSQLCore.QueryAnalyzer --> DyraSQL.DyraSQLCore.DecisionEngine <<Relationship-UmVsYXRpb25zaGlw>> : "8. Dados"
+DyraSQL.DyraSQLCore.DecisionEngine --> DyraSQL.DyraSQLCore.HistoryManager <<Relationship-UmVsYXRpb25zaGlw>> : "9. Historico"
+DyraSQL.DyraSQLCore.DecisionEngine --> DyraSQL.DyraSQLCore.APIREST <<Relationship-UmVsYXRpb25zaGlw>> : "10. Decisao"
+DyraSQL.DyraSQLCore.APIREST --> DyraSQL.TrinoGatewayProxy <<Relationship-UmVsYXRpb25zaGlw>> : "11. JSON"
+DyraSQL.PostgreSQL --> DyraSQL.DyraSQLCore.DecisionEngine <<Relationship-UmVsYXRpb25zaGlw>> : "12. Aprendizado"
+
+@enduml

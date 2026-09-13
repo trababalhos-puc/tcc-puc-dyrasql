@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "DyraSQL: Roteamento Dinâmico de Consultas SQL Baseado em Metadados de Tabelas Apache Iceberg"
+abstract: "Framework para roteamento dinâmico de consultas SQL considerando características previamente disponíveis nos metadados de tabelas Apache Iceberg. O sistema direciona automaticamente consultas para clusters Trino de capacidades distintas, otimizando o uso de recursos através da análise de metadados obtidos via comando EXPLAIN (TYPE IO)."
+authors:
+  - family-names: "Cruz"
+    given-names: "Aristides Henrique Gonçalves da"
+    email: "arihenriquedev@hotmail.com"
+    affiliation: "Pontifícia Universidade Católica de Minas Gerais"
+  - family-names: "Soares"
+    given-names: "Gustavo Luís"
+    email: "gsoares@pucminas.br"
+    affiliation: "Pontifícia Universidade Católica de Minas Gerais"
+    role: "advisor"
+keywords:
+  - "query routing"
+  - "Apache Iceberg"
+  - "Trino"
+  - "data lake"
+  - "metadata analysis"
+  - "SQL optimization"
+license: MIT
+repository-code: "https://github.com/trababalhos-puc/tcc-puc-dyrasql"
+url: "https://github.com/trababalhos-puc/tcc-puc-dyrasql"
+date-released: 2024-12-19
+version: "1.0.0"

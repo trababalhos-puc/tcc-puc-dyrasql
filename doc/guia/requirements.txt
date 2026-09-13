@@ -1,0 +1,13 @@
+# Dependências para o projeto TCC
+# Scripts Python
+
+# Conversão PDF para Markdown
+PyMuPDF>=1.23.0
+
+# Formatação e linting de código Python
+black>=23.0.0
+flake8>=6.0.0
+isort>=5.12.0
+
+# Utilitários gerais
+pathlib2>=2.3.7; python_version < "3.4"
