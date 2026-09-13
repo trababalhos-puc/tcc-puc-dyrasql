@@ -348,7 +348,7 @@ docker-build:
 		echo "$(BLUE)[INFO]$(NC) Instale o Docker: https://www.docker.com/get-started"; \
 		exit 1; \
 	fi
-	docker-compose build
+	cd latex && docker-compose build
 	@echo "$(GREEN)[SUCESSO]$(NC) Imagem Docker construída com sucesso!"
 
 # Compilar usando Docker
@@ -363,7 +363,11 @@ docker-compile:
 		echo "$(BLUE)[Docker]$(NC) Imagem não encontrada. Construindo..."; \
 		$(MAKE) docker-build; \
 	fi
-	docker-compose run --rm latex make compile
+	cd latex && docker-compose run --rm latex
+	@echo "$(GREEN)[SUCESSO]$(NC) Compilação via Docker concluída!"
+	@if [ -f "latex/principal.pdf" ]; then \
+		echo "$(GREEN)[SUCESSO]$(NC) PDF gerado: latex/principal.pdf"; \
+	fi
 	@if [ -f "$(PDF)" ]; then \
 		echo "$(GREEN)[SUCESSO]$(NC) Compilação concluída: $(PDF)"; \
 		if [ -f "$(DELIVERY_PDF)" ]; then \

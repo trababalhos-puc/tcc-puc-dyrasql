@@ -15,10 +15,10 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Define o diretório de trabalho
-WORKDIR /tcc
+WORKDIR /tcc/latex
 
-# Copia arquivos do projeto
+# Copia arquivos do projeto LaTeX
 COPY . .
 
-# Comando padrão: compilar o documento
-CMD ["make", "compile"]
+# Comando padrão: compilar o documento principal
+CMD ["make", "-C", "..", "compile"]

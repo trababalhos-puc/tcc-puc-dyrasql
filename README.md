@@ -36,7 +36,9 @@ O DyraSQL é um framework para roteamento dinâmico de consultas SQL baseado em 
 │   ├── modulos/               # Capítulos da monografia
 │   ├── figuras/               # Imagens e diagramas
 │   ├── beamer/                # Apresentação de defesa
-│   └── bibliografia.bib       # Referências bibliográficas
+│   ├── bibliografia.bib       # Referências bibliográficas
+│   ├── Dockerfile             # Build Docker para LaTeX
+│   └── docker-compose.yml     # Orquestração da compilação LaTeX
 ├── doc/                # Documentação e PDFs de entrega
 │   ├── TCC_Aristides Henrique Gonçalves da Cruz.pdf
 │   ├── principal.pdf          # PDF da monografia
@@ -46,8 +48,6 @@ O DyraSQL é um framework para roteamento dinâmico de consultas SQL baseado em 
 ├── results/            # Resultados e métricas
 ├── tools/              # Scripts utilitários
 ├── Makefile            # Automação de compilação
-├── Dockerfile          # Imagem Docker para LaTeX
-├── docker-compose.yml  # Orquestração da compilação
 ├── LICENSE             # Licença MIT
 ├── CITATION.cff        # Metadados de citação
 └── CONTRIBUTING.md     # Guia de contribuição
@@ -105,10 +105,11 @@ make compile
 #### Usando Docker
 
 ```bash
-docker-compose up latex
+cd latex
+docker-compose up
 ```
 
-O PDF será gerado em `latex/principal.pdf` e copiado para `doc/`.
+O PDF será gerado em `principal.pdf` e copiado para `../doc/`.
 
 #### Compilar apresentação
 
