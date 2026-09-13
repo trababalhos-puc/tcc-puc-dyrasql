@@ -39,7 +39,7 @@ O DyraSQL é um framework para roteamento dinâmico de consultas SQL baseado em 
 │   └── bibliografia.bib       # Referências bibliográficas
 ├── doc/                # Documentação e PDFs de entrega
 │   ├── TCC_Aristides Henrique Gonçalves da Cruz.pdf
-│   ├── guia/                  # Guias e regimentos
+│   ├── principal.pdf          # PDF da monografia
 │   └── arquitetura.md         # Documentação técnica
 ├── references/         # Papers e referências
 ├── data/               # Dados dos experimentos
@@ -116,9 +116,9 @@ O PDF será gerado em `latex/principal.pdf` e copiado para `doc/`.
 make beamer
 ```
 
-### Compilar Documentação
+### Documentação Técnica
 
-Consulte o [guia de regimento](doc/guia/Regimento-TCC-SI-SG.md) e a [documentação técnica](doc/arquitetura.md).
+Consulte a [documentação de arquitetura](doc/arquitetura.md) para detalhes técnicos do projeto.
 
 ## Resultados
 
