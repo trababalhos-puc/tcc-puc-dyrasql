@@ -303,7 +303,7 @@ zip:
 	@echo "$(BLUE)[TCC]$(NC) Criando arquivo ZIP do TCC..."
 	@ZIP_NAME="tcc-$$(date +%Y%m%d-%H%M%S).zip"; \
 	files_exist=true; \
-	for file in principal.tex principal.pdf bibliografia.bib; do \
+	for file in latex/principal.tex latex/principal.pdf latex/bibliografia.bib; do \
 		if [ ! -f "$$file" ]; then \
 			echo "$(YELLOW)[AVISO]$(NC) Arquivo $$file não encontrado."; \
 			files_exist=false; \
@@ -311,20 +311,23 @@ zip:
 	done; \
 	if [ "$$files_exist" = true ]; then \
 		if command -v zip >/dev/null 2>&1; then \
-			zip -q $$ZIP_NAME \
-				$(shell find . -name "*.tex" -not -path "*/\.*") \
-				$(shell find . -name "*.bib" -not -path "*/\.*") \
-				$(shell find . -name "*.pdf" -not -path "*/\.*" -not -path "*/referencias/*") \
-				$(shell find . -name "*.sty" -not -path "*/\.*") \
-				$(shell find . -name "*.bst" -not -path "*/\.*") \
-				$(shell find . -name "*.def" -not -path "*/\.*"); \
-			if [ -d "figuras" ]; then \
-				zip -rq $$ZIP_NAME figuras/; \
-			fi; \
-			if [ -d "modulos" ]; then \
-				zip -rq $$ZIP_NAME modulos/; \
-			fi; \
+			zip -rq $$ZIP_NAME \
+				latex/ \
+				doc/ \
+				README.md \
+				LICENSE \
+				CITATION.cff \
+				-x "*.aux" "*.log" "*.bbl" "*.blg" "*.out" "*.toc" "*.synctex.gz" "*.nav" "*.snm" "*.vrb" \
+				-x "*/.DS_Store" "*/Thumbs.db"; \
 			echo "$(GREEN)[SUCESSO]$(NC) Arquivo ZIP do TCC criado: $$ZIP_NAME"; \
+		else \
+			echo "$(RED)[ERRO]$(NC) Comando 'zip' não encontrado. Instale o zip."; \
+			exit 1; \
+		fi; \
+	else \
+		echo "$(RED)[ERRO]$(NC) Arquivos essenciais não encontrados. Compile o TCC primeiro com 'make compile'."; \
+		exit 1; \
+	fi \
 		else \
 			echo "$(YELLOW)[AVISO]$(NC) Comando zip não encontrado."; \
 		fi; \
