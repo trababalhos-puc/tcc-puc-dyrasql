@@ -51,5 +51,10 @@ results/*.log
 results/*.csv
 !results/README.md
 
+# References - converted files
+references/*.md
+references/*_imagens/
+!references/README.md
+
 # OS
 Thumbs.db
