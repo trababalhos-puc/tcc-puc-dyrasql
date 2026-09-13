@@ -291,8 +291,11 @@ lint:
 # Limpeza de arquivos auxiliares
 clean:
 	@echo "$(BLUE)[TCC]$(NC) Limpando arquivos auxiliares..."
-	rm -f $(AUX_FILES)
-	rm -f embedding_system.log
+	@cd latex && rm -f *.aux *.bbl *.blg *.log *.out *.toc *.fdb_latexmk *.fls *.synctex.gz 2>/dev/null || true
+	@if [ -d "latex/beamer" ]; then \
+		cd latex/beamer && rm -f *.aux *.log *.nav *.out *.snm *.toc *.vrb *.fdb_latexmk *.fls *.synctex.gz 2>/dev/null || true; \
+	fi
+	@rm -f embedding_system.log 2>/dev/null || true
 	@echo "$(GREEN)[SUCESSO]$(NC) Limpeza concluída!"
 
 # Criar arquivo ZIP do TCC (apenas arquivos essenciais)
