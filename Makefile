@@ -367,17 +367,15 @@ docker-compile:
 	@echo "$(GREEN)[SUCESSO]$(NC) Compilação via Docker concluída!"
 	@if [ -f "latex/principal.pdf" ]; then \
 		echo "$(GREEN)[SUCESSO]$(NC) PDF gerado: latex/principal.pdf"; \
-	fi
-	@if [ -f "$(PDF)" ]; then \
-		echo "$(GREEN)[SUCESSO]$(NC) Compilação concluída: $(PDF)"; \
-		if [ -f "$(DELIVERY_PDF)" ]; then \
-			echo "$(GREEN)[SUCESSO]$(NC) Cópia de entrega gerada: $(DELIVERY_PDF)"; \
-		fi; \
+		cp "latex/principal.pdf" "doc/principal.pdf"; \
+		cp "latex/principal.pdf" "doc/$(DELIVERY_PDF)"; \
+		echo "$(GREEN)[SUCESSO]$(NC) Cópia de entrega gerada: doc/$(DELIVERY_PDF)"; \
 		if command -v open >/dev/null 2>&1; then \
-			echo "$(BLUE)[INFO]$(NC) Para visualizar: open $(PDF)"; \
+			echo "$(BLUE)[INFO]$(NC) Para visualizar: open latex/principal.pdf"; \
+			echo "$(BLUE)[INFO]$(NC) Arquivo de entrega: open doc/$(DELIVERY_PDF)"; \
 		fi; \
 	else \
-		echo "$(RED)[ERRO]$(NC) Falha na compilação."; \
+		echo "$(RED)[ERRO]$(NC) Falha na compilação. Verifique latex/principal.log"; \
 	fi
 
 # Compilar apresentação Beamer usando Docker
