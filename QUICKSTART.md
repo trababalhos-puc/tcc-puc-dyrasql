@@ -227,7 +227,7 @@ docker compose exec gateway-db psql -U dyrasql -d dyrasql -c \
 ## Próximos Passos
 
 1. 📖 Leia o [README completo](README.md)
-2. 🏗️ Entenda a [arquitetura](../doc/arquitetura.md)
+2. 🏗️ Entenda a [arquitetura](docs/arquitetura.md)
 3. 📊 Execute as [queries de teste](query.sql)
 4. 📝 Leia a [monografia](../latex/principal.pdf)
 

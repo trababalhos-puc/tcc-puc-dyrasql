@@ -8,7 +8,7 @@ Este é um repositório de Trabalho de Conclusão de Curso (TCC). A estrutura es
 
 - **`src/`** - Código-fonte do framework DyraSQL (aceita contribuições)
 - **`latex/`** - Monografia acadêmica (documento finalizado, apenas correções pontuais)
-- **`doc/`** - Documentação e PDFs de entrega
+- **`docs/`** - Documentação Sphinx + PDFs de entrega
 - **`references/`** - Referências bibliográficas
 - **`data/`** e **`results/`** - Dados e resultados dos experimentos
 - **`tools/`** - Scripts auxiliares
@@ -34,7 +34,7 @@ Contribuições para o código do DyraSQL são bem-vindas! Você pode:
 5. Commit com mensagens claras (use conventional commits)
 6. Abra um Pull Request para `developer`
 
-### 2. Documentação Técnica (`doc/`)
+### 2. Documentação Técnica (`docs/`)
 
 Contribuições para documentação técnica são aceitas:
 

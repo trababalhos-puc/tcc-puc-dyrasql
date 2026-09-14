@@ -11,4 +11,4 @@ Esta pasta contém os resultados dos experimentos realizados.
 ## Nota
 
 Logs e arquivos CSV de resultados estão no `.gitignore` e não são versionados.
-Os resultados principais estão documentados na monografia em `doc/`.
+Os resultados principais estão documentados na monografia em `docs/`.

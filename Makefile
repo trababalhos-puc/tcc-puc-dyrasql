@@ -207,7 +207,7 @@ compile:
 	@if [ -f "latex/principal.pdf" ]; then \
 		echo "$(GREEN)[SUCESSO]$(NC) Compilação concluída: latex/principal.pdf"; \
 		echo "$(BLUE)[INFO]$(NC) Verifique latex/principal.log para warnings ou erros."; \
-		cp "latex/principal.pdf" "doc/TCC_Aristides Henrique Gonçalves da Cruz.pdf"; \
+		cp "latex/principal.pdf" "docs/TCC_Aristides Henrique Gonçalves da Cruz.pdf"; \
 		echo "$(GREEN)[SUCESSO]$(NC) Cópia de entrega gerada em doc/"; \
 		if command -v xdg-open >/dev/null 2>&1; then \
 			echo "$(BLUE)[INFO]$(NC) Para visualizar: xdg-open latex/principal.pdf"; \
@@ -367,12 +367,12 @@ docker-compile:
 	@echo "$(GREEN)[SUCESSO]$(NC) Compilação via Docker concluída!"
 	@if [ -f "latex/principal.pdf" ]; then \
 		echo "$(GREEN)[SUCESSO]$(NC) PDF gerado: latex/principal.pdf"; \
-		cp "latex/principal.pdf" "doc/principal.pdf"; \
-		cp "latex/principal.pdf" "doc/$(DELIVERY_PDF)"; \
-		echo "$(GREEN)[SUCESSO]$(NC) Cópia de entrega gerada: doc/$(DELIVERY_PDF)"; \
+		cp "latex/principal.pdf" "docs/principal.pdf"; \
+		cp "latex/principal.pdf" "docs/$(DELIVERY_PDF)"; \
+		echo "$(GREEN)[SUCESSO]$(NC) Cópia de entrega gerada: docs/$(DELIVERY_PDF)"; \
 		if command -v open >/dev/null 2>&1; then \
 			echo "$(BLUE)[INFO]$(NC) Para visualizar: open latex/principal.pdf"; \
-			echo "$(BLUE)[INFO]$(NC) Arquivo de entrega: open doc/$(DELIVERY_PDF)"; \
+			echo "$(BLUE)[INFO]$(NC) Arquivo de entrega: open docs/$(DELIVERY_PDF)"; \
 		fi; \
 	else \
 		echo "$(RED)[ERRO]$(NC) Falha na compilação. Verifique latex/principal.log"; \

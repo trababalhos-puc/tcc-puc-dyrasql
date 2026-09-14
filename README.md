@@ -50,7 +50,7 @@ A documentação inclui:
 │   ├── bibliografia.bib       # Referências bibliográficas
 │   ├── Dockerfile             # Build Docker para LaTeX
 │   └── docker-compose.yml     # Orquestração da compilação LaTeX
-├── doc/                # Documentação e PDFs de entrega
+├── docs/               # Documentação Sphinx + PDFs de entrega
 │   ├── TCC_Aristides Henrique Gonçalves da Cruz.pdf
 │   ├── principal.pdf          # PDF da monografia
 │   └── arquitetura.md         # Documentação técnica
@@ -120,7 +120,7 @@ cd latex
 docker-compose up
 ```
 
-O PDF será gerado em `principal.pdf` e copiado para `../doc/`.
+O PDF será gerado em `principal.pdf` e copiado para `../docs/`.
 
 #### Compilar apresentação
 
@@ -130,7 +130,7 @@ make beamer
 
 ### Documentação Técnica
 
-Consulte a [documentação de arquitetura](doc/arquitetura.md) para detalhes técnicos do projeto.
+Consulte a [documentação de arquitetura](docs/arquitetura.md) para detalhes técnicos do projeto.
 
 ## Resultados
 
@@ -140,7 +140,7 @@ O framework demonstrou eficácia na classificação e direcionamento de consulta
 - O algoritmo de pontuação reflete adequadamente as características das consultas
 - O cache de decisões reduz overhead de análise em consultas recorrentes
 
-Resultados detalhados estão disponíveis na monografia em `doc/`.
+Resultados detalhados estão disponíveis na monografia em `docs/`.
 
 ## Tecnologias Utilizadas
 
