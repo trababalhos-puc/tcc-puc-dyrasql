@@ -1,0 +1,72 @@
+name-template: "DyraSQL v$RESOLVED_VERSION"
+tag-template: "v$RESOLVED_VERSION"
+version-template: "$MAJOR.$MINOR.$PATCH"
+change-template: "- $TITLE (#$NUMBER) @$AUTHOR"
+change-title-escapes: '\<*_&'
+categories:
+  - title: "Features"
+    labels:
+      - feat
+      - feature
+      - enhancement
+  - title: "Bug Fixes"
+    labels:
+      - fix
+      - bug
+      - hotfix
+  - title: "Tests"
+    labels:
+      - test
+      - tests
+  - title: "CI / Build"
+    labels:
+      - ci
+      - build
+  - title: "Documentation"
+    labels:
+      - docs
+      - documentation
+  - title: "Maintenance"
+    labels:
+      - chore
+      - refactor
+      - style
+      - cleanup
+      - dependency
+exclude-labels:
+  - skip-changelog
+version-resolver:
+  major:
+    labels:
+      - major
+      - breaking
+  minor:
+    labels:
+      - minor
+      - feat
+      - feature
+      - enhancement
+  patch:
+    labels:
+      - patch
+      - fix
+      - bug
+      - hotfix
+      - docs
+      - chore
+      - test
+      - ci
+  default: patch
+template: |
+  ## DyraSQL $RESOLVED_VERSION
+
+  Roteamento dinamico de consultas SQL (TCC PUC Minas).
+
+  ## Changes
+
+  $CHANGES
+
+  ## Links
+
+  - Documentacao: https://trababalhos-puc.github.io/tcc-puc-dyrasql/
+  - Changelog: https://github.com/trababalhos-puc/tcc-puc-dyrasql/blob/main/CHANGELOG.md
