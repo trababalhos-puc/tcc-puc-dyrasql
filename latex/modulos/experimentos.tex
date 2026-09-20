@@ -1,0 +1,49 @@
+\section{Experimentos e Resultados}
+\label{sec:experimentos}
+
+Esta seção apresenta o ambiente empregado para avaliação do \textit{framework DyraSQL}, os cenários de teste, as métricas observadas e a discussão dos resultados. Os experimentos foram projetados para verificar a consistência da lógica de roteamento e dos pesos do Algoritmo de decisão em ambiente local, confirmando que o sistema calcula \textit{scores} e classifica consultas nas faixas de capacidade definidas.
+
+\subsection{Ambiente de Teste}
+
+Os experimentos foram conduzidos em ambiente local orquestrado por Docker Compose, com tabelas \textit{Apache Iceberg} geradas sobre o MinIO e catálogo REST compartilhado pelos \textit{clusters} \textit{Trino}. A Tabela \ref{tab:dataset-teste} foi utilizada como caso de referência, sendo que a consulta principal foi apresentada através do Algoritmo \ref{alg:consulta-vendas}. Experimentos adicionais variaram o \textit{range} de filtros por data para processar diferentes volumes efetivos.
+
+A Tabela \ref{tab:ambiente-teste} apresenta as configurações do ambiente de teste. O \textit{framework} direciona consultas para três \textit{clusters} baseado no \textit{Score} calculado, sendo que consultas com \textit{Score} menor que 0,3 seguem para o \textit{cluster small}, consultas com \textit{Score} entre 0,3 e 0,7 para o \textit{cluster medium}, e consultas com \textit{Score} maior que 0,7 para o \textit{cluster large}.
+
+\begin{table}[ht]
+	\centering
+	\caption{Configurações do Ambiente de Teste}
+	\label{tab:ambiente-teste}
+	\begin{tabular}{lll}
+	\hline
+	\textbf{Componente} & \textbf{Tipo} & \textbf{Configuração} \\
+	\hline
+	\textit{cluster small} & \textit{Small} & \textit{Score} menor que 0,3 \\
+	\textit{cluster medium} & \textit{Medium} & \textit{Score} 0,3 a 0,7 \\
+	\textit{cluster large} & \textit{Large} & \textit{Score} maior que 0,7 \\
+	\textit{Trino Gateway} & \textit{gateway} & Balanceador e roteamento \\
+	\textit{Trino Gateway Proxy} & \textit{proxy} & Integração com o \textit{DyraSQL Core} \\
+	\textit{DyraSQL Core} & API REST & Análise e decisão de roteamento \\
+	PostgreSQL & Banco de dados & Persistência do \textit{gateway} e \textit{cache} \\
+	MinIO & Objetos & \textit{Warehouse} das tabelas \textit{Iceberg} \\
+	Catálogo REST & Catálogo & Metadados das tabelas \textit{Iceberg} \\
+	\hline
+	\end{tabular}
+	\fonte{Elaborado pelo autor.}
+\end{table}
+\FloatBarrier
+
+A Tabela \ref{tab:ambiente-teste} reúne os componentes da stack local, evidenciando a separação entre decisão de roteamento, catálogo, armazenamento e execução. Os três \textit{clusters} \textit{Trino} compartilham o mesmo catálogo REST e o mesmo \textit{warehouse} no MinIO, de modo que a escolha do destino altera apenas a capacidade de processamento.
+
+\subsection{Cenários de Teste}
+
+Os testes utilizaram a Tabela \ref{tab:dataset-teste} e a consulta do Algoritmo \ref{alg:consulta-vendas}, além de variações com filtros de data mais estreitos ou mais amplos e de consultas apenas de metadados. Os cenários cobriram \textit{cache miss}, primeira execução com cálculo completo do \textit{Score}, e \textit{cache hit}, reexecução com o mesmo \textit{fingerprint} dentro do \textit{TTL} de 24 horas. Também foram observadas consultas de baixa complexidade, encaminhadas ao \textit{cluster small}, e a consulta de referência, cujo exemplo de cálculo resulta em \textit{Score} 0,44 e destino \textit{medium}.
+
+\subsection{Métricas e Resultados}
+
+As métricas observadas incluem consistência dos \textit{scores} para consultas similares, adequação das faixas 0,3 e 0,7, tempo de cálculo associado ao \textit{EXPLAIN (TYPE IO)} e taxa de \textit{cache hit} no PostgreSQL. O \textit{EXPLAIN (TYPE IO)} retornou estimativas de volume e de linhas compatíveis com os filtros de partição aplicados, permitindo o cálculo do Fator volume. A consulta de referência produziu \textit{Score} 0,44, classificada no \textit{cluster medium}, enquanto consultas sem junções e com filtros estreitos tenderam ao \textit{cluster small}. Reexecuções com o mesmo \textit{fingerprint} recuperaram a decisão armazenada, evitando nova análise enquanto o \textit{TTL} permaneceu válido.
+
+Os pesos $w_1 = 0,5$, $w_2 = 0,3$ e $w_3 = 0,2$ diferenciaram consultas leves, intermediárias e pesadas no conjunto avaliado, sendo o fator de volume o de maior influência e o fator histórico complementar quando havia execução prévia. O tempo de análise prévia manteve-se adequado para o \textit{dataset} sintético, permanecendo na ordem de centenas de milissegundos nas consultas observadas.
+
+\subsection{Limitações Identificadas}
+
+O \textit{dataset} sintético possui volume inferior ao de ambientes de produção, o que restringe a generalização dos resultados para \textit{warehouses} de centenas de gigabytes. A precisão das decisões depende de histórico suficiente no PostgreSQL, sendo que consultas novas utilizam $f_h = 0,5$. O \textit{EXPLAIN (TYPE IO)} pode se tornar mais lento em planos muito complexos, e metadados \textit{Iceberg} desatualizados reduzem a qualidade das estimativas. A máquina local também não reproduz elasticidade nem escala de um ambiente de nuvem, aspecto tratado nos trabalhos futuros. O sistema ainda não implementa uma estratégia formal de \textit{fallback} para os casos em que o \textit{EXPLAIN (TYPE IO)} não retorna resultado (indisponibilidade do \textit{Trino} ou \textit{timeout}), resultando em erro em vez de um \textit{cluster} padrão; essa condição não se manifestou nos testes, mas não é coberta pela lógica atual.

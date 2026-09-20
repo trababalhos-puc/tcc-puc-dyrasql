@@ -1,0 +1,51 @@
+[project]
+name = "tcc-puc-dyrasql"
+version = "1.0.0"
+description = "DyraSQL - roteamento dinamico de consultas SQL (TCC PUC Minas)"
+authors = [
+    { name = "Aristides Cruz" },
+]
+requires-python = ">=3.9"
+
+[tool.poetry]
+package-mode = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+src = ["src", "tests"]
+exclude = [
+    ".venv",
+    "venv",
+    "__pycache__",
+    "docs",
+    "latex",
+    "tmp",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "B"]
+ignore = ["E501", "UP017", "UP007", "UP006", "UP035", "B008", "W293"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011", "E402"]
+"src/dyrasql-core/app.py" = ["B904", "E722"]
+"src/trino-gateway-proxy/app.py" = ["B904"]
+"src/dyrasql-core/query_analyzer.py" = ["B904", "B023"]
+"src/scripts/generate_data.py" = ["UP031"]
+
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "tests/*",
+    "*/tests/*",
+]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+]

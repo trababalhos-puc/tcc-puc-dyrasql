@@ -1,0 +1,7 @@
+\selectlanguage{english}
+\begin{abstract}
+\noindent
+The growth of data volume in data lakes has increased the need for adaptive architectures that balance cost and performance in SQL query execution. This work presents DyraSQL, a framework for dynamic SQL query routing based on Apache Iceberg table metadata obtained through Trino's EXPLAIN (TYPE IO) command. The system automatically directs queries to processing clusters with distinct capacities, classified as small, medium, and large, using a scoring algorithm that combines data volume, query complexity, and execution history. The methodology extracts metadata about effective data volume and I/O costs, performs syntactic analysis of SQL queries, and reuses decisions through a temporal cache in PostgreSQL. The prototype was evaluated in a local Docker Compose environment, with generated Apache Iceberg tables on MinIO object storage and a REST catalog, showing that the system computes consistent scores and classifies queries into the defined capacity ranges. The results indicate that metadata-based routing contributes to more efficient use of processing resources, offering an adaptive model for local Trino clusters and, as future work, for cloud environments.
+\\\textbf{\keyword{Keywords: }} SQL queries. Trino. Apache Iceberg. Data lake. Trino Gateway.
+\end{abstract}
+\selectlanguage{brazilian}

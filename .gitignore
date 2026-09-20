@@ -51,5 +51,23 @@ results/*.log
 results/*.csv
 !results/README.md
 
+# References - converted files
+references/*.md
+references/*_imagens/
+!references/README.md
+
 # OS
 Thumbs.db
+tmp
+
+# Sphinx documentation
+docs/_build/
+docs/_static/
+docs/_templates/
+*principal.pdf
+# Test / coverage / local env
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+.venv/

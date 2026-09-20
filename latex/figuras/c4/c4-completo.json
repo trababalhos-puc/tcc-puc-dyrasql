@@ -1,0 +1,596 @@
+{
+  "configuration" : { },
+  "description" : "Framework de roteamento dinamico baseado em metadados Iceberg",
+  "documentation" : { },
+  "id" : 0,
+  "model" : {
+    "people" : [ {
+      "description" : "Executa consultas SQL",
+      "id" : "1",
+      "name" : "Analista de dados",
+      "properties" : {
+        "structurizr.dsl.identifier" : "analista"
+      },
+      "relationships" : [ {
+        "description" : "Executa consultas SQL",
+        "destinationId" : "3",
+        "id" : "17",
+        "sourceId" : "1",
+        "tags" : "Relationship"
+      } ],
+      "tags" : "Element,Person"
+    } ],
+    "softwareSystems" : [ {
+      "description" : "Trino, MinIO, PostgreSQL e catalogo Iceberg",
+      "documentation" : { },
+      "id" : "2",
+      "name" : "Ambiente local",
+      "properties" : {
+        "structurizr.dsl.identifier" : "ambienteLocal"
+      },
+      "tags" : "Element,Software System"
+    }, {
+      "containers" : [ {
+        "description" : "Intercepta consultas SQL e integra-se com DyraSQL Core",
+        "documentation" : { },
+        "id" : "4",
+        "name" : "Trino Gateway Proxy",
+        "properties" : {
+          "structurizr.dsl.identifier" : "trinoGatewayProxy"
+        },
+        "relationships" : [ {
+          "description" : "1. Decisao",
+          "destinationId" : "6",
+          "id" : "20",
+          "sourceId" : "4",
+          "tags" : "Relationship"
+        }, {
+          "description" : "6. Balanceamento",
+          "destinationId" : "5",
+          "id" : "25",
+          "sourceId" : "4",
+          "tags" : "Relationship"
+        }, {
+          "description" : "7a. Roteamento",
+          "destinationId" : "11",
+          "id" : "26",
+          "sourceId" : "4",
+          "tags" : "Relationship"
+        }, {
+          "description" : "7b. Roteamento",
+          "destinationId" : "12",
+          "id" : "27",
+          "sourceId" : "4",
+          "tags" : "Relationship"
+        }, {
+          "description" : "7c. Roteamento",
+          "destinationId" : "13",
+          "id" : "28",
+          "sourceId" : "4",
+          "tags" : "Relationship"
+        }, {
+          "description" : "1. Query",
+          "destinationId" : "7",
+          "id" : "33",
+          "sourceId" : "4",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Proxy de roteamento"
+      }, {
+        "description" : "Balanceador e roteamento de consultas",
+        "documentation" : { },
+        "id" : "5",
+        "name" : "Trino Gateway",
+        "properties" : {
+          "structurizr.dsl.identifier" : "trinoGateway"
+        },
+        "tags" : "Element,Container",
+        "technology" : "Balanceamento de carga"
+      }, {
+        "components" : [ {
+          "description" : "FastAPI",
+          "documentation" : { },
+          "id" : "7",
+          "name" : "API REST",
+          "properties" : {
+            "structurizr.dsl.identifier" : "apiREST"
+          },
+          "relationships" : [ {
+            "description" : "2. Fingerprint",
+            "destinationId" : "8",
+            "id" : "34",
+            "sourceId" : "7",
+            "tags" : "Relationship"
+          }, {
+            "description" : "3. Cache",
+            "destinationId" : "10",
+            "id" : "35",
+            "sourceId" : "7",
+            "tags" : "Relationship"
+          }, {
+            "description" : "11. JSON",
+            "destinationId" : "4",
+            "id" : "43",
+            "sourceId" : "7",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "API de roteamento"
+        }, {
+          "description" : "Python",
+          "documentation" : { },
+          "id" : "8",
+          "name" : "Query Analyzer",
+          "properties" : {
+            "structurizr.dsl.identifier" : "queryAnalyzer"
+          },
+          "relationships" : [ {
+            "description" : "5. EXPLAIN",
+            "destinationId" : "11",
+            "id" : "37",
+            "sourceId" : "8",
+            "tags" : "Relationship"
+          }, {
+            "description" : "8. Dados",
+            "destinationId" : "9",
+            "id" : "40",
+            "sourceId" : "8",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Analise de consultas"
+        }, {
+          "description" : "Python",
+          "documentation" : { },
+          "id" : "9",
+          "name" : "Decision Engine",
+          "properties" : {
+            "structurizr.dsl.identifier" : "decisionEngine"
+          },
+          "relationships" : [ {
+            "description" : "9. Historico",
+            "destinationId" : "10",
+            "id" : "41",
+            "sourceId" : "9",
+            "tags" : "Relationship"
+          }, {
+            "description" : "10. Decisao",
+            "destinationId" : "7",
+            "id" : "42",
+            "sourceId" : "9",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Decisao de roteamento"
+        }, {
+          "description" : "Python",
+          "documentation" : { },
+          "id" : "10",
+          "name" : "History Manager",
+          "properties" : {
+            "structurizr.dsl.identifier" : "historyManager"
+          },
+          "relationships" : [ {
+            "description" : "4. TTL",
+            "destinationId" : "14",
+            "id" : "36",
+            "sourceId" : "10",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Gerenciamento de historico"
+        } ],
+        "description" : "Sistema de analise de consultas e decisao de roteamento",
+        "documentation" : { },
+        "id" : "6",
+        "name" : "DyraSQL Core",
+        "properties" : {
+          "structurizr.dsl.identifier" : "dyraSQLCore"
+        },
+        "relationships" : [ {
+          "description" : "2. Cache",
+          "destinationId" : "14",
+          "id" : "21",
+          "sourceId" : "6",
+          "tags" : "Relationship"
+        }, {
+          "description" : "3. EXPLAIN",
+          "destinationId" : "11",
+          "id" : "22",
+          "sourceId" : "6",
+          "tags" : "Relationship"
+        }, {
+          "description" : "5. Score",
+          "destinationId" : "4",
+          "id" : "24",
+          "sourceId" : "6",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Analise e decisao"
+      }, {
+        "description" : "Cluster leve para consultas com Score menor que 0,3",
+        "documentation" : { },
+        "id" : "11",
+        "name" : "Cluster Trino leve",
+        "properties" : {
+          "structurizr.dsl.identifier" : "clusterLeve"
+        },
+        "relationships" : [ {
+          "description" : "4. Metadados",
+          "destinationId" : "15",
+          "id" : "23",
+          "sourceId" : "11",
+          "tags" : "Relationship"
+        }, {
+          "description" : "8. Dados",
+          "destinationId" : "16",
+          "id" : "29",
+          "sourceId" : "11",
+          "tags" : "Relationship"
+        }, {
+          "description" : "6. Metadados",
+          "destinationId" : "15",
+          "id" : "38",
+          "sourceId" : "11",
+          "tags" : "Relationship"
+        }, {
+          "description" : "7. Dados",
+          "destinationId" : "16",
+          "id" : "39",
+          "sourceId" : "11",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Consultas leves"
+      }, {
+        "description" : "Cluster intermediario para consultas com Score 0,3 a 0,7",
+        "documentation" : { },
+        "id" : "12",
+        "name" : "Cluster Trino intermediario",
+        "properties" : {
+          "structurizr.dsl.identifier" : "clusterIntermediario"
+        },
+        "relationships" : [ {
+          "description" : "8. Dados",
+          "destinationId" : "16",
+          "id" : "30",
+          "sourceId" : "12",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Consultas medias"
+      }, {
+        "description" : "Cluster robusto para consultas com Score maior que 0,7",
+        "documentation" : { },
+        "id" : "13",
+        "name" : "Cluster Trino robusto",
+        "properties" : {
+          "structurizr.dsl.identifier" : "clusterRobusto"
+        },
+        "relationships" : [ {
+          "description" : "8. Dados",
+          "destinationId" : "16",
+          "id" : "31",
+          "sourceId" : "13",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Consultas pesadas"
+      }, {
+        "description" : "Cache TTL 24h, historico de execucoes e metricas",
+        "documentation" : { },
+        "id" : "14",
+        "name" : "PostgreSQL",
+        "properties" : {
+          "structurizr.dsl.identifier" : "postgres"
+        },
+        "relationships" : [ {
+          "description" : "9. Historico",
+          "destinationId" : "6",
+          "id" : "32",
+          "sourceId" : "14",
+          "tags" : "Relationship"
+        }, {
+          "description" : "12. Aprendizado",
+          "destinationId" : "9",
+          "id" : "44",
+          "sourceId" : "14",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container,Database",
+        "technology" : "Cache e historico"
+      }, {
+        "description" : "Catalogo de metadados das tabelas Iceberg",
+        "documentation" : { },
+        "id" : "15",
+        "name" : "Catalogo Iceberg REST",
+        "properties" : {
+          "structurizr.dsl.identifier" : "catalogoRest"
+        },
+        "tags" : "Element,Container,Database",
+        "technology" : "Catalogo de metadados"
+      }, {
+        "description" : "Dados e metadados armazenados no MinIO",
+        "documentation" : { },
+        "id" : "16",
+        "name" : "Tabelas Apache Iceberg",
+        "properties" : {
+          "structurizr.dsl.identifier" : "tabelasIceberg"
+        },
+        "tags" : "Element,Container",
+        "technology" : "Dados e metadados"
+      } ],
+      "description" : "Framework de roteamento dinamico baseado em metadados Iceberg",
+      "documentation" : { },
+      "id" : "3",
+      "name" : "DyraSQL",
+      "properties" : {
+        "structurizr.dsl.identifier" : "sistemaRoteamento"
+      },
+      "relationships" : [ {
+        "description" : "Utiliza clusters e data lake local",
+        "destinationId" : "2",
+        "id" : "18",
+        "sourceId" : "3",
+        "tags" : "Relationship"
+      }, {
+        "description" : "Resultado da consulta",
+        "destinationId" : "1",
+        "id" : "19",
+        "sourceId" : "3",
+        "tags" : "Relationship"
+      } ],
+      "tags" : "Element,Software System"
+    } ]
+  },
+  "name" : "DyraSQL",
+  "properties" : {
+    "structurizr.inspection.error" : "31",
+    "structurizr.dsl" : "d29ya3NwYWNlICJEeXJhU1FMIiAiRnJhbWV3b3JrIGRlIHJvdGVhbWVudG8gZGluYW1pY28gYmFzZWFkbyBlbSBtZXRhZGFkb3MgSWNlYmVyZyIgewoKICAgIG1vZGVsIHsKICAgICAgICBhbmFsaXN0YSA9IHBlcnNvbiAiQW5hbGlzdGEgZGUgZGFkb3MiICJFeGVjdXRhIGNvbnN1bHRhcyBTUUwiCgogICAgICAgIGFtYmllbnRlTG9jYWwgPSBzb2Z0d2FyZVN5c3RlbSAiQW1iaWVudGUgbG9jYWwiICJUcmlubywgTWluSU8sIFBvc3RncmVTUUwgZSBjYXRhbG9nbyBJY2ViZXJnIgoKICAgICAgICBzaXN0ZW1hUm90ZWFtZW50byA9IHNvZnR3YXJlU3lzdGVtICJEeXJhU1FMIiAiRnJhbWV3b3JrIGRlIHJvdGVhbWVudG8gZGluYW1pY28gYmFzZWFkbyBlbSBtZXRhZGFkb3MgSWNlYmVyZyIgewoKICAgICAgICAgICAgdHJpbm9HYXRld2F5UHJveHkgPSBjb250YWluZXIgIlRyaW5vIEdhdGV3YXkgUHJveHkiICJGYXN0QVBJIiAiUHJveHkgZGUgcm90ZWFtZW50byIgewogICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIkludGVyY2VwdGEgY29uc3VsdGFzIFNRTCBlIGludGVncmEtc2UgY29tIER5cmFTUUwgQ29yZSIKICAgICAgICAgICAgfQoKICAgICAgICAgICAgdHJpbm9HYXRld2F5ID0gY29udGFpbmVyICJUcmlubyBHYXRld2F5IiAiVHJpbm8gR2F0ZXdheSIgIkJhbGFuY2VhbWVudG8gZGUgY2FyZ2EiIHsKICAgICAgICAgICAgICAgIGRlc2NyaXB0aW9uICJCYWxhbmNlYWRvciBlIHJvdGVhbWVudG8gZGUgY29uc3VsdGFzIgogICAgICAgICAgICB9CgogICAgICAgICAgICBkeXJhU1FMQ29yZSA9IGNvbnRhaW5lciAiRHlyYVNRTCBDb3JlIiAiUHl0aG9uIiAiQW5hbGlzZSBlIGRlY2lzYW8iIHsKICAgICAgICAgICAgICAgIGRlc2NyaXB0aW9uICJTaXN0ZW1hIGRlIGFuYWxpc2UgZGUgY29uc3VsdGFzIGUgZGVjaXNhbyBkZSByb3RlYW1lbnRvIgoKICAgICAgICAgICAgICAgIGFwaVJFU1QgPSBjb21wb25lbnQgIkFQSSBSRVNUIiAiRmFzdEFQSSIgIkFQSSBkZSByb3RlYW1lbnRvIgogICAgICAgICAgICAgICAgcXVlcnlBbmFseXplciA9IGNvbXBvbmVudCAiUXVlcnkgQW5hbHl6ZXIiICJQeXRob24iICJBbmFsaXNlIGRlIGNvbnN1bHRhcyIKICAgICAgICAgICAgICAgIGRlY2lzaW9uRW5naW5lID0gY29tcG9uZW50ICJEZWNpc2lvbiBFbmdpbmUiICJQeXRob24iICJEZWNpc2FvIGRlIHJvdGVhbWVudG8iCiAgICAgICAgICAgICAgICBoaXN0b3J5TWFuYWdlciA9IGNvbXBvbmVudCAiSGlzdG9yeSBNYW5hZ2VyIiAiUHl0aG9uIiAiR2VyZW5jaWFtZW50byBkZSBoaXN0b3JpY28iCiAgICAgICAgICAgIH0KCiAgICAgICAgICAgIGNsdXN0ZXJMZXZlID0gY29udGFpbmVyICJDbHVzdGVyIFRyaW5vIGxldmUiICJUcmlubyIgIkNvbnN1bHRhcyBsZXZlcyIgewogICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIkNsdXN0ZXIgbGV2ZSBwYXJhIGNvbnN1bHRhcyBjb20gU2NvcmUgbWVub3IgcXVlIDAsMyIKICAgICAgICAgICAgfQoKICAgICAgICAgICAgY2x1c3RlckludGVybWVkaWFyaW8gPSBjb250YWluZXIgIkNsdXN0ZXIgVHJpbm8gaW50ZXJtZWRpYXJpbyIgIlRyaW5vIiAiQ29uc3VsdGFzIG1lZGlhcyIgewogICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIkNsdXN0ZXIgaW50ZXJtZWRpYXJpbyBwYXJhIGNvbnN1bHRhcyBjb20gU2NvcmUgMCwzIGEgMCw3IgogICAgICAgICAgICB9CgogICAgICAgICAgICBjbHVzdGVyUm9idXN0byA9IGNvbnRhaW5lciAiQ2x1c3RlciBUcmlubyByb2J1c3RvIiAiVHJpbm8iICJDb25zdWx0YXMgcGVzYWRhcyIgewogICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIkNsdXN0ZXIgcm9idXN0byBwYXJhIGNvbnN1bHRhcyBjb20gU2NvcmUgbWFpb3IgcXVlIDAsNyIKICAgICAgICAgICAgfQoKICAgICAgICAgICAgcG9zdGdyZXMgPSBjb250YWluZXIgIlBvc3RncmVTUUwiICJQb3N0Z3JlU1FMIiAiQ2FjaGUgZSBoaXN0b3JpY28iICJEYXRhYmFzZSIgewogICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIkNhY2hlIFRUTCAyNGgsIGhpc3RvcmljbyBkZSBleGVjdWNvZXMgZSBtZXRyaWNhcyIKICAgICAgICAgICAgfQoKICAgICAgICAgICAgY2F0YWxvZ29SZXN0ID0gY29udGFpbmVyICJDYXRhbG9nbyBJY2ViZXJnIFJFU1QiICJJY2ViZXJnIFJFU1QiICJDYXRhbG9nbyBkZSBtZXRhZGFkb3MiICJEYXRhYmFzZSIgewogICAgICAgICAgICAgICAgZGVzY3JpcHRpb24gIkNhdGFsb2dvIGRlIG1ldGFkYWRvcyBkYXMgdGFiZWxhcyBJY2ViZXJnIgogICAgICAgICAgICB9CgogICAgICAgICAgICB0YWJlbGFzSWNlYmVyZyA9IGNvbnRhaW5lciAiVGFiZWxhcyBBcGFjaGUgSWNlYmVyZyIgIkFwYWNoZSBJY2ViZXJnIiAiRGFkb3MgZSBtZXRhZGFkb3MiIHsKICAgICAgICAgICAgICAgIGRlc2NyaXB0aW9uICJEYWRvcyBlIG1ldGFkYWRvcyBhcm1hemVuYWRvcyBubyBNaW5JTyIKICAgICAgICAgICAgfQogICAgICAgIH0KCiAgICAgICAgYW5hbGlzdGEgLT4gc2lzdGVtYVJvdGVhbWVudG8gIkV4ZWN1dGEgY29uc3VsdGFzIFNRTCIKICAgICAgICBzaXN0ZW1hUm90ZWFtZW50byAtPiBhbWJpZW50ZUxvY2FsICJVdGlsaXphIGNsdXN0ZXJzIGUgZGF0YSBsYWtlIGxvY2FsIgogICAgICAgIHNpc3RlbWFSb3RlYW1lbnRvIC0+IGFuYWxpc3RhICJSZXN1bHRhZG8gZGEgY29uc3VsdGEiCgogICAgICAgIHRyaW5vR2F0ZXdheVByb3h5IC0+IGR5cmFTUUxDb3JlICIxLiBEZWNpc2FvIgogICAgICAgIGR5cmFTUUxDb3JlIC0+IHBvc3RncmVzICIyLiBDYWNoZSIKICAgICAgICBkeXJhU1FMQ29yZSAtPiBjbHVzdGVyTGV2ZSAiMy4gRVhQTEFJTiIKICAgICAgICBjbHVzdGVyTGV2ZSAtPiBjYXRhbG9nb1Jlc3QgIjQuIE1ldGFkYWRvcyIKICAgICAgICBkeXJhU1FMQ29yZSAtPiB0cmlub0dhdGV3YXlQcm94eSAiNS4gU2NvcmUiCiAgICAgICAgdHJpbm9HYXRld2F5UHJveHkgLT4gdHJpbm9HYXRld2F5ICI2LiBCYWxhbmNlYW1lbnRvIgogICAgICAgIHRyaW5vR2F0ZXdheVByb3h5IC0+IGNsdXN0ZXJMZXZlICI3YS4gUm90ZWFtZW50byIKICAgICAgICB0cmlub0dhdGV3YXlQcm94eSAtPiBjbHVzdGVySW50ZXJtZWRpYXJpbyAiN2IuIFJvdGVhbWVudG8iCiAgICAgICAgdHJpbm9HYXRld2F5UHJveHkgLT4gY2x1c3RlclJvYnVzdG8gIjdjLiBSb3RlYW1lbnRvIgogICAgICAgIGNsdXN0ZXJMZXZlIC0+IHRhYmVsYXNJY2ViZXJnICI4LiBEYWRvcyIKICAgICAgICBjbHVzdGVySW50ZXJtZWRpYXJpbyAtPiB0YWJlbGFzSWNlYmVyZyAiOC4gRGFkb3MiCiAgICAgICAgY2x1c3RlclJvYnVzdG8gLT4gdGFiZWxhc0ljZWJlcmcgIjguIERhZG9zIgogICAgICAgIHBvc3RncmVzIC0+IGR5cmFTUUxDb3JlICI5LiBIaXN0b3JpY28iCgogICAgICAgIHRyaW5vR2F0ZXdheVByb3h5IC0+IGFwaVJFU1QgIjEuIFF1ZXJ5IgogICAgICAgIGFwaVJFU1QgLT4gcXVlcnlBbmFseXplciAiMi4gRmluZ2VycHJpbnQiCiAgICAgICAgYXBpUkVTVCAtPiBoaXN0b3J5TWFuYWdlciAiMy4gQ2FjaGUiCiAgICAgICAgaGlzdG9yeU1hbmFnZXIgLT4gcG9zdGdyZXMgIjQuIFRUTCIKICAgICAgICBxdWVyeUFuYWx5emVyIC0+IGNsdXN0ZXJMZXZlICI1LiBFWFBMQUlOIgogICAgICAgIGNsdXN0ZXJMZXZlIC0+IGNhdGFsb2dvUmVzdCAiNi4gTWV0YWRhZG9zIgogICAgICAgIGNsdXN0ZXJMZXZlIC0+IHRhYmVsYXNJY2ViZXJnICI3LiBEYWRvcyIKICAgICAgICBxdWVyeUFuYWx5emVyIC0+IGRlY2lzaW9uRW5naW5lICI4LiBEYWRvcyIKICAgICAgICBkZWNpc2lvbkVuZ2luZSAtPiBoaXN0b3J5TWFuYWdlciAiOS4gSGlzdG9yaWNvIgogICAgICAgIGRlY2lzaW9uRW5naW5lIC0+IGFwaVJFU1QgIjEwLiBEZWNpc2FvIgogICAgICAgIGFwaVJFU1QgLT4gdHJpbm9HYXRld2F5UHJveHkgIjExLiBKU09OIgogICAgICAgIHBvc3RncmVzIC0+IGRlY2lzaW9uRW5naW5lICIxMi4gQXByZW5kaXphZG8iCiAgICB9CgogICAgdmlld3MgewogICAgICAgIHRoZW1lIGRlZmF1bHQKCiAgICAgICAgc3lzdGVtQ29udGV4dCBzaXN0ZW1hUm90ZWFtZW50byAiQ29udGV4dG9Eb1Npc3RlbWEiIHsKICAgICAgICAgICAgaW5jbHVkZSAqCiAgICAgICAgICAgIHRpdGxlICJDb250ZXh0byBkbyBTaXN0ZW1hIgogICAgICAgICAgICBkZXNjcmlwdGlvbiAiQW5hbGlzdGEgZXhlY3V0YSBjb25zdWx0YXMgU1FMIG5vIER5cmFTUUwgZW0gYW1iaWVudGUgbG9jYWwuIgogICAgICAgICAgICBhdXRvbGF5b3V0IGxyCiAgICAgICAgfQoKICAgICAgICBjb250YWluZXIgc2lzdGVtYVJvdGVhbWVudG8gIkNvbnRhaW5lcnNEb1Npc3RlbWEiIHsKICAgICAgICAgICAgaW5jbHVkZSBzaXN0ZW1hUm90ZWFtZW50bwogICAgICAgICAgICBpbmNsdWRlIHRyaW5vR2F0ZXdheVByb3h5CiAgICAgICAgICAgIGluY2x1ZGUgdHJpbm9HYXRld2F5CiAgICAgICAgICAgIGluY2x1ZGUgZHlyYVNRTENvcmUKICAgICAgICAgICAgaW5jbHVkZSBjbHVzdGVyTGV2ZQogICAgICAgICAgICBpbmNsdWRlIGNsdXN0ZXJJbnRlcm1lZGlhcmlvCiAgICAgICAgICAgIGluY2x1ZGUgY2x1c3RlclJvYnVzdG8KICAgICAgICAgICAgaW5jbHVkZSBwb3N0Z3JlcwogICAgICAgICAgICBpbmNsdWRlIGNhdGFsb2dvUmVzdAogICAgICAgICAgICBpbmNsdWRlIHRhYmVsYXNJY2ViZXJnCiAgICAgICAgICAgIHRpdGxlICJDb250YWluZXJzIGRvIFNpc3RlbWEiCiAgICAgICAgICAgIGRlc2NyaXB0aW9uICJUcmlubyBHYXRld2F5IFByb3h5IGludGVyY2VwdGEgY29uc3VsdGFzLCBEeXJhU1FMIENvcmUgYW5hbGlzYSBlIGRlY2lkZSwgY2x1c3RlcnMgcHJvY2Vzc2FtLiIKICAgICAgICAgICAgYXV0b2xheW91dCB0YgogICAgICAgIH0KCiAgICAgICAgY29tcG9uZW50IGR5cmFTUUxDb3JlICJDb21wb25lbnRlc1JvdGVhbWVudG8iIHsKICAgICAgICAgICAgaW5jbHVkZSBkeXJhU1FMQ29yZQogICAgICAgICAgICBpbmNsdWRlIGFwaVJFU1QKICAgICAgICAgICAgaW5jbHVkZSBxdWVyeUFuYWx5emVyCiAgICAgICAgICAgIGluY2x1ZGUgZGVjaXNpb25FbmdpbmUKICAgICAgICAgICAgaW5jbHVkZSBoaXN0b3J5TWFuYWdlcgogICAgICAgICAgICBpbmNsdWRlIHRyaW5vR2F0ZXdheVByb3h5CiAgICAgICAgICAgIGluY2x1ZGUgY2x1c3RlckxldmUKICAgICAgICAgICAgaW5jbHVkZSBjYXRhbG9nb1Jlc3QKICAgICAgICAgICAgaW5jbHVkZSB0YWJlbGFzSWNlYmVyZwogICAgICAgICAgICBpbmNsdWRlIHBvc3RncmVzCiAgICAgICAgICAgIHRpdGxlICJDb21wb25lbnRlcyBkbyBEeXJhU1FMIENvcmUiCiAgICAgICAgICAgIGRlc2NyaXB0aW9uICJGbHV4byBkZSBpbnRlcmNlcHRhY2FvLCBhbmFsaXNlLCBkZWNpc2FvIGUgaGlzdG9yaWNvLiIKICAgICAgICAgICAgYXV0b2xheW91dCB0YgogICAgICAgIH0KCiAgICAgICAgc3R5bGVzIHsKICAgICAgICAgICAgZWxlbWVudCAiUGVyc29uIiB7CiAgICAgICAgICAgICAgICBzaGFwZSBQZXJzb24KICAgICAgICAgICAgICAgIGZvbnRTaXplIDMwCiAgICAgICAgICAgIH0KICAgICAgICAgICAgZWxlbWVudCAiU29mdHdhcmUgU3lzdGVtIiB7CiAgICAgICAgICAgICAgICBmb250U2l6ZSAzMAogICAgICAgICAgICB9CiAgICAgICAgICAgIGVsZW1lbnQgIkNvbnRhaW5lciIgewogICAgICAgICAgICAgICAgZm9udFNpemUgMzAKICAgICAgICAgICAgfQogICAgICAgICAgICBlbGVtZW50ICJDb21wb25lbnQiIHsKICAgICAgICAgICAgICAgIGZvbnRTaXplIDMwCiAgICAgICAgICAgIH0KICAgICAgICAgICAgZWxlbWVudCAiRGF0YWJhc2UiIHsKICAgICAgICAgICAgICAgIGZvbnRTaXplIDMwCiAgICAgICAgICAgIH0KICAgICAgICAgICAgcmVsYXRpb25zaGlwICJSZWxhdGlvbnNoaXAiIHsKICAgICAgICAgICAgICAgIGZvbnRTaXplIDMwCiAgICAgICAgICAgIH0KICAgICAgICB9CiAgICB9Cn0=",
+    "structurizr.inspection.info" : "0",
+    "structurizr.inspection.ignore" : "0",
+    "structurizr.inspection.warning" : "0"
+  },
+  "views" : {
+    "componentViews" : [ {
+      "automaticLayout" : {
+        "applied" : false,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "containerId" : "6",
+      "description" : "Fluxo de interceptacao, analise, decisao e historico.",
+      "elements" : [ {
+        "id" : "4",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "7",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "8",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "9",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "10",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "11",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "14",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "15",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "16",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "ComponentesRoteamento",
+      "name" : "Component View: DyraSQL - DyraSQL Core",
+      "order" : 3,
+      "relationships" : [ {
+        "id" : "23"
+      }, {
+        "id" : "26"
+      }, {
+        "id" : "29"
+      }, {
+        "id" : "33"
+      }, {
+        "id" : "34"
+      }, {
+        "id" : "35"
+      }, {
+        "id" : "36"
+      }, {
+        "id" : "37"
+      }, {
+        "id" : "38"
+      }, {
+        "id" : "39"
+      }, {
+        "id" : "40"
+      }, {
+        "id" : "41"
+      }, {
+        "id" : "42"
+      }, {
+        "id" : "43"
+      }, {
+        "id" : "44"
+      } ],
+      "title" : "Componentes do DyraSQL Core"
+    } ],
+    "configuration" : {
+      "branding" : { },
+      "styles" : {
+        "elements" : [ {
+          "fontSize" : 30,
+          "tag" : "Component"
+        }, {
+          "fontSize" : 30,
+          "tag" : "Container"
+        }, {
+          "fontSize" : 30,
+          "tag" : "Database"
+        }, {
+          "fontSize" : 30,
+          "shape" : "Person",
+          "tag" : "Person"
+        }, {
+          "fontSize" : 30,
+          "tag" : "Software System"
+        } ],
+        "relationships" : [ {
+          "fontSize" : 30,
+          "tag" : "Relationship"
+        } ]
+      },
+      "terminology" : { },
+      "themes" : [ "https://static.structurizr.com/themes/default/theme.json" ]
+    },
+    "containerViews" : [ {
+      "automaticLayout" : {
+        "applied" : false,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "description" : "Trino Gateway Proxy intercepta consultas, DyraSQL Core analisa e decide, clusters processam.",
+      "elements" : [ {
+        "id" : "4",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "6",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "11",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "12",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "13",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "14",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "15",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "16",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalSoftwareSystemBoundariesVisible" : false,
+      "key" : "ContainersDoSistema",
+      "name" : "Container View: DyraSQL",
+      "order" : 2,
+      "relationships" : [ {
+        "id" : "20"
+      }, {
+        "id" : "21"
+      }, {
+        "id" : "22"
+      }, {
+        "id" : "23"
+      }, {
+        "id" : "24"
+      }, {
+        "id" : "25"
+      }, {
+        "id" : "26"
+      }, {
+        "id" : "27"
+      }, {
+        "id" : "28"
+      }, {
+        "id" : "29"
+      }, {
+        "id" : "30"
+      }, {
+        "id" : "31"
+      }, {
+        "id" : "32"
+      }, {
+        "id" : "38"
+      }, {
+        "id" : "39"
+      } ],
+      "softwareSystemId" : "3",
+      "title" : "Containers do Sistema"
+    } ],
+    "systemContextViews" : [ {
+      "automaticLayout" : {
+        "applied" : false,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "description" : "Analista executa consultas SQL no DyraSQL em ambiente local.",
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "2",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "3",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "enterpriseBoundaryVisible" : true,
+      "key" : "ContextoDoSistema",
+      "name" : "System Context View: DyraSQL",
+      "order" : 1,
+      "relationships" : [ {
+        "id" : "17"
+      }, {
+        "id" : "18"
+      }, {
+        "id" : "19"
+      } ],
+      "softwareSystemId" : "3",
+      "title" : "Contexto do Sistema"
+    } ]
+  }
+}

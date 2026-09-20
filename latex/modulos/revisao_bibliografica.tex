@@ -1,0 +1,30 @@
+\section{Revisão Bibliográfica}
+\label{sec:revisao-bibliografica}
+
+Esta seção apresenta uma revisão de trabalhos relacionados ao roteamento dinâmico de consultas, melhoria de custo-benefício em ambientes de processamento e utilização de metadados para tomada de decisões em sistemas de dados. A revisão bibliográfica complementa o referencial teórico apresentado na Seção~\ref{sec:referencial-teorico}, focando em trabalhos que abordam problemas similares ao proposto neste trabalho e técnicas relacionadas utilizadas na literatura.
+
+\subsection{Trabalhos sobre Roteamento Dinâmico de Consultas}
+
+Xue et al. (2024) propuseram um sistema adaptativo que ajusta dinamicamente a estratégia de execução em ambientes de \textit{lakehouse} em larga escala, conforme características da consulta e condições do ambiente \cite{xue2024}; o \textit{DyraSQL} complementa essa abordagem através de análise prévia de metadados antes da execução, em vez de ajustes em tempo real.
+
+Strausz, Pardon e Giurgiu (2025) propuseram um otimizador baseado em modelo de custo aprendido para \textit{workloads} SQL \textit{multi-engine}, prevendo por aprendizado de máquina o custo de execução em diferentes \textit{engines} \cite{strausz2025}; o \textit{DyraSQL} utiliza abordagem similar através do Fator histórico, mas foca em roteamento entre configurações de \textit{clusters Trino}, e não entre \textit{engines} distintas.
+
+Zhang, Zhang e Meng (2025) exploraram elasticidade em tempo de execução, ajustando recursos computacionais durante a execução com base em métricas de \textit{performance} em tempo real \cite{zhang2025}; o \textit{DyraSQL} é complementar, pois realiza a análise prévia de metadados para seleção do \textit{cluster} antes da submissão, e não ajustes durante a execução.
+
+\subsection{Trabalhos sobre Custos em \textit{data lakes}}
+
+Weintraub et al. (2024) propuseram uma abordagem de melhoria de consultas em \textit{data lakes} baseada em planos de cobertura balanceados, utilizando índices e metadados para reduzir o volume de dados via \textit{data skipping} \cite{weintraub2024}; o \textit{DyraSQL} usa abordagem similar de análise de metadados do \textit{Apache Iceberg}, mas para direcionar consultas entre \textit{clusters}, e não para otimizar dentro de uma única arquitetura.
+
+Ding et al. (2024) apresentaram um sistema de \textit{layouts} de dados multidimensionais automatizados no Amazon Redshift, que usa aprendizado de máquina para organizar dados conforme padrões de consultas \cite{ding2024}; o \textit{DyraSQL} utiliza abordagem similar de aprendizado contínuo, ajustando pesos do modelo de decisão a partir do histórico de custo e \textit{performance}, mas com foco em roteamento entre arquiteturas de processamento, e não em organização de dados.
+
+\subsection{Trabalhos sobre Utilização de Metadados}
+
+A utilização de metadados para melhoria de consultas tem sido amplamente explorada na literatura, sendo que sistemas como o \textit{Apache Iceberg} oferecem estruturas hierárquicas de metadados para estimativa de volume, análise de partições e melhoria de consultas \cite{iceberg2024}. Trabalhos anteriores demonstraram a eficácia de metadados para \textit{data skipping} e melhoria de consultas \cite{weintraub2024}; o \textit{DyraSQL} estende essa abordagem para roteamento dinâmico entre diferentes \textit{clusters}.
+
+Sistemas de processamento distribuído como o \textit{Trino} e Apache Spark utilizam metadados para melhoria de planos de execução, sendo que informações sobre volume de dados, distribuição e partições são fundamentais para determinação da estratégia de processamento \cite{trinoconcepts,apachespark2025}. O \textit{DyraSQL} complementa esta abordagem através de utilização de metadados para seleção da arquitetura de processamento antes da geração do plano de execução, sendo que esta análise prévia permite direcionamento mais eficiente das consultas.
+
+\subsection{Diferenças e Contribuições do \textit{DyraSQL}}
+
+O \textit{DyraSQL} diferencia-se dos trabalhos relacionados através de sua abordagem de roteamento dinâmico baseado em análise prévia de metadados do \textit{Apache Iceberg} para direcionamento de consultas entre \textit{clusters} \textit{Trino} de capacidades distintas. Enquanto trabalhos anteriores focam em melhoria dentro de uma única arquitetura \cite{weintraub2024} ou seleção entre diferentes \textit{engines} \cite{strausz2025}, o \textit{DyraSQL} propõe roteamento entre níveis de infraestrutura (\textit{small}, \textit{medium} e \textit{large}) baseado em características de cada consulta identificadas através de metadados.
+
+A principal contribuição do \textit{DyraSQL} reside na combinação de análise prévia de metadados, algoritmo de decisão baseado em pontuação e sistema de histórico para roteamento dinâmico que melhora a relação entre custo e \textit{performance}, complementando trabalhos que focam em melhoria durante a execução \cite{zhang2025} ou seleção entre \textit{engines} \cite{strausz2025} com uma camada adicional de seleção prévia do \textit{cluster}. Os experimentos em ambiente local demonstram que essa abordagem resulta em classificação consistente das consultas.
