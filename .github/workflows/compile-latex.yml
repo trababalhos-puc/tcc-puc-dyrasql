@@ -1,0 +1,44 @@
+name: Compile LaTeX
+
+on:
+  push:
+    branches: [ developer, main ]
+    paths:
+      - 'latex/**'
+      - '.github/workflows/compile-latex.yml'
+  pull_request:
+    branches: [ developer ]
+    paths:
+      - 'latex/**'
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Compile LaTeX document
+      uses: xu-cheng/latex-action@v3
+      with:
+        root_file: principal.tex
+        working_directory: latex
+        args: -pdf -interaction=nonstopmode -halt-on-error
+        
+    - name: Upload PDF artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: tcc-pdf
+        path: latex/principal.pdf
+        if-no-files-found: error
+        
+    - name: Check compilation
+      run: |
+        if [ -f latex/principal.pdf ]; then
+          echo "✅ PDF compiled successfully"
+          ls -lh latex/principal.pdf
+        else
+          echo "❌ PDF compilation failed"
+          exit 1
+        fi

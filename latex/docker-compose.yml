@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  latex:
+    build:
+      context: ..
+      dockerfile: latex/Dockerfile
+    image: tcc-latex:latest
+    container_name: tcc-latex-compiler
+    volumes:
+      # Monta o diretório raiz do projeto
+      - ..:/tcc
+      # Mantém cache de pacotes LaTeX para compilações mais rápidas
+      - latex-cache:/root/.texlive
+    working_dir: /tcc
+    # Comando padrão: compilar monografia
+    command: make compile
+
+volumes:
+  latex-cache:
+    driver: local

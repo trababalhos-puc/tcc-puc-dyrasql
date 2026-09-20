@@ -1,0 +1,90 @@
+@startuml
+title <size:24>Containers do Sistema</size>\n<size:24>Trino Gateway Proxy intercepta consultas, DyraSQL Core analisa e decide, clusters processam.</size>
+
+set separator none
+top to bottom direction
+skinparam ranksep 60
+skinparam nodesep 30
+hide stereotype
+
+<style>
+  root {
+    BackgroundColor: #ffffff;
+    FontColor: #444444;
+  }
+  // Element,Container
+  .Element-RWxlbWVudCxDb250YWluZXI= {
+    BackgroundColor: #438dd5;
+    LineColor: #2e6295;
+    LineStyle: 0;
+    LineThickness: 2;
+    RoundCorner: 20;
+    FontColor: #ffffff;
+    FontSize: 30;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Container,Database
+  .Element-RWxlbWVudCxDb250YWluZXIsRGF0YWJhc2U= {
+    BackgroundColor: #438dd5;
+    LineColor: #2e6295;
+    LineStyle: 0;
+    LineThickness: 2;
+    RoundCorner: 20;
+    FontColor: #ffffff;
+    FontSize: 30;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Relationship
+  .Relationship-UmVsYXRpb25zaGlw {
+    LineThickness: 2;
+    LineStyle: 10-10;
+    LineColor: #444444;
+    FontColor: #444444;
+    FontSize: 30;
+  }
+  // DyraSQL
+  .Boundary-RHlyYVNRTA== {
+    BackgroundColor: #ffffff;
+    LineColor: #0b4884;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #1168bd;
+    FontSize: 30;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+  }
+</style>
+
+rectangle "DyraSQL\n<size:21>[Software System]</size>" <<Boundary-RHlyYVNRTA==>> {
+  rectangle "==Cluster Trino leve\n<size:21>[Container: Consultas leves]</size>\n\nCluster leve para consultas com Score menor que 0,3" <<Element-RWxlbWVudCxDb250YWluZXI=>> as DyraSQL.ClusterTrinoleve
+  rectangle "==Cluster Trino intermediario\n<size:21>[Container: Consultas medias]</size>\n\nCluster intermediario para consultas com Score 0,3 a 0,7" <<Element-RWxlbWVudCxDb250YWluZXI=>> as DyraSQL.ClusterTrinointermediario
+  rectangle "==Cluster Trino robusto\n<size:21>[Container: Consultas pesadas]</size>\n\nCluster robusto para consultas com Score maior que 0,7" <<Element-RWxlbWVudCxDb250YWluZXI=>> as DyraSQL.ClusterTrinorobusto
+  rectangle "==PostgreSQL\n<size:21>[Container: Cache e historico]</size>\n\nCache TTL 24h, historico de execucoes e metricas" <<Element-RWxlbWVudCxDb250YWluZXIsRGF0YWJhc2U=>> as DyraSQL.PostgreSQL
+  rectangle "==Catalogo Iceberg REST\n<size:21>[Container: Catalogo de metadados]</size>\n\nCatalogo de metadados das tabelas Iceberg" <<Element-RWxlbWVudCxDb250YWluZXIsRGF0YWJhc2U=>> as DyraSQL.CatalogoIcebergREST
+  rectangle "==Tabelas Apache Iceberg\n<size:21>[Container: Dados e metadados]</size>\n\nDados e metadados armazenados no MinIO" <<Element-RWxlbWVudCxDb250YWluZXI=>> as DyraSQL.TabelasApacheIceberg
+  rectangle "==Trino Gateway Proxy\n<size:21>[Container: Proxy de roteamento]</size>\n\nIntercepta consultas SQL e integra-se com DyraSQL Core" <<Element-RWxlbWVudCxDb250YWluZXI=>> as DyraSQL.TrinoGatewayProxy
+  rectangle "==Trino Gateway\n<size:21>[Container: Balanceamento de carga]</size>\n\nBalanceador e roteamento de consultas" <<Element-RWxlbWVudCxDb250YWluZXI=>> as DyraSQL.TrinoGateway
+  rectangle "==DyraSQL Core\n<size:21>[Container: Analise e decisao]</size>\n\nSistema de analise de consultas e decisao de roteamento" <<Element-RWxlbWVudCxDb250YWluZXI=>> as DyraSQL.DyraSQLCore
+}
+
+DyraSQL.TrinoGatewayProxy --> DyraSQL.DyraSQLCore <<Relationship-UmVsYXRpb25zaGlw>> : "1. Decisao"
+DyraSQL.DyraSQLCore --> DyraSQL.PostgreSQL <<Relationship-UmVsYXRpb25zaGlw>> : "2. Cache"
+DyraSQL.DyraSQLCore --> DyraSQL.ClusterTrinoleve <<Relationship-UmVsYXRpb25zaGlw>> : "3. EXPLAIN"
+DyraSQL.ClusterTrinoleve --> DyraSQL.CatalogoIcebergREST <<Relationship-UmVsYXRpb25zaGlw>> : "4. Metadados"
+DyraSQL.DyraSQLCore --> DyraSQL.TrinoGatewayProxy <<Relationship-UmVsYXRpb25zaGlw>> : "5. Score"
+DyraSQL.TrinoGatewayProxy --> DyraSQL.TrinoGateway <<Relationship-UmVsYXRpb25zaGlw>> : "6. Balanceamento"
+DyraSQL.TrinoGatewayProxy --> DyraSQL.ClusterTrinoleve <<Relationship-UmVsYXRpb25zaGlw>> : "7a. Roteamento"
+DyraSQL.TrinoGatewayProxy --> DyraSQL.ClusterTrinointermediario <<Relationship-UmVsYXRpb25zaGlw>> : "7b. Roteamento"
+DyraSQL.TrinoGatewayProxy --> DyraSQL.ClusterTrinorobusto <<Relationship-UmVsYXRpb25zaGlw>> : "7c. Roteamento"
+DyraSQL.ClusterTrinoleve --> DyraSQL.TabelasApacheIceberg <<Relationship-UmVsYXRpb25zaGlw>> : "8. Dados"
+DyraSQL.ClusterTrinointermediario --> DyraSQL.TabelasApacheIceberg <<Relationship-UmVsYXRpb25zaGlw>> : "8. Dados"
+DyraSQL.ClusterTrinorobusto --> DyraSQL.TabelasApacheIceberg <<Relationship-UmVsYXRpb25zaGlw>> : "8. Dados"
+DyraSQL.PostgreSQL --> DyraSQL.DyraSQLCore <<Relationship-UmVsYXRpb25zaGlw>> : "9. Historico"
+DyraSQL.ClusterTrinoleve --> DyraSQL.CatalogoIcebergREST <<Relationship-UmVsYXRpb25zaGlw>> : "6. Metadados"
+DyraSQL.ClusterTrinoleve --> DyraSQL.TabelasApacheIceberg <<Relationship-UmVsYXRpb25zaGlw>> : "7. Dados"
+
+@enduml
