@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """
 Decision Engine - algoritmo de decisao de roteamento
@@ -21,9 +20,7 @@ class DecisionEngine:
         self.w2 = float(os.getenv("DYRASQL_WEIGHT_COMPLEXITY", "0.3"))
         self.w3 = float(os.getenv("DYRASQL_WEIGHT_HISTORICAL", "0.2"))
         self.small_threshold = float(os.getenv("DYRASQL_SMALL_THRESHOLD", "0.3"))
-        self.medium_threshold = float(
-            os.getenv("DYRASQL_MEDIUM_THRESHOLD", "0.7")
-        )
+        self.medium_threshold = float(os.getenv("DYRASQL_MEDIUM_THRESHOLD", "0.7"))
 
         total_weight = self.w1 + self.w2 + self.w3
         if abs(total_weight - 1.0) > 0.1:
@@ -79,11 +76,11 @@ class DecisionEngine:
         # fv = (log(Te) / log(Tmax) * 0.6 + log(Re) / log(Rmax) * 0.4) * (1 - Fo)
         normalized_size = min(1.0, math.log(effective_size_gb) / math.log(max_size_gb))
         normalized_rows = min(1.0, math.log(effective_rows) / math.log(max_rows))
-        
+
         # Pesos conforme artigo: 0.6 para tamanho, 0.4 para linhas
         fv = (normalized_size * 0.6 + normalized_rows * 0.4) * (1 - optimization_factor)
         fv = max(0, min(1, fv))
-        
+
         logger.debug(
             "Fator volume: size=%.2fGB rows=%.0f normalized_size=%.3f normalized_rows=%.3f fv=%.3f",
             total_size_gb,
@@ -109,9 +106,7 @@ class DecisionEngine:
             + non_partitioned_filters * 0.1
         ) / complexity_limit
         fc = max(0, min(1, fc))
-        logger.debug(
-            "Fator complexidade: joins=%s aggs=%s fc=%.3f", joins, aggregations, fc
-        )
+        logger.debug("Fator complexidade: joins=%s aggs=%s fc=%.3f", joins, aggregations, fc)
         return fc
 
     def _select_cluster(self, score):

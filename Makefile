@@ -62,7 +62,7 @@ else
     LATEX_PACKAGES =
 endif
 
-.PHONY: all install convert compile beamer clean zip format lint help docker-build docker-compile docker-beamer docker-clean docker-shell c4-build c4-compile c4-clean
+.PHONY: all install convert compile beamer clean zip format lint test help docker-build docker-compile docker-beamer docker-clean docker-shell c4-build c4-compile c4-clean
 
 # Comando padrão
 all: help
@@ -244,49 +244,26 @@ beamer:
 		echo "$(RED)[ERRO]$(NC) Falha na compilação da apresentação."; \
 	fi
 
-# 4. Formatação e Linting
+# 4. Testes, formatacao e lint (DyraSQL)
 format:
-	@echo "$(BLUE)[TCC]$(NC) Formatando código Python..."
-	@if [ ! -d "scripts" ]; then \
-		echo "$(YELLOW)[AVISO]$(NC) Pasta scripts não encontrada!"; \
-		exit 0; \
-	fi
-	@if [ -z "$(shell find scripts -name '*.py' 2>/dev/null)" ]; then \
-		echo "$(YELLOW)[AVISO]$(NC) Nenhum arquivo Python encontrado na pasta scripts."; \
-		exit 0; \
-	fi
-	@if command -v black >/dev/null 2>&1; then \
-		black tools/*.py; \
-		echo "$(GREEN)[SUCESSO]$(NC) Código formatado com black!"; \
-	else \
-		echo "$(YELLOW)[AVISO]$(NC) black não encontrado!"; \
-		echo "$(BLUE)[INFO]$(NC) Instale com: pip install black"; \
-	fi
-	@if command -v isort >/dev/null 2>&1; then \
-		isort tools/*.py; \
-		echo "$(GREEN)[SUCESSO]$(NC) Imports organizados com isort!"; \
-	else \
-		echo "$(YELLOW)[AVISO]$(NC) isort não encontrado!"; \
-		echo "$(BLUE)[INFO]$(NC) Instale com: pip install isort"; \
-	fi
+	@echo "$(BLUE)[TCC]$(NC) Formatando codigo Python com Ruff..."
+	@pip3 install -q -r requirements-dev.txt 2>/dev/null || pip install -q -r requirements-dev.txt
+	python3 -m ruff format src tests
+	@echo "$(GREEN)[SUCESSO]$(NC) Formatacao concluida!"
 
 lint:
-	@echo "$(BLUE)[TCC]$(NC) Verificando código Python..."
-	@if [ ! -d "scripts" ]; then \
-		echo "$(YELLOW)[AVISO]$(NC) Pasta scripts não encontrada!"; \
-		exit 0; \
-	fi
-	@if [ -z "$(shell find scripts -name '*.py' 2>/dev/null)" ]; then \
-		echo "$(YELLOW)[AVISO]$(NC) Nenhum arquivo Python encontrado na pasta scripts."; \
-		exit 0; \
-	fi
-	@if command -v flake8 >/dev/null 2>&1; then \
-		flake8 tools/*.py --max-line-length=100 --ignore=E203,W503; \
-		echo "$(GREEN)[SUCESSO]$(NC) Linting concluído!"; \
-	else \
-		echo "$(YELLOW)[AVISO]$(NC) flake8 não encontrado!"; \
-		echo "$(BLUE)[INFO]$(NC) Instale com: pip install flake8"; \
-	fi
+	@echo "$(BLUE)[TCC]$(NC) Lint com Ruff..."
+	@pip3 install -q -r requirements-dev.txt 2>/dev/null || pip install -q -r requirements-dev.txt
+	python3 -m ruff check src tests
+	python3 -m ruff format --check src tests
+	@echo "$(GREEN)[SUCESSO]$(NC) Lint concluido!"
+
+test:
+	@echo "$(BLUE)[TCC]$(NC) Executando testes (cobertura minima 90% em src/)..."
+	@pip3 install -q -r src/dyrasql-core/requirements.txt -r src/trino-gateway-proxy/requirements.txt -r requirements-dev.txt 2>/dev/null || \
+		pip install -q -r src/dyrasql-core/requirements.txt -r src/trino-gateway-proxy/requirements.txt -r requirements-dev.txt
+	python3 -m pytest -v
+	@echo "$(GREEN)[SUCESSO]$(NC) Testes concluidos!"
 
 # Limpeza de arquivos auxiliares
 clean:
@@ -540,9 +517,10 @@ help:
 	@echo "  make compile    - Compilar artigo LaTeX para PDF"
 	@echo "  make beamer     - Compilar apresentação Beamer"
 	@echo ""
-	@echo "$(GREEN)4. Formatação e Linting:$(NC)"
-	@echo "  make format     - Formatar código Python (black + isort)"
-	@echo "  make lint       - Verificar código Python (flake8)"
+	@echo "$(GREEN)4. Testes e Lint:$(NC)"
+	@echo "  make test      - Executar pytest com cobertura >= 90% em src/"
+	@echo "  make format    - Formatar codigo Python (Ruff)"
+	@echo "  make lint      - Verificar lint/format (Ruff)"
 	@echo ""
 	@echo "$(GREEN)5. Utilitários:$(NC)"
 	@echo "  make clean      - Limpar arquivos auxiliares"

@@ -239,4 +239,4 @@ docker compose exec gateway-db psql -U dyrasql -d dyrasql -c \
 ---
 
 **Desenvolvido por:** Aristides Henrique Gonçalves da Cruz  
-**PUC Minas - 2024**
+**PUC Minas - 2026**

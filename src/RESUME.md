@@ -24,7 +24,7 @@ O projeto DyraSQL implementa um sistema de roteamento dinâmico de consultas SQL
    - Sistema de roteamento dinâmico
    - Análise de queries usando EXPLAIN (TYPE IO)
    - Cálculo de score baseado em volume, complexidade e histórico
-   - Cache de decisões no DynamoDB
+   - Cache de decisões no PostgreSQL
 
 3. **Clusters Trino Simulados**
    - **Trino ECS** (porta 8081): Consultas leves (Score < 0.3)
@@ -33,7 +33,7 @@ O projeto DyraSQL implementa um sistema de roteamento dinâmico de consultas SQL
 
 4. **Infraestrutura de Suporte**
    - PostgreSQL: Banco de dados para Trino Gateway
-   - DynamoDB: Cache de decisões de roteamento
+   - PostgreSQL: Cache de decisões de roteamento
    - AWS Glue Catalog: Metastore para tabelas Iceberg
    - S3: Armazenamento de dados Iceberg
 
@@ -147,7 +147,7 @@ Onde:
 
 3. **Fator Histórico (fh)**
    - Baseado em execuções anteriores
-   - Consulta DynamoDB para histórico
+   - Consulta PostgreSQL para histórico
    - Valor padrão: 0.5
 
 **Seleção de Cluster:**
@@ -159,7 +159,7 @@ Onde:
 
 **Arquivo:** `dyrasql-core/history_manager.py`
 
-- Gerenciamento de cache no DynamoDB
+- Gerenciamento de cache no PostgreSQL
 - TTL de 24 horas para decisões
 - Salvamento de fatores junto com decisões
 - Consulta de histórico para cálculo de fator histórico
@@ -184,7 +184,7 @@ Onde:
    - Retorna: Decisão de roteamento com cluster, score e fatores
    - Fluxo:
      1. Gera fingerprint da query
-     2. Verifica cache no DynamoDB
+     2. Verifica cache no PostgreSQL
      3. Se não estiver em cache:
         - Executa EXPLAIN (TYPE IO)
         - Analisa I/O e complexidade
@@ -224,27 +224,14 @@ Onde:
    - Fornece comandos prontos para executar a query
 
 4. **`scripts/clear-cache.sh`**
-   - Limpa o cache do DynamoDB
+   - Limpa o cache do PostgreSQL
    - Remove todas as entradas de decisões
 
 5. **`scripts/test-routing.sh`**
    - Testa o sistema de roteamento com múltiplas queries
 
-### 9. Terraform para DynamoDB
 
-**Arquivos:** `terraform/main.tf`, `terraform/outputs.tf`, `terraform/variables.tf`
-
-- Provisionamento da tabela DynamoDB via Terraform
-- Integração com Makefile
-- Outputs para verificação
-
-**Comandos:**
-- `make terraform-init`: Inicializa Terraform
-- `make terraform-plan`: Mostra plano de execução
-- `make terraform-apply`: Cria a tabela
-- `make terraform-destroy`: Remove a tabela
-
-### 10. Documentação
+### 9. Documentação
 
 **Arquivos criados:**
 
@@ -300,7 +287,7 @@ Onde:
 - ✅ Tratamento de valores "NaN" no JSON
 
 ### 5. Cache e Persistência
-- ✅ Salvamento de fatores no DynamoDB
+- ✅ Salvamento de fatores no PostgreSQL
 - ✅ Retorno de fatores do cache
 - ✅ Script para limpar cache
 
@@ -318,7 +305,7 @@ Onde:
    ↓
 2. Gera fingerprint da query
    ↓
-3. Verifica cache no DynamoDB
+3. Verifica cache no PostgreSQL
    ↓
 4a. Se em cache: Retorna decisão salva
    ↓
@@ -373,7 +360,7 @@ experimento/
 │   ├── setup-gateway-backends.sh  # Configura backends no Gateway
 │   ├── trino-query.sh             # Executa queries no Trino
 │   ├── get-routing-decision.sh    # Obtém decisão de roteamento
-│   ├── clear-cache.sh             # Limpa cache do DynamoDB
+│   ├── clear-cache.sh             # Limpa cache do PostgreSQL
 │   ├── test-routing.sh            # Testa roteamento
 │   ├── exemplo.sql                # Exemplo de query SQL
 │   ├── show-catalogs.sql          # Query para listar catálogos
@@ -412,10 +399,6 @@ experimento/
 │   ├── config.yaml                # Configuração do Gateway
 │   └── README.md                  # Documentação do Gateway
 │
-└── terraform/
-    ├── main.tf                    # Configuração da tabela DynamoDB
-    ├── variables.tf               # Variáveis do Terraform
-    └── outputs.tf                 # Outputs do Terraform
 ```
 
 ## Tecnologias Utilizadas
@@ -425,10 +408,9 @@ experimento/
 - **Trino Gateway**: Balanceador de carga oficial
 - **Python 3.11**: DyraSQL Core (Flask)
 - **PostgreSQL**: Persistência do Trino Gateway
-- **DynamoDB**: Cache de decisões
+- **PostgreSQL**: Cache de decisões
 - **AWS Glue Catalog**: Metastore para Iceberg
 - **Apache Iceberg**: Formato de tabela
-- **Terraform**: Infrastructure as Code
 - **boto3**: SDK AWS para Python
 
 ## Configurações Importantes
@@ -438,7 +420,6 @@ experimento/
 ```bash
 AWS_REGION=us-east-1
 AWS_PROFILE=default
-DYNAMODB_TABLE=dyrasql-history
 S3_BUCKET=prod-cafdatalakehouse--ref
 S3_PREFIX=dbt/prod_db_transient_ref/
 TRINO_URL=http://trino-ecs:8080
@@ -480,7 +461,7 @@ Score = 0.5 × fv + 0.3 × fc + 0.2 × fh
 - Filtros não-particionados: 0.1 por filtro
 
 #### Fator Histórico (fh)
-- Baseado em execuções anteriores no DynamoDB
+- Baseado em execuções anteriores no PostgreSQL
 - Valor padrão: 0.5
 - Pode ser ajustado baseado em métricas históricas
 
@@ -500,9 +481,6 @@ cp env.example .env
 
 # Editar .env com suas configurações
 # (credenciais AWS já estão em ~/.aws)
-
-# Criar tabela DynamoDB
-make terraform-apply
 
 # Construir e iniciar containers
 make build
@@ -600,13 +578,6 @@ make logs           # Ver logs
 make clean          # Limpa tudo
 ```
 
-### Terraform
-```bash
-make terraform-init    # Inicializa Terraform
-make terraform-plan    # Mostra plano
-make terraform-apply   # Aplica mudanças
-make terraform-destroy # Remove recursos
-```
 
 ### Scripts
 ```bash
@@ -641,7 +612,7 @@ make terraform-destroy # Remove recursos
 3. **DyraSQL Core**
    - Análise de queries usando EXPLAIN (TYPE IO) ✅
    - Cálculo de score baseado em volume, complexidade e histórico ✅
-   - Cache no DynamoDB funcionando ✅
+   - Cache no PostgreSQL funcionando
    - API REST respondendo corretamente ✅
 
 4. **Clusters Trino**

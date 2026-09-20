@@ -1,6 +1,7 @@
 # DyraSQL - Roteamento Dinâmico de Consultas SQL
 
 [![Compile LaTeX](https://github.com/trababalhos-puc/tcc-puc-dyrasql/actions/workflows/compile-latex.yml/badge.svg)](https://github.com/trababalhos-puc/tcc-puc-dyrasql/actions/workflows/compile-latex.yml)
+[![Test and Lint](https://github.com/trababalhos-puc/tcc-puc-dyrasql/actions/workflows/test-lint.yml/badge.svg)](https://github.com/trababalhos-puc/tcc-puc-dyrasql/actions/workflows/test-lint.yml)
 
 **Trabalho de Conclusão de Curso**  
 **Sistemas de Informação - PUC Minas São Gabriel**
@@ -169,10 +170,10 @@ Contribuições são bem-vindas! Consulte o [guia de contribuição](CONTRIBUTIN
 Se você utilizar este trabalho em sua pesquisa, por favor cite:
 
 ```bibtex
-@software{cruz2024dyrasql,
+@software{cruz2026dyrasql,
   author = {Cruz, Aristides Henrique Gonçalves da and Soares, Gustavo Luís},
   title = {DyraSQL: Roteamento Dinâmico de Consultas SQL Baseado em Metadados de Tabelas Apache Iceberg},
-  year = {2024},
+  year = {2026},
   url = {https://github.com/trababalhos-puc/tcc-puc-dyrasql},
   institution = {Pontifícia Universidade Católica de Minas Gerais}
 }
@@ -206,4 +207,4 @@ Os estilos e pacotes abntex2/Abakos seguem suas respectivas licenças (LPPL 1.3c
 ---
 
 **Desenvolvido como Trabalho de Conclusão de Curso**  
-**PUC Minas - 2024**
+**PUC Minas - 2026**

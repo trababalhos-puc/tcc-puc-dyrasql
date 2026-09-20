@@ -517,4 +517,4 @@ docker compose exec dyrasql-core python3 -c "from history_manager import History
 **Desenvolvido por:** Aristides Henrique Gonçalves da Cruz  
 **Orientador:** Prof. Gustavo Luís Soares  
 **Instituição:** PUC Minas - ICEI  
-**Ano:** 2024
+**Ano:** 2026

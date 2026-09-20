@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """
 History Manager - cache e historico de consultas no PostgreSQL
 """
+
+from __future__ import annotations
 
 import json
 import logging

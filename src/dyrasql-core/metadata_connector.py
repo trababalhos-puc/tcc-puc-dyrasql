@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """
 Metadata Connector - extracao opcional de metadados Iceberg via catalogo REST

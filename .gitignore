@@ -65,3 +65,9 @@ docs/_build/
 docs/_static/
 docs/_templates/
 *principal.pdf
+# Test / coverage / local env
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+.venv/
