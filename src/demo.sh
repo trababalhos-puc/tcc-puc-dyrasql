@@ -21,8 +21,8 @@ echo ""
 # ----------------------------------------------------------------------
 # 1. Verificar ambiente
 # ----------------------------------------------------------------------
-echo -e "${YELLOW}[1/8]${NC} Verificando ambiente..."
-if ! docker compose ps | grep -q "dyrasql-core.*running"; then
+echo -e "${YELLOW}[1/9]${NC} Verificando ambiente..."
+if ! curl -sf -m 5 http://localhost:5001/health > /dev/null; then
     echo -e "${RED}✗ DyraSQL Core não está rodando${NC}"
     echo "  Execute: docker compose up -d"
     exit 1
@@ -33,7 +33,7 @@ echo ""
 # ----------------------------------------------------------------------
 # 2. Demonstrar queries simples (cluster small)
 # ----------------------------------------------------------------------
-echo -e "${YELLOW}[2/8]${NC} Testando consulta SIMPLES (esperado: cluster small)..."
+echo -e "${YELLOW}[2/9]${NC} Testando consulta SIMPLES (esperado: cluster small)..."
 echo ""
 
 query_simple="SELECT COUNT(*) as total FROM iceberg.analytics.dados WHERE date = TIMESTAMP '2024-01-15'"
@@ -65,11 +65,11 @@ sleep 2
 # ----------------------------------------------------------------------
 # 3. Demonstrar queries intermediárias (cluster medium)
 # ----------------------------------------------------------------------
-echo -e "${YELLOW}[3/8]${NC} Testando consulta INTERMEDIÁRIA (esperado: cluster medium)..."
+echo -e "${YELLOW}[3/9]${NC} Testando consulta INTERMEDIÁRIA (esperado: cluster medium)..."
 echo ""
 
-query_medium="SELECT t.tenant_id, t.categoria, COUNT(*) as total, SUM(d.valor) as soma FROM iceberg.analytics.dados d JOIN iceberg.analytics.tenant_info t ON d.tenant_id = t.tenant_id WHERE d.date >= TIMESTAMP '2024-01-01' AND d.date < TIMESTAMP '2024-01-15' GROUP BY t.tenant_id, t.categoria"
-echo "Query: SELECT ... FROM dados d JOIN tenant_info t ... GROUP BY ..."
+query_medium="SELECT t.tenant_id, t.categoria, COUNT(d.document) as total, SUM(length(d.document)) as bytes_documento, AVG(d.valor) as media, MAX(d.valor) as maximo, MIN(d.valor) as minimo FROM iceberg.analytics.dados d JOIN iceberg.analytics.tenant_info t ON d.tenant_id = t.tenant_id WHERE d.status = 'ATIVO' GROUP BY t.tenant_id, t.categoria HAVING COUNT(*) > 1000"
+echo "Query: SELECT ... document ... FROM dados d JOIN tenant_info t ... GROUP BY ..."
 echo ""
 
 response=$(curl -s -X POST http://localhost:5001/api/v1/route \
@@ -95,9 +95,41 @@ echo ""
 sleep 2
 
 # ----------------------------------------------------------------------
-# 4. Demonstrar cache hit
+# 4. Demonstrar queries complexas (cluster large)
 # ----------------------------------------------------------------------
-echo -e "${YELLOW}[4/8]${NC} Testando CACHE (reexecução da mesma query)..."
+echo -e "${YELLOW}[4/9]${NC} Testando consulta COMPLEXA (esperado: cluster large)..."
+echo ""
+
+query_large="SELECT t.tenant_id, t.categoria, COUNT(d.document) as total, SUM(length(d.document)) as bytes_documento, AVG(d.valor) as media, MAX(d.valor) as maximo, MIN(d.valor) as minimo, STDDEV(d.valor) as desvio FROM iceberg.analytics.dados d JOIN iceberg.analytics.tenant_info t ON d.tenant_id = t.tenant_id WHERE d.status = 'ATIVO' AND t.categoria IN (SELECT categoria FROM iceberg.analytics.tenant_info WHERE nivel > (SELECT AVG(nivel) FROM iceberg.analytics.tenant_info)) GROUP BY t.tenant_id, t.categoria HAVING COUNT(*) > 1000"
+echo "Query: SELECT ... document ... JOIN ... IN (SELECT ... (SELECT AVG ...))"
+echo ""
+
+response=$(curl -s -X POST http://localhost:5001/api/v1/route \
+    -H "Content-Type: application/json" \
+    -d "{\"query\": \"$query_large\"}")
+
+cluster=$(echo "$response" | grep -o '"cluster":"[^"]*"' | cut -d'"' -f4)
+score=$(echo "$response" | grep -o '"score":[0-9.]*' | cut -d':' -f2)
+volume=$(echo "$response" | grep -o '"volume":[0-9.]*' | cut -d':' -f2 | head -1)
+complexity=$(echo "$response" | grep -o '"complexity":[0-9.]*' | cut -d':' -f2)
+
+echo "Resultado:"
+echo "  Cluster selecionado: $cluster"
+echo "  Score calculado: $score"
+echo "  Fatores: volume=$volume, complexity=$complexity"
+
+if [ "$cluster" = "large" ]; then
+    echo -e "  ${GREEN}✓ Correto! Query complexa → cluster large${NC}"
+else
+    echo -e "  ${YELLOW}⚠ Score determinou cluster: $cluster${NC}"
+fi
+echo ""
+sleep 2
+
+# ----------------------------------------------------------------------
+# 5. Demonstrar cache hit
+# ----------------------------------------------------------------------
+echo -e "${YELLOW}[5/9]${NC} Testando CACHE (reexecução da mesma query)..."
 echo ""
 
 response=$(curl -s -X POST http://localhost:5001/api/v1/route \
@@ -120,7 +152,7 @@ sleep 2
 # ----------------------------------------------------------------------
 # 5. Verificar histórico no PostgreSQL
 # ----------------------------------------------------------------------
-echo -e "${YELLOW}[5/8]${NC} Consultando histórico no PostgreSQL..."
+echo -e "${YELLOW}[6/9]${NC} Consultando histórico no PostgreSQL..."
 echo ""
 
 docker compose exec -T gateway-db psql -U dyrasql -d dyrasql -t <<EOF | head -5
@@ -142,7 +174,7 @@ sleep 2
 # ----------------------------------------------------------------------
 # 6. Demonstrar análise de complexidade
 # ----------------------------------------------------------------------
-echo -e "${YELLOW}[6/8]${NC} Analisando complexidade de query com subconsulta..."
+echo -e "${YELLOW}[7/9]${NC} Analisando complexidade de query com subconsulta..."
 echo ""
 
 query_complex="SELECT t.tenant_id, COUNT(*) FROM iceberg.analytics.dados d JOIN iceberg.analytics.tenant_info t ON d.tenant_id = t.tenant_id WHERE t.categoria IN (SELECT categoria FROM iceberg.analytics.tenant_info WHERE nivel > 5) GROUP BY t.tenant_id"
@@ -168,7 +200,7 @@ sleep 2
 # ----------------------------------------------------------------------
 # 7. Verificar EXPLAIN salvo
 # ----------------------------------------------------------------------
-echo -e "${YELLOW}[7/8]${NC} Verificando EXPLAIN (TYPE IO) salvo..."
+echo -e "${YELLOW}[8/9]${NC} Verificando EXPLAIN (TYPE IO) salvo..."
 echo ""
 
 num_explains=$(ls -1 explains/*.json 2>/dev/null | wc -l || echo "0")
@@ -188,7 +220,7 @@ sleep 2
 # ----------------------------------------------------------------------
 # 8. Resumo final
 # ----------------------------------------------------------------------
-echo -e "${YELLOW}[8/8]${NC} Resumo da Demonstração"
+echo -e "${YELLOW}[9/9]${NC} Resumo da Demonstração"
 echo "======================================================================"
 echo ""
 echo "O framework DyraSQL demonstrou:"

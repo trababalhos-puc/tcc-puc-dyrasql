@@ -64,8 +64,8 @@ class DecisionEngine:
         total_size_bytes = sum(m.get("total_size_bytes", 0) for m in metadata.values())
         total_rows = sum(m.get("total_records", 0) for m in metadata.values())
         total_size_gb = total_size_bytes / (1024**3)
-        max_size_gb = 1000
-        max_rows = 1e9
+        max_size_gb = float(os.getenv("DYRASQL_MAX_SIZE_GB", "1000"))
+        max_rows = float(os.getenv("DYRASQL_MAX_ROWS", "1000000000"))
         optimization_factor = 0.1
 
         # Valores efetivos (garantindo mínimos para log)

@@ -4,6 +4,55 @@
 \usepackage{abntex2cite}
 \usepackage{placeins}
 \usepackage{framed}
+\newcounter{algoritmo}
+\newenvironment{blocoalgoritmo}[2]{%
+  \par
+  \addvspace{0.8cm}%
+  {\centering
+    \refstepcounter{algoritmo}%
+    \textbf{Algoritmo \thealgoritmo{} - #1}%
+    \label{#2}\par
+  }%
+  \nopagebreak
+  \vspace{0.25em}%
+  \nopagebreak
+}{%
+  \par
+  \addvspace{0.8cm}%
+}
+\definecolor{sqlkeyword}{RGB}{0,82,147}
+\definecolor{sqlstring}{RGB}{163,21,21}
+\lstdefinestyle{codigomoldura}{
+  basicstyle=\ttfamily\footnotesize,
+  frame=none,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  aboveskip=0pt,
+  belowskip=0pt,
+  extendedchars=true,
+  literate=
+    {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+    {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+    {à}{{\`a}}1 {ã}{{\~a}}1 {õ}{{\~o}}1 {Ã}{{\~A}}1 {Õ}{{\~O}}1
+    {â}{{\^a}}1 {ê}{{\^e}}1 {ô}{{\^o}}1
+    {ç}{{\c{c}}}1 {Ç}{{\c{C}}}1
+}
+\lstdefinestyle{sqlmoldura}{
+  style=codigomoldura,
+  language=SQL,
+  keywordstyle=\color{sqlkeyword}\bfseries,
+  stringstyle=\color{sqlstring},
+  morekeywords={LIMIT,DESC,ASC}
+}
+\newcommand{\pk}[1]{\textcolor{sqlkeyword}{\bfseries #1}}
+\lstdefinestyle{pseudomoldura}{
+  style=codigomoldura,
+  keywordstyle=\color{sqlkeyword}\bfseries,
+  escapeinside={(*}{*)},
+  morekeywords={Entrada,Se,se,Fim,for,existir,estiver,Gerar,Consultar,Obter,Extrair,Normalizar,Analisar,Calcular,Selecionar,Salvar,Retornar}
+}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Capa da revista
@@ -109,7 +158,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \newpage
-
 \bibliographystyle{abntex2-alf}
 \bibliography{bibliografia}
 

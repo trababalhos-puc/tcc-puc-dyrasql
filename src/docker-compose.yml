@@ -191,6 +191,8 @@ services:
       DYRASQL_WEIGHT_HISTORICAL: "0.2"
       DYRASQL_SMALL_THRESHOLD: "0.3"
       DYRASQL_MEDIUM_THRESHOLD: "0.7"
+      DYRASQL_MAX_SIZE_GB: "10"
+      DYRASQL_MAX_ROWS: "1000000000"
       SAVE_EXPLAINS: "true"
       EXPLAINS_DIR: /app/explains
     volumes:
@@ -269,6 +271,8 @@ services:
       retries: 10
       start_period: 40s
 
+  # Amostra inicial (~180 mil linhas) so se a tabela estiver vazia.
+  # Nao carrega 10 GB. Volume minio-data persiste; se ja houver dados, ignora.
   iceberg-init:
     image: trinodb/trino:484@sha256:2704eb53935af5e582d63d6033e9bf99d20c325e9b0e30b1016ef59a4773979f
     container_name: iceberg-init

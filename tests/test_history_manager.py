@@ -35,10 +35,16 @@ def test_historical_factor_success(history_manager_with_cursor):
     assert hm.get_historical_factor("fp", "q") == 0.44
 
 
-def test_historical_factor_failure(history_manager_with_cursor):
+def test_historical_factor_failure_medium(history_manager_with_cursor):
     hm, cursor = history_manager_with_cursor
     cursor.fetchone.return_value = {"score": 0.44, "success": False}
     assert abs(hm.get_historical_factor("fp", "q") - (1.0 - 0.44)) < 1e-9
+
+
+def test_historical_factor_failure_large_does_not_downsize(history_manager_with_cursor):
+    hm, cursor = history_manager_with_cursor
+    cursor.fetchone.return_value = {"score": 0.8, "success": False}
+    assert hm.get_historical_factor("fp", "q") == 0.5
 
 
 def test_get_cached_decision_hit(history_manager_with_cursor):

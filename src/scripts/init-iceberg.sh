@@ -28,10 +28,11 @@ trino --server "$SERVER" --user "$USER_NAME" --file /init-iceberg.sql
 COUNT=$(trino --server "$SERVER" --user "$USER_NAME" --output-format TSV --execute "SELECT count(*) FROM iceberg.analytics.dados" | tr -d '[:space:]' || echo "0")
 
 if [ "${COUNT:-0}" = "0" ]; then
-    echo "Carregando dados sinteticos..."
+    echo "Carregando amostra inicial (cerca de 180 mil linhas). Os 10 GB nao sobem com o compose."
     trino --server "$SERVER" --user "$USER_NAME" --file /load-iceberg.sql
     COUNT=$(trino --server "$SERVER" --user "$USER_NAME" --output-format TSV --execute "SELECT count(*) FROM iceberg.analytics.dados" | tr -d '[:space:]')
     echo "Carga concluida: ${COUNT} linhas"
+    echo "Para 10 GB, rode depois: ./scripts/load-10gb.sh"
 else
-    echo "Tabela ja possui ${COUNT} linhas"
+    echo "Tabela ja possui ${COUNT} linhas. Compose nao recarrega os dados."
 fi
