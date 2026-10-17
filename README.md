@@ -3,6 +3,7 @@
 [![Compile LaTeX](https://github.com/trababalhos-puc/tcc-puc-dyrasql/actions/workflows/compile-latex.yml/badge.svg)](https://github.com/trababalhos-puc/tcc-puc-dyrasql/actions/workflows/compile-latex.yml)
 [![Test and Lint](https://github.com/trababalhos-puc/tcc-puc-dyrasql/actions/workflows/test-lint.yml/badge.svg)](https://github.com/trababalhos-puc/tcc-puc-dyrasql/actions/workflows/test-lint.yml)
 [![Versao](https://img.shields.io/github/v/tag/trababalhos-puc/tcc-puc-dyrasql?label=versao)](https://github.com/trababalhos-puc/tcc-puc-dyrasql/tags)
+[![Cobertura](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/trababalhos-puc/tcc-puc-dyrasql/badges/coverage-badge.json)](https://github.com/trababalhos-puc/tcc-puc-dyrasql/actions/workflows/test-lint.yml)
 
 **Trabalho de Conclusão de Curso**  
 **Sistemas de Informação - PUC Minas São Gabriel**
