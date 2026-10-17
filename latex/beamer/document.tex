@@ -37,7 +37,7 @@
 
 % 1 Capa
 \begin{frame}{}
-  \centering{\calligra{Apresentação Final}}
+  \centering{\calligra{Apresentação Banca Intermediária}}
   \maketitle
   \vspace{0.2cm}
   \centering
@@ -241,23 +241,6 @@
   % 4. Salve como latex/beamer/prints/cache.png
   \shot{cache.png}{0.90}{Elaborado pelo autor. \textit{Cache miss} e \textit{cache hit}.}
   \end{center}
-\end{frame}
-
-% 13 Resumo dos resultados
-\begin{frame}{Resultados - Síntese}
-  \begin{block}{Consulta de referência}
-    \begin{equation*}
-      S = 0{,}5 \times 0{,}27 + 0{,}3 \times 0{,}69 + 0{,}2 \times 0{,}5 = 0{,}44
-    \end{equation*}
-    Volume $f_v{=}0{,}27$, complexidade $f_c{=}0{,}69$ e histórico $f_h{=}0{,}5$. Com $0{,}3 \le S \le 0{,}7$, a consulta segue para o \textit{cluster medium}.
-  \end{block}
-  \begin{itemize}
-    \item Consultas simples e com filtros estreitos tendem ao \textit{cluster small}
-    \item \textit{EXPLAIN (TYPE IO)} fornece volume compatível com os filtros de partição
-    \item Reexecuções recuperam a decisão do \textit{cache}
-  \end{itemize}
-  \vspace{0.3em}
-  {\footnotesize Limitação: \textit{dataset} sintético, sem elasticidade de nuvem.}
 \end{frame}
 
 % 14 Proximos passos
