@@ -29,6 +29,9 @@ concurrency:
   group: test-lint-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     name: Ruff lint and format
@@ -95,3 +98,56 @@ jobs:
           name: coverage-report
           path: coverage.xml
           if-no-files-found: ignore
+
+  coverage-badge:
+    name: Publish coverage badge
+    needs: test
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+
+      - name: Generate badge json
+        run: |
+          python3 - <<'PY'
+          import json
+          import xml.etree.ElementTree as ET
+
+          rate = float(ET.parse("coverage.xml").getroot().get("line-rate")) * 100
+          color = "brightgreen" if rate >= 90 else "yellow" if rate >= 75 else "red"
+          badge = {
+              "schemaVersion": 1,
+              "label": "cobertura",
+              "message": f"{rate:.0f}%",
+              "color": color,
+          }
+          json.dump(badge, open("/tmp/coverage-badge.json", "w"))
+          PY
+
+      - name: Push badge to badges branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --exit-code --heads origin badges > /dev/null; then
+            git fetch origin badges
+            git worktree add /tmp/badges origin/badges
+            cd /tmp/badges
+            git checkout -B badges
+          else
+            git worktree add --detach /tmp/badges
+            cd /tmp/badges
+            git checkout --orphan badges
+            git rm -rf . > /dev/null
+          fi
+          cp /tmp/coverage-badge.json coverage-badge.json
+          git add coverage-badge.json
+          git diff --cached --quiet || git commit -m "Atualiza badge de cobertura"
+          git push origin badges

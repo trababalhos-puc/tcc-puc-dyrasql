@@ -46,7 +46,7 @@ containers=(
 )
 
 for container in "${containers[@]}"; do
-    if docker compose ps | grep -q "$container.*running"; then
+    if docker compose ps --status running --services | grep -qx "$container"; then
         echo -e "  ${GREEN}✓${NC} $container"
     else
         echo -e "  ${RED}✗${NC} $container não está rodando"

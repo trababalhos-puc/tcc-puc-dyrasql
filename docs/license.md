@@ -83,7 +83,7 @@ Se você utilizar este software em trabalhos acadêmicos, por favor cite:
 ```bibtex
 @misc{dyrasql2026,
     author = {Cruz, Aristides Henrique Gonçalves da},
-    title = {DyraSQL: Framework para roteamento dinâmico de consultas SQL baseado em metadados de tabelas Apache Iceberg},
+    title = {DyraSQL: Framework para roteamento dinâmico de consultas SQL},
     year = {2026},
     howpublished = {GitHub},
     note = {Disponível em: https://github.com/trababalhos-puc/tcc-puc-dyrasql}
@@ -92,11 +92,11 @@ Se você utilizar este software em trabalhos acadêmicos, por favor cite:
 
 ### ABNT (NBR 6023:2018)
 
-CRUZ, Aristides Henrique Gonçalves da. **DyraSQL**: Framework para roteamento dinâmico de consultas SQL baseado em metadados de tabelas Apache Iceberg. 2026. Disponível em: <https://github.com/trababalhos-puc/tcc-puc-dyrasql>. Acesso em: [data].
+CRUZ, Aristides Henrique Gonçalves da. **DyraSQL**: Framework para roteamento dinâmico de consultas SQL. 2026. Disponível em: <https://github.com/trababalhos-puc/tcc-puc-dyrasql>. Acesso em: [data].
 
 ### APA 7th Edition
 
-Cruz, A. H. G. (2026). *DyraSQL: Framework para roteamento dinâmico de consultas SQL baseado em metadados de tabelas Apache Iceberg* [Software de computador]. GitHub. https://github.com/trababalhos-puc/tcc-puc-dyrasql
+Cruz, A. H. G. (2026). *DyraSQL: Framework para roteamento dinâmico de consultas SQL* [Software de computador]. GitHub. https://github.com/trababalhos-puc/tcc-puc-dyrasql
 
 ---
 

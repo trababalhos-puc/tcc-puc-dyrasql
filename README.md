@@ -2,7 +2,8 @@
 
 [![Compile LaTeX](https://github.com/trababalhos-puc/tcc-puc-dyrasql/actions/workflows/compile-latex.yml/badge.svg)](https://github.com/trababalhos-puc/tcc-puc-dyrasql/actions/workflows/compile-latex.yml)
 [![Test and Lint](https://github.com/trababalhos-puc/tcc-puc-dyrasql/actions/workflows/test-lint.yml/badge.svg)](https://github.com/trababalhos-puc/tcc-puc-dyrasql/actions/workflows/test-lint.yml)
-[![Release](https://img.shields.io/github/v/release/trababalhos-puc/tcc-puc-dyrasql?display_name=release)](https://github.com/trababalhos-puc/tcc-puc-dyrasql/releases)
+[![Versao](https://img.shields.io/github/v/tag/trababalhos-puc/tcc-puc-dyrasql?label=versao)](https://github.com/trababalhos-puc/tcc-puc-dyrasql/tags)
+[![Cobertura](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/trababalhos-puc/tcc-puc-dyrasql/badges/coverage-badge.json)](https://github.com/trababalhos-puc/tcc-puc-dyrasql/actions/workflows/test-lint.yml)
 
 **Trabalho de Conclusão de Curso**  
 **Sistemas de Informação - PUC Minas São Gabriel**
@@ -14,7 +15,7 @@
 
 ## Sobre o Projeto
 
-O DyraSQL é um framework para roteamento dinâmico de consultas SQL baseado em metadados de tabelas Apache Iceberg. O sistema analisa características das consultas antes da execução e as direciona automaticamente para clusters Trino de capacidades distintas (small, medium, large), otimizando o uso de recursos computacionais.
+O DyraSQL é um framework para roteamento dinâmico de consultas SQL. O sistema direciona automaticamente as consultas para clusters Trino de capacidades distintas (small, medium, large), melhorando o uso de recursos computacionais.
 
 ### Características Principais
 
@@ -39,7 +40,9 @@ A documentação inclui:
 ```
 ├── src/                # Código-fonte do DyraSQL
 │   ├── dyrasql-core/          # Motor de decisão
-│   ├── trino-gateway/         # Gateway Trino
+│   ├── trino-gateway/         # Configuração do Gateway Trino
+│   ├── platform/              # Imagem única (MinIO + Trino Gateway)
+│   ├── vendor/                # Código-fonte incorporado (MinIO e Trino Gateway)
 │   ├── trino-gateway-proxy/   # Proxy de interceptação
 │   ├── trino/config/          # Configurações dos clusters
 │   ├── scripts/               # Scripts auxiliares
