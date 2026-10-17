@@ -1,0 +1,33 @@
+#!/bin/bash
+
+set -euo pipefail
+
+function get_property() {
+    grep "$1" "$2" | cut -d':' -f2 | tr -d '[:space:]' || true
+}
+
+config=/etc/trino-gateway/config.yaml
+scheme=http
+port=8080
+
+# prefer to use http even if https is enabled
+if [ "$(get_property 'http-server.https.enabled' "$config")" == "true" ]; then
+    scheme=https
+    potential_port=$(get_property http-server.https.port "$config")
+    if [ "${potential_port}" != "" ]; then
+        port=${potential_port}
+    fi
+else
+    potential_port=$(get_property http-server.http.port "$config")
+    if [ "${potential_port}" != "" ]; then
+        port=${potential_port}
+    fi
+fi
+
+endpoint="${scheme}://localhost:${port}/api/public/backends"
+
+# add --insecure to disable certificate verification in curl, in case a self-signed certificate is being used
+if ! info=$(curl --fail --silent --show-error --insecure "$endpoint"); then
+    echo >&2 "Server is not responding to requests"
+    exit 1
+fi

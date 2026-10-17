@@ -19,4 +19,8 @@ SELECT
     localtimestamp,
     '{"origem":"sintetico"}',
     CAST(n AS varchar)
-FROM UNNEST(SEQUENCE(1, 180000)) AS t(n);
+FROM (
+    SELECT a * 10000 + b AS n
+    FROM UNNEST(SEQUENCE(0, 17)) AS ta(a)
+    CROSS JOIN UNNEST(SEQUENCE(1, 10000)) AS tb(b)
+) AS t;

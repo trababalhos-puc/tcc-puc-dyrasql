@@ -1,8 +1,8 @@
 services:
   minio:
-    image: minio/minio:latest
+    image: ghcr.io/trababalhos-puc/dyrasql-platform:1.0.0
     container_name: minio
-    command: server /data --console-address ":9001"
+    command: ["minio", "server", "/data", "--console-address", ":9001"]
     environment:
       MINIO_ROOT_USER: dyrasql
       MINIO_ROOT_PASSWORD: dyrasql1
@@ -14,24 +14,29 @@ services:
     networks:
       - dyrasql-network
   minio-init:
-    image: minio/mc:latest
+    image: amazon/aws-cli:2.38.1@sha256:733d5be1015825e4038c6016f3fa9954868ddee1f611b73be795a9cc2e706bfd
     container_name: minio-init
     depends_on:
       - minio
     networks:
       - dyrasql-network
+    environment:
+      AWS_ACCESS_KEY_ID: dyrasql
+      AWS_SECRET_ACCESS_KEY: dyrasql1
+      AWS_DEFAULT_REGION: us-east-1
     entrypoint: ["/bin/sh", "-c"]
-    command: |
-      for i in $$(seq 1 30); do
-        mc alias set local http://minio:9000 dyrasql dyrasql1 && break
-        sleep 2
-      done
-      mc mb local/warehouse --ignore-existing
-      echo "Bucket warehouse criado"
+    command:
+      - |
+        for i in $$(seq 1 30); do
+          aws --endpoint-url http://minio:9000 s3 mb s3://warehouse && break
+          aws --endpoint-url http://minio:9000 s3 ls s3://warehouse && break
+          sleep 2
+        done
+        echo "Bucket warehouse criado"
     restart: "no"
 
   iceberg-rest:
-    image: tabulario/iceberg-rest:1.6.0
+    image: tabulario/iceberg-rest:1.6.0@sha256:3b7d31bdfec626b68e97531c9778a1b9119659e456fe28545a49f6aa6a9ce472
     container_name: iceberg-rest
     depends_on:
       minio-init:
@@ -50,7 +55,7 @@ services:
       - dyrasql-network
 
   gateway-db:
-    image: postgres:16-alpine
+    image: postgres:16.15-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
     container_name: gateway-db
     environment:
       POSTGRES_DB: trino_gateway
@@ -102,12 +107,9 @@ services:
       retries: 3
 
   trino-gateway:
-    build:
-      context: ./trino-gateway
-      dockerfile: Dockerfile
-    image: dyrasql/trino-gateway:latest
-    pull_policy: build
+    image: ghcr.io/trababalhos-puc/dyrasql-platform:1.0.0
     container_name: trino-gateway
+    command: ["java", "-cp", "/app/gateway-ha.jar:/app/postgresql.jar", "io.trino.gateway.ha.HaGatewayLauncher", "/etc/gateway/config.yaml"]
     ports:
       - "8085:8080"
       - "8084:8081"
@@ -137,7 +139,7 @@ services:
       start_period: 60s
 
   gateway-setup:
-    image: alpine:latest
+    image: alpine:3.24.2@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6
     container_name: gateway-setup
     volumes:
       - ./scripts/setup-gateway-backends-auto.sh:/setup.sh:ro
@@ -208,7 +210,7 @@ services:
       retries: 3
 
   trino-small:
-    image: trinodb/trino:latest
+    image: trinodb/trino:484@sha256:2704eb53935af5e582d63d6033e9bf99d20c325e9b0e30b1016ef59a4773979f
     container_name: trino-small
     ports:
       - "8081:8080"
@@ -228,7 +230,7 @@ services:
       start_period: 40s
 
   trino-medium:
-    image: trinodb/trino:latest
+    image: trinodb/trino:484@sha256:2704eb53935af5e582d63d6033e9bf99d20c325e9b0e30b1016ef59a4773979f
     container_name: trino-medium
     ports:
       - "8082:8080"
@@ -248,7 +250,7 @@ services:
       start_period: 40s
 
   trino-large:
-    image: trinodb/trino:latest
+    image: trinodb/trino:484@sha256:2704eb53935af5e582d63d6033e9bf99d20c325e9b0e30b1016ef59a4773979f
     container_name: trino-large
     ports:
       - "8083:8080"
@@ -268,7 +270,7 @@ services:
       start_period: 40s
 
   iceberg-init:
-    image: trinodb/trino:latest
+    image: trinodb/trino:484@sha256:2704eb53935af5e582d63d6033e9bf99d20c325e9b0e30b1016ef59a4773979f
     container_name: iceberg-init
     user: root
     volumes:

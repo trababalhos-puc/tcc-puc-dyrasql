@@ -1,0 +1,196 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package io.trino.gateway.baseapp;
+
+import com.google.common.collect.ImmutableList;
+import com.google.inject.Binder;
+import com.google.inject.Module;
+import com.google.inject.Scopes;
+import io.airlift.log.Logger;
+import io.trino.gateway.ha.clustermonitor.ClusterMetricsStatsExporter;
+import io.trino.gateway.ha.clustermonitor.ForMonitor;
+import io.trino.gateway.ha.config.DataStoreConfiguration;
+import io.trino.gateway.ha.config.DatabaseCacheConfiguration;
+import io.trino.gateway.ha.config.HaGatewayConfiguration;
+import io.trino.gateway.ha.config.MonitorConfiguration;
+import io.trino.gateway.ha.config.RoutingConfiguration;
+import io.trino.gateway.ha.handler.ProxyHandlerStats;
+import io.trino.gateway.ha.handler.RoutingTargetHandler;
+import io.trino.gateway.ha.resource.EntityEditorResource;
+import io.trino.gateway.ha.resource.GatewayHealthCheckResource;
+import io.trino.gateway.ha.resource.GatewayResource;
+import io.trino.gateway.ha.resource.GatewayViewResource;
+import io.trino.gateway.ha.resource.GatewayWebAppResource;
+import io.trino.gateway.ha.resource.HaGatewayResource;
+import io.trino.gateway.ha.resource.LoginResource;
+import io.trino.gateway.ha.resource.PublicResource;
+import io.trino.gateway.ha.router.BackendLifecycleManager;
+import io.trino.gateway.ha.router.ForRouter;
+import io.trino.gateway.ha.router.RoutingManager;
+import io.trino.gateway.ha.router.RoutingRulesManager;
+import io.trino.gateway.ha.router.StochasticRoutingManager;
+import io.trino.gateway.ha.security.AuthorizedExceptionMapper;
+import io.trino.gateway.ha.security.QueryMetadataParser;
+import io.trino.gateway.ha.security.QueryUserInfoParser;
+import io.trino.gateway.proxyserver.ProxyServerModule;
+import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
+
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.google.inject.multibindings.OptionalBinder.newOptionalBinder;
+import static io.airlift.http.client.HttpClientBinder.httpClientBinder;
+import static io.airlift.jaxrs.JaxrsBinder.jaxrsBinder;
+import static java.util.Objects.requireNonNull;
+import static org.weakref.jmx.guice.ExportBinder.newExporter;
+
+public class BaseApp
+        implements Module
+{
+    private static final Logger logger = Logger.get(BaseApp.class);
+    private final HaGatewayConfiguration configuration;
+
+    public BaseApp(HaGatewayConfiguration configuration)
+    {
+        this.configuration = requireNonNull(configuration, "configuration is null");
+    }
+
+    private static Module newModule(String clazz, HaGatewayConfiguration configuration)
+    {
+        try {
+            logger.info("Trying to load module [%s]", clazz);
+            // Modules must have exactly one constructor. The signature must be:
+            // public Module constructor(HaGatewayConfiguration)
+            Constructor<?>[] constructors = Class.forName(clazz).getConstructors();
+            if (constructors.length != 1) {
+                throw new RuntimeException("Failed to load module [%s]. Multiple constructors exist.".formatted(clazz));
+            }
+            Constructor<?> constructor = constructors[0];
+            if (constructor.getParameterCount() != 1) {
+                throw new RuntimeException("Failed to load module [%s]. Unsupported constructor.".formatted(clazz));
+            }
+            Object module = constructor.newInstance(configuration);
+            return ((Module) module);
+        }
+        catch (Exception e) {
+            logger.error(e, "Could not instantiate module [%s]", clazz);
+            System.exit(1);
+        }
+        return null;
+    }
+
+    public static List<Module> addModules(HaGatewayConfiguration configuration)
+    {
+        List<Module> modules = new ArrayList<>();
+        if (configuration.getModules() == null) {
+            logger.info("No modules to load.");
+        }
+        else {
+            for (String clazz : configuration.getModules()) {
+                warnLoadingDefaultModules(clazz);
+                modules.add(newModule(clazz, configuration));
+            }
+        }
+        return modules;
+    }
+
+    private static void warnLoadingDefaultModules(String clazz)
+    {
+        // Remove this check when user finished the migration
+        List<String> defaultModules = ImmutableList.of(
+                "io.trino.gateway.ha.module.HaGatewayProviderModule",
+                "io.trino.gateway.ha.module.ClusterStateListenerModule",
+                "io.trino.gateway.ha.module.ClusterStatsMonitorModule");
+        if (defaultModules.contains(clazz)) {
+            logger.error("Default module [%s] is already being loaded. Please remove it from the config file", clazz);
+            System.exit(1);
+        }
+    }
+
+    @Override
+    public void configure(Binder binder)
+    {
+        binder.bind(HaGatewayConfiguration.class).toInstance(configuration);
+        binder.bind(RoutingConfiguration.class).toInstance(configuration.getRouting());
+        binder.bind(DataStoreConfiguration.class).toInstance(configuration.getDataStore());
+        binder.bind(MonitorConfiguration.class).toInstance(configuration.getMonitor());
+        binder.bind(DatabaseCacheConfiguration.class).toInstance(configuration.getDatabaseCache());
+        registerAuthFilters(binder);
+        registerResources(binder);
+        registerProxyResources(binder);
+        jaxrsBinder(binder).bind(RoutingTargetHandler.class);
+        addManagedApps(configuration, binder);
+        jaxrsBinder(binder).bind(AuthorizedExceptionMapper.class);
+        binder.bind(ProxyHandlerStats.class).in(Scopes.SINGLETON);
+        newExporter(binder).export(ProxyHandlerStats.class).withGeneratedName();
+        binder.bind(RoutingRulesManager.class);
+        binder.bind(ClusterMetricsStatsExporter.class).in(Scopes.SINGLETON);
+        newOptionalBinder(binder, RoutingManager.class)
+                .setDefault()
+                .to(StochasticRoutingManager.class)
+                .in(Scopes.SINGLETON);
+        binder.bind(BackendLifecycleManager.class).in(Scopes.SINGLETON);
+    }
+
+    private static void addManagedApps(HaGatewayConfiguration configuration, Binder binder)
+    {
+        if (configuration.getManagedApps() == null) {
+            logger.info("No managed apps found");
+            return;
+        }
+        configuration.getManagedApps().forEach(
+                clazz -> {
+                    // Remove this check when user finished the migration
+                    if (clazz.equals("io.trino.gateway.ha.clustermonitor.ActiveClusterMonitor")) {
+                        logger.error("Default class ActiveClusterMonitor is already being loaded. Please remove it from the config file");
+                        System.exit(1);
+                    }
+                    try {
+                        Class<?> c = Class.forName(clazz);
+                        binder.bind(c).in(Scopes.SINGLETON);
+                    }
+                    catch (Exception e) {
+                        logger.error(e, "Error loading managed app");
+                    }
+                });
+    }
+
+    private static void registerResources(Binder binder)
+    {
+        jaxrsBinder(binder).bind(EntityEditorResource.class);
+        jaxrsBinder(binder).bind(GatewayResource.class);
+        jaxrsBinder(binder).bind(GatewayViewResource.class);
+        jaxrsBinder(binder).bind(GatewayWebAppResource.class);
+        jaxrsBinder(binder).bind(HaGatewayResource.class);
+        jaxrsBinder(binder).bind(LoginResource.class);
+        jaxrsBinder(binder).bind(PublicResource.class);
+        jaxrsBinder(binder).bind(WebUIStaticResource.class);
+        jaxrsBinder(binder).bind(GatewayHealthCheckResource.class);
+    }
+
+    private static void registerAuthFilters(Binder binder)
+    {
+        jaxrsBinder(binder).bind(RolesAllowedDynamicFeature.class);
+    }
+
+    private static void registerProxyResources(Binder binder)
+    {
+        binder.install(new ProxyServerModule());
+        jaxrsBinder(binder).bind(QueryUserInfoParser.class);
+        jaxrsBinder(binder).bind(QueryMetadataParser.class);
+        httpClientBinder(binder).bindHttpClient("monitor", ForMonitor.class);
+        httpClientBinder(binder).bindHttpClient("router", ForRouter.class);
+    }
+}

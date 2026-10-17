@@ -245,7 +245,7 @@ docker compose restart dyrasql-core
 ```bash
 # Verificar MinIO
 docker compose logs minio
-docker compose exec minio mc ls local/
+docker compose logs minio-init
 
 # Verificar catálogo REST
 docker compose logs iceberg-rest
