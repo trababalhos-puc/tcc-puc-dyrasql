@@ -21,6 +21,7 @@ exclude = [
     "docs",
     "latex",
     "tmp",
+    "src/vendor",
 ]
 
 [tool.ruff.lint]
@@ -40,6 +41,7 @@ source = ["src"]
 omit = [
     "tests/*",
     "*/tests/*",
+    "src/vendor/*",
 ]
 
 [tool.coverage.report]
