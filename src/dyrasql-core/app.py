@@ -50,6 +50,18 @@ history_manager = HistoryManager()
 query_cluster_map = {}
 
 
+def is_client_metadata_query(query: str) -> bool:
+    normalized = query.strip().upper()
+    normalized = re.sub(r"/\*.*?\*/", " ", normalized, flags=re.DOTALL)
+    normalized = re.sub(r"--[^\n]*", " ", normalized)
+    normalized = " ".join(normalized.rstrip(";").split())
+    if normalized.startswith(
+        ("SHOW ", "DESCRIBE ", "DESC ", "SELECT VERSION()", "SELECT CURRENT_")
+    ):
+        return True
+    return "SYSTEM.JDBC." in normalized or "INFORMATION_SCHEMA." in normalized
+
+
 class RouteRequest(BaseModel):
     query: str
 
@@ -78,6 +90,17 @@ async def route_query(request_data: RouteRequest):
 
         fingerprint = query_analyzer.generate_fingerprint(query)
         logger.debug(f"Fingerprint gerado: {fingerprint}")
+
+        if is_client_metadata_query(query):
+            logger.info("METADATA: consulta de catalogo JDBC, usando cluster small")
+            return {
+                "fingerprint": fingerprint,
+                "cluster": "small",
+                "score": 0.0,
+                "factors": {"volume": 0, "complexity": 0, "historical": 0},
+                "cached": False,
+                "cluster_url": get_cluster_url("small"),
+            }
 
         cached_decision = history_manager.get_cached_decision(fingerprint)
 

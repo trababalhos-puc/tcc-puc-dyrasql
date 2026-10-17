@@ -65,6 +65,13 @@ def test_extract_where_clause_absent(analyzer):
     assert analyzer._extract_where_clause("SELECT * FROM t") is None
 
 
+def test_normalize_query_keeps_system_jdbc(analyzer):
+    original = "SELECT TABLE_TYPE FROM system.jdbc.table_types ORDER BY TABLE_TYPE"
+    normalized = analyzer._normalize_query_with_catalog(original)
+    assert "iceberg.system" not in normalized.lower()
+    assert "system.jdbc.table_types" in normalized.lower()
+
+
 def test_normalize_query_adds_iceberg_catalog(analyzer):
     normalized = analyzer._normalize_query_with_catalog(
         "SELECT * FROM analytics.dados WHERE id = 1"
@@ -107,6 +114,43 @@ def test_parse_explain_io(analyzer):
     assert parsed["total_rows"] == 2500000.0
     assert abs(parsed["total_size_bytes"] / (1024**3) - 1.25) < 0.01
     assert "iceberg.analytics.dados" in parsed["tables"]
+
+
+def test_parse_explain_io_accumulates_duplicate_scans(analyzer):
+    explain_json = {
+        "inputTableColumnInfos": [
+            {
+                "table": {
+                    "catalog": "iceberg",
+                    "schemaTable": {"schema": "analytics", "table": "dados"},
+                },
+                "constraint": {"columnConstraints": []},
+                "estimate": {
+                    "outputRowCount": 1000.0,
+                    "outputSizeInBytes": 2048.0,
+                    "cpuCost": 10.0,
+                },
+            },
+            {
+                "table": {
+                    "catalog": "iceberg",
+                    "schemaTable": {"schema": "analytics", "table": "dados"},
+                },
+                "constraint": {"columnConstraints": []},
+                "estimate": {
+                    "outputRowCount": 2000.0,
+                    "outputSizeInBytes": 4096.0,
+                    "cpuCost": 20.0,
+                },
+            },
+        ]
+    }
+    parsed = analyzer._parse_explain_io(explain_json)
+    table = parsed["tables"]["iceberg.analytics.dados"]
+    assert table["estimated_size_bytes"] == 6144.0
+    assert table["estimated_rows"] == 3000.0
+    assert parsed["total_size_bytes"] == 6144.0
+    assert parsed["total_rows"] == 3000.0
 
 
 def test_explain_io_success(analyzer):

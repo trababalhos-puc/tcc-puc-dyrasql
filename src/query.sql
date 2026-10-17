@@ -83,25 +83,27 @@ ORDER BY dia, categoria;
 -- 3. CONSULTAS COMPLEXAS (Esperado: cluster LARGE, score > 0.7)
 -- ======================================================================
 
--- 3.1. Query com subconsultas (exemplo do artigo)
-SELECT 
+-- 3.1. Query com leitura de document, JOIN, agregacoes e subconsultas aninhadas
+SELECT
     t.tenant_id,
     t.categoria,
-    COUNT(*) as total_registros,
-    SUM(d.valor) as valor_total,
-    AVG(d.valor) as valor_medio
+    COUNT(d.document) as total_registros,
+    SUM(length(d.document)) as bytes_documento,
+    AVG(d.valor) as valor_medio,
+    MAX(d.valor) as valor_maximo,
+    MIN(d.valor) as valor_minimo,
+    STDDEV(d.valor) as desvio_padrao
 FROM iceberg.analytics.dados d
 JOIN iceberg.analytics.tenant_info t ON d.tenant_id = t.tenant_id
-WHERE d.date >= TIMESTAMP '2024-01-01'
-  AND d.status = 'ATIVO'
+WHERE d.status = 'ATIVO'
   AND t.categoria IN (
-      SELECT categoria 
-      FROM iceberg.analytics.tenant_info 
+      SELECT categoria
+      FROM iceberg.analytics.tenant_info
       WHERE nivel > (SELECT AVG(nivel) FROM iceberg.analytics.tenant_info)
   )
 GROUP BY t.tenant_id, t.categoria
-HAVING COUNT(*) > 100
-ORDER BY valor_total DESC
+HAVING COUNT(*) > 1000
+ORDER BY bytes_documento DESC
 LIMIT 50;
 
 -- 3.2. Análise estatística completa

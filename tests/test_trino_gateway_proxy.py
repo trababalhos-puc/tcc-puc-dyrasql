@@ -26,6 +26,7 @@ proxy_app = _load_proxy_app()
 
 @pytest.fixture
 def client():
+    proxy_app.query_cluster_map.clear()
     return TestClient(proxy_app.app)
 
 
@@ -159,6 +160,147 @@ async def test_get_routing_decision_exception():
         mock_client.post.side_effect = Exception("x")
         mock_client_cls.return_value = mock_client
         assert await proxy_app.get_routing_decision("SELECT 1") is None
+
+
+def test_sanitize_jdbc_metadata_query():
+    original = (
+        "SELECT TABLE_SCHEM, TABLE_CATALOG FROM system.jdbc.schemas "
+        "WHERE TABLE_CATALOG = '\"iceberg\"' AND TABLE_SCHEM = '\"analytics\"'"
+    )
+    cleaned = proxy_app.sanitize_jdbc_metadata_query(original)
+    assert "TABLE_CATALOG = 'iceberg'" in cleaned
+    assert "TABLE_SCHEM = 'analytics'" in cleaned
+    assert "'\"iceberg\"'" not in cleaned
+
+
+def test_is_client_metadata_query():
+    assert proxy_app.is_client_metadata_query(
+        "SELECT TABLE_SCHEM, TABLE_CATALOG FROM system.jdbc.schemas"
+    )
+    assert not proxy_app.is_client_metadata_query("SELECT COUNT(*) FROM iceberg.analytics.dados")
+
+
+def test_datagrip_keepalive_skips_core(client):
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.content = b'{"id":"20261017_161136_00049_svdd3"}'
+    mock_response.headers = {"Content-Type": "application/json"}
+    routing = AsyncMock(return_value="medium")
+
+    with patch.object(proxy_app, "get_routing_decision", new=routing):
+        with patch.object(proxy_app.httpx, "AsyncClient") as mock_client_cls:
+            mock_client = AsyncMock()
+            mock_client.__aenter__.return_value = mock_client
+            mock_client.__aexit__.return_value = None
+            mock_client.post.return_value = mock_response
+            mock_client_cls.return_value = mock_client
+            response = client.post("/v1/statement", content=b"SELECT 'keep alive'")
+    assert response.status_code == 200
+    routing.assert_not_called()
+
+
+def test_jdbc_metadata_skips_core(client):
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.content = b'{"id":"20261017_160154_00011_e9sbc"}'
+    mock_response.headers = {"Content-Type": "application/json"}
+    routed = {}
+
+    async def post_side_effect(url, **kwargs):
+        routed["url"] = url
+        return mock_response
+
+    with patch.object(proxy_app.httpx, "AsyncClient") as mock_client_cls:
+        mock_client = AsyncMock()
+        mock_client.__aenter__.return_value = mock_client
+        mock_client.__aexit__.return_value = None
+        mock_client.post.side_effect = post_side_effect
+        mock_client_cls.return_value = mock_client
+        response = client.post(
+            "/v1/statement",
+            content=b"SELECT TABLE_SCHEM FROM system.jdbc.schemas",
+            headers={"X-Trino-User": "admin"},
+        )
+    assert response.status_code == 200
+    assert routed["url"] == "http://trino-small:8080/v1/statement"
+
+
+def test_statement_keepalive_maps_query_id(client):
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.content = (
+        b'{"id":"20261017_160154_00011_e9sbc",'
+        b'"nextUri":"http://trino-small:8080/v1/statement/queued/20261017_160154_00011_e9sbc/abc"}'
+    )
+    mock_response.headers = {"Content-Type": "application/json"}
+
+    with patch.object(proxy_app.httpx, "AsyncClient") as mock_client_cls:
+        mock_client = AsyncMock()
+        mock_client.__aenter__.return_value = mock_client
+        mock_client.__aexit__.return_value = None
+        mock_client.post.return_value = mock_response
+        mock_client_cls.return_value = mock_client
+        response = client.post(
+            "/v1/statement",
+            content=b"SELECT 1",
+            headers={"X-Trino-User": "admin"},
+        )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["nextUri"].startswith("http://localhost:8080/v1/statement/")
+    assert proxy_app.query_cluster_map["20261017_160154_00011_e9sbc"] == "small"
+
+
+def test_proxy_next_uri_uses_mapped_cluster(client):
+    proxy_app.query_cluster_map["20261017_160154_00011_e9sbc"] = "medium"
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.content = b'{"stats":{"state":"FINISHED"}}'
+    mock_response.headers = {"Content-Type": "application/json"}
+    captured = {}
+
+    async def get_side_effect(url, **kwargs):
+        captured["url"] = url
+        return mock_response
+
+    with patch.object(proxy_app.httpx, "AsyncClient") as mock_client_cls:
+        mock_client = AsyncMock()
+        mock_client.__aenter__.return_value = mock_client
+        mock_client.__aexit__.return_value = None
+        mock_client.get.side_effect = get_side_effect
+        mock_client_cls.return_value = mock_client
+        response = client.get("/v1/statement/queued/20261017_160154_00011_e9sbc/abc")
+    assert response.status_code == 200
+    assert captured["url"].startswith("http://trino-medium:8080/v1/statement/queued/")
+
+
+def test_proxy_next_uri_retries_other_cluster_on_404(client):
+    not_found = MagicMock()
+    not_found.status_code = 404
+    not_found.content = b"Error 404 Not Found: Query not found"
+    not_found.headers = {"Content-Type": "text/plain"}
+    ok = MagicMock()
+    ok.status_code = 200
+    ok.content = b'{"id":"20261017_160154_00011_e9sbc"}'
+    ok.headers = {"Content-Type": "application/json"}
+    urls = []
+
+    async def get_side_effect(url, **kwargs):
+        urls.append(url)
+        if "trino-small" in url:
+            return not_found
+        return ok
+
+    with patch.object(proxy_app.httpx, "AsyncClient") as mock_client_cls:
+        mock_client = AsyncMock()
+        mock_client.__aenter__.return_value = mock_client
+        mock_client.__aexit__.return_value = None
+        mock_client.get.side_effect = get_side_effect
+        mock_client_cls.return_value = mock_client
+        response = client.get("/v1/statement/queued/20261017_160154_00011_e9sbc/abc")
+    assert response.status_code == 200
+    assert any("trino-small" in url for url in urls)
+    assert any("trino-medium" in url for url in urls)
 
 
 def test_statement_keepalive(client):

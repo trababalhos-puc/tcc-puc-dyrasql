@@ -36,8 +36,108 @@ FALLBACK_CLUSTER = "small"
 
 TIMEOUT = int(os.getenv("ROUTING_TIMEOUT", "5"))
 
+QUERY_TIMEOUT = int(os.getenv("QUERY_TIMEOUT", "300"))
+
+PUBLIC_BASE = os.getenv("PROXY_PUBLIC_URL", "http://localhost:8080").rstrip("/")
+
+QUERY_ID_RE = re.compile(r"(\d{8}_\d{6}_\d{5}_[A-Za-z0-9]+)")
+
+URI_KEYS = ("nextUri", "infoUri", "partialCancelUri")
+
+query_cluster_map: dict[str, str] = {}
 
 http_client = httpx.AsyncClient(timeout=TIMEOUT)
+
+
+def sanitize_jdbc_metadata_query(query: str) -> str:
+    """Remove aspas extras que o JDBC coloca em catalogo/schema (ex: '"iceberg"')."""
+    return re.sub(r"'\"([^\"]+)\"'", r"'\1'", query)
+
+
+def is_client_metadata_query(query: str) -> bool:
+    normalized = query.strip().upper()
+    normalized = re.sub(r"/\*.*?\*/", " ", normalized, flags=re.DOTALL)
+    normalized = re.sub(r"--[^\n]*", " ", normalized)
+    normalized = " ".join(normalized.rstrip(";").split())
+    if normalized.startswith(
+        ("SHOW ", "DESCRIBE ", "DESC ", "SELECT VERSION()", "SELECT CURRENT_")
+    ):
+        return True
+    return "SYSTEM.JDBC." in normalized or "INFORMATION_SCHEMA." in normalized
+
+
+def extract_query_id(text: str) -> str | None:
+    match = QUERY_ID_RE.search(text)
+    if match:
+        return match.group(1)
+    return None
+
+
+def remember_query_cluster(content: str, cluster_name: str) -> None:
+    query_id = None
+    try:
+        data = json.loads(content)
+        if isinstance(data, dict):
+            query_id = data.get("id")
+    except (json.JSONDecodeError, TypeError):
+        query_id = None
+    if not query_id:
+        query_id = extract_query_id(content)
+    if query_id:
+        query_cluster_map[str(query_id)] = cluster_name
+        logger.info("Mapeado query ID %s para cluster %s", query_id, cluster_name)
+
+
+def rewrite_one_uri(uri: str) -> str:
+    if not uri:
+        return uri
+    for prefix in list(CLUSTER_URLS.values()) + [
+        "http://127.0.0.1:8080",
+        "http://0.0.0.0:8080",
+    ]:
+        if uri.startswith(prefix):
+            return PUBLIC_BASE + uri[len(prefix) :]
+    return uri
+
+
+def rewrite_trino_payload(content: str) -> str:
+    try:
+        data = json.loads(content)
+        if isinstance(data, dict):
+            for key in URI_KEYS:
+                value = data.get(key)
+                if isinstance(value, str):
+                    data[key] = rewrite_one_uri(value)
+            return json.dumps(data)
+    except (json.JSONDecodeError, TypeError, UnicodeDecodeError):
+        pass
+    rewritten = content
+    for cluster_url in CLUSTER_URLS.values():
+        rewritten = re.sub(
+            re.escape(cluster_url) + r"(/[^\"]+)",
+            PUBLIC_BASE + r"\1",
+            rewritten,
+        )
+    return rewritten
+
+
+def clusters_to_try(path: str) -> list[str]:
+    ordered = [FALLBACK_CLUSTER] + [name for name in CLUSTER_URLS if name != FALLBACK_CLUSTER]
+    query_id = extract_query_id(path)
+    if query_id and query_id in query_cluster_map:
+        mapped = query_cluster_map[query_id]
+        return [mapped] + [name for name in ordered if name != mapped]
+    return ordered
+
+
+def filter_response_headers(headers) -> dict[str, str]:
+    skipped = {
+        "connection",
+        "transfer-encoding",
+        "content-encoding",
+        "content-length",
+    }
+    return {key: value for key, value in headers.items() if key.lower() not in skipped}
 
 
 @app.get("/health")
@@ -68,10 +168,25 @@ async def route_statement(request: Request):
 
         query_normalized = query.strip().upper().rstrip(";").strip()
 
-        is_keepalive = query_normalized in ["SELECT 1", "SELECT 1 AS KEEPALIVE", "SELECT 1 AS 1"]
+        is_keepalive = (
+            query_normalized in ["SELECT 1", "SELECT 1 AS KEEPALIVE", "SELECT 1 AS 1"]
+            or query_normalized.startswith("SELECT 'KEEP ALIVE'")
+            or query_normalized.startswith("SELECT 'KEEPALIVE'")
+        )
+
+        is_metadata = is_client_metadata_query(query)
 
         if is_keepalive:
             logger.debug(f"Query de keep-alive detectada: {query}")
+
+            cluster_name = FALLBACK_CLUSTER
+
+        elif is_metadata:
+            sanitized = sanitize_jdbc_metadata_query(query)
+            if sanitized != query:
+                logger.info("METADATA: removendo aspas extras da consulta JDBC")
+                query = sanitized
+            logger.info("METADATA: consulta de catalogo JDBC no cluster small: %s", query[:180])
 
             cluster_name = FALLBACK_CLUSTER
 
@@ -119,31 +234,11 @@ async def route_statement(request: Request):
         async with httpx.AsyncClient(timeout=TIMEOUT, follow_redirects=True) as client:
             response = await client.post(target_url, content=query, headers=request_headers)
 
-            response_content = response.content.decode("utf-8")
+            response_content = rewrite_trino_payload(response.content.decode("utf-8"))
 
-            for _cluster_name_sub, cluster_url in CLUSTER_URLS.items():
-                pattern_next = re.escape(cluster_url) + r"(/v1/statement/[^\"]+)"
+            remember_query_cluster(response_content, cluster_name)
 
-                replacement_next = r"http://localhost:8080\1"
-
-                response_content = re.sub(pattern_next, replacement_next, response_content)
-
-                pattern_info = re.escape(cluster_url) + r"(/ui/[^\"]+)"
-
-                replacement_info = r"http://localhost:8080\1"
-
-                response_content = re.sub(pattern_info, replacement_info, response_content)
-
-            response_headers = {}
-
-            for key, value in response.headers.items():
-                if key.lower() not in [
-                    "connection",
-                    "transfer-encoding",
-                    "content-encoding",
-                    "content-length",
-                ]:
-                    response_headers[key] = value
+            response_headers = filter_response_headers(response.headers)
 
             content_type = response.headers.get("Content-Type", "application/json")
 
@@ -304,15 +399,7 @@ async def proxy_other(path: str, request: Request):
             logger.warning(f"Erro ao redirecionar UI para gateway, tentando cluster padrão: {e}")
 
     try:
-        if path.startswith("/"):
-            target_url = f"{CLUSTER_URLS[FALLBACK_CLUSTER]}{path}"
-
-        else:
-            target_url = (
-                f"{CLUSTER_URLS[FALLBACK_CLUSTER]}/{path}"
-                if path
-                else f"{CLUSTER_URLS[FALLBACK_CLUSTER]}/"
-            )
+        relative_path = path if path.startswith("/") else f"/{path}" if path else "/"
 
         headers = {}
 
@@ -322,49 +409,70 @@ async def proxy_other(path: str, request: Request):
 
         body = await request.body() if request.method in ["POST", "PUT"] else None
 
+        is_statement_poll = relative_path.startswith("/v1/statement/")
+
+        timeout = QUERY_TIMEOUT if is_statement_poll else TIMEOUT
+
+        last_response = None
+
         async with httpx.AsyncClient(
-            timeout=TIMEOUT, follow_redirects=True, headers={"Accept-Encoding": "identity"}
+            timeout=timeout, follow_redirects=True, headers={"Accept-Encoding": "identity"}
         ) as client:
-            if request.method == "GET":
-                response = await client.get(
-                    target_url, headers=headers, params=request.query_params
-                )
+            for cluster_name in clusters_to_try(relative_path):
+                target_url = f"{CLUSTER_URLS[cluster_name]}{relative_path}"
+                if is_statement_poll:
+                    logger.info("PROXY: %s %s -> %s", request.method, relative_path, cluster_name)
 
-            elif request.method == "POST":
-                response = await client.post(target_url, content=body, headers=headers)
+                if request.method == "GET":
+                    response = await client.get(
+                        target_url, headers=headers, params=request.query_params
+                    )
 
-            elif request.method == "PUT":
-                response = await client.put(target_url, content=body, headers=headers)
+                elif request.method == "POST":
+                    response = await client.post(target_url, content=body, headers=headers)
 
-            elif request.method == "DELETE":
-                response = await client.delete(target_url, headers=headers)
+                elif request.method == "PUT":
+                    response = await client.put(target_url, content=body, headers=headers)
 
-            elif request.method == "HEAD":
-                response = await client.head(target_url, headers=headers)
+                elif request.method == "DELETE":
+                    response = await client.delete(target_url, headers=headers)
 
-            elif request.method == "OPTIONS":
-                response = await client.options(target_url, headers=headers)
+                elif request.method == "HEAD":
+                    response = await client.head(target_url, headers=headers)
 
-            else:
-                raise HTTPException(status_code=405, detail="Method not allowed")
+                elif request.method == "OPTIONS":
+                    response = await client.options(target_url, headers=headers)
 
-            response_headers = {}
+                else:
+                    raise HTTPException(status_code=405, detail="Method not allowed")
 
-            for key, value in response.headers.items():
-                if key.lower() not in ["connection", "transfer-encoding", "content-encoding"]:
-                    response_headers[key] = value
+                last_response = response
 
-            response_content = response.content.decode("utf-8")
+                if is_statement_poll and response.status_code == 404:
+                    logger.warning(
+                        "Query nao encontrada em %s, tentando outro cluster: %s",
+                        cluster_name,
+                        relative_path,
+                    )
+                    continue
 
-            for _cluster_name_sub, cluster_url in CLUSTER_URLS.items():
-                pattern = re.escape(cluster_url) + r"(/[^\"]+)"
+                break
 
-                replacement = r"http://localhost:8080\1"
+            response = last_response
 
-                response_content = re.sub(pattern, replacement, response_content)
+            if response is None:
+                raise HTTPException(status_code=502, detail="Nenhum cluster Trino disponivel")
+
+            response_headers = filter_response_headers(response.headers)
+
+            try:
+                response_content = rewrite_trino_payload(response.content.decode("utf-8"))
+                payload = response_content.encode("utf-8")
+            except UnicodeDecodeError:
+                payload = response.content
 
             return Response(
-                content=response_content.encode("utf-8"),
+                content=payload,
                 status_code=response.status_code,
                 headers=response_headers,
             )

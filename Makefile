@@ -238,6 +238,8 @@ beamer:
 	@echo "$(BLUE)[LaTeX]$(NC) Compilando apresentação Beamer..."
 	cd latex/beamer && $(PDFLATEX) -interaction=nonstopmode document.tex || \
 		{ echo "$(RED)[ERRO]$(NC) Falha na compilação da apresentação."; exit 1; }
+	cd latex/beamer && $(PDFLATEX) -interaction=nonstopmode document.tex || \
+		{ echo "$(RED)[ERRO]$(NC) Falha na compilação da apresentação."; exit 1; }
 	@if [ -f "latex/beamer/document.pdf" ]; then \
 		echo "$(GREEN)[SUCESSO]$(NC) Apresentação compilada: latex/beamer/document.pdf"; \
 	else \
@@ -384,14 +386,15 @@ docker-beamer:
 		echo "$(BLUE)[Docker]$(NC) Imagem não encontrada. Construindo..."; \
 		$(MAKE) docker-build; \
 	fi
-	docker-compose run --rm latex make beamer
-	@if [ -f "beamer/document.pdf" ]; then \
-		echo "$(GREEN)[SUCESSO]$(NC) Compilação concluída: beamer/document.pdf"; \
+	cd latex && docker-compose run --rm latex make beamer
+	@if [ -f "latex/beamer/document.pdf" ]; then \
+		echo "$(GREEN)[SUCESSO]$(NC) Compilação concluída: latex/beamer/document.pdf"; \
 		if command -v open >/dev/null 2>&1; then \
-			echo "$(BLUE)[INFO]$(NC) Para visualizar: open beamer/document.pdf"; \
+			echo "$(BLUE)[INFO]$(NC) Para visualizar: open latex/beamer/document.pdf"; \
 		fi; \
 	else \
 		echo "$(RED)[ERRO]$(NC) Falha na compilação da apresentação."; \
+		exit 1; \
 	fi
 
 # Limpar containers e volumes Docker

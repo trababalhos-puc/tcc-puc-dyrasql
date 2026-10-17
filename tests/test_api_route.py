@@ -44,6 +44,24 @@ def test_health(api_client):
     assert response.json()["status"] == "healthy"
 
 
+def test_route_jdbc_metadata_ignores_cache(api_client):
+    client, app_module = api_client
+    app_module.history_manager.get_cached_decision.return_value = {
+        "cluster": "medium",
+        "score": 0.35,
+        "factors": {},
+    }
+    response = client.post(
+        "/api/v1/route",
+        json={"query": "SELECT TABLE_SCHEM FROM system.jdbc.schemas ORDER BY TABLE_SCHEM"},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["cluster"] == "small"
+    assert data["cached"] is False
+    app_module.history_manager.get_cached_decision.assert_not_called()
+
+
 def test_route_cache_hit(api_client):
     client, app_module = api_client
     app_module.history_manager.get_cached_decision.return_value = {

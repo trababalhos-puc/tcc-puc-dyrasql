@@ -133,10 +133,10 @@ class QueryAnalyzer:
                 table = match.group(3)
 
                 # Verifica se schema não é 'iceberg' (já tem catálogo)
-                if schema.lower() != "iceberg":
-                    modified = True
-                    return f"{keyword} iceberg.{schema}.{table}"
-                return match.group(0)
+                if schema.lower() in ("iceberg", "system", "information_schema"):
+                    return match.group(0)
+                modified = True
+                return f"{keyword} iceberg.{schema}.{table}"
 
             query_normalized = re.sub(
                 simple_pattern, add_catalog, query_normalized, flags=re.IGNORECASE
@@ -408,16 +408,23 @@ class QueryAnalyzer:
 
                         filters.append(filter_info)
 
-                tables_info[full_table_name] = {
-                    "catalog": catalog,
-                    "schema": schema,
-                    "table": table,
-                    "estimated_size_bytes": estimated_size_bytes,
-                    "estimated_rows": estimated_rows,
-                    "cpu_cost": cpu_cost,
-                    "filters": filters,
-                    "column_constraints": column_constraints,
-                }
+                if full_table_name in tables_info:
+                    tables_info[full_table_name]["estimated_size_bytes"] += estimated_size_bytes
+                    tables_info[full_table_name]["estimated_rows"] += estimated_rows
+                    tables_info[full_table_name]["cpu_cost"] += cpu_cost
+                    tables_info[full_table_name]["filters"].extend(filters)
+                    tables_info[full_table_name]["column_constraints"].extend(column_constraints)
+                else:
+                    tables_info[full_table_name] = {
+                        "catalog": catalog,
+                        "schema": schema,
+                        "table": table,
+                        "estimated_size_bytes": estimated_size_bytes,
+                        "estimated_rows": estimated_rows,
+                        "cpu_cost": cpu_cost,
+                        "filters": filters,
+                        "column_constraints": column_constraints,
+                    }
 
                 total_size_bytes += estimated_size_bytes
 

@@ -28,7 +28,7 @@
 % Macro de imagem: se o arquivo existir em prints/, exibe; senao mostra caixa de aviso
 \newcommand{\shot}[3]{% arquivo, altura, legenda
   \IfFileExists{prints/#1}{%
-    \includegraphics[width=0.95\textwidth,height=#2\textheight,keepaspectratio]{prints/#1}}{%
+    \includegraphics[width=\textwidth,height=#2\textheight,keepaspectratio]{prints/#1}}{%
     \fbox{\parbox[c][#2\textheight][c]{0.9\textwidth}{\centering\Large\textcolor{red}{PRINT PENDENTE: #1}}}}
   \\[0.3em]{\tiny Fonte: #3}}
 
@@ -96,10 +96,24 @@
   \end{alertblock}
 \end{frame}
 
+\begin{frame}{Referencial Teórico - Metadados do \textit{Apache Iceberg}}
+  \begin{center}
+    \includegraphics[width=\textwidth,height=0.78\textheight,keepaspectratio]{../figuras/iceberg-metadata.png}\\[0.15em]
+    {\tiny Fonte: Apache Software Foundation (2025).}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Referencial Teórico - \textit{Trino Gateway}}
+  \begin{center}
+    \includegraphics[width=\textwidth,height=0.72\textheight,keepaspectratio]{prints/trino-gateway.png}\\[0.15em]
+    {\tiny Fonte: TrinoDB (2025).}
+  \end{center}
+\end{frame}
+
 % 6 Arquitetura
 \begin{frame}{Metodologia - Arquitetura}
   \begin{center}
-    \includegraphics[width=\textwidth,height=0.72\textheight,keepaspectratio]{../figuras/container.png}\\[0.15em]
+    \includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{../figuras/container.png}\\[0.15em]
     {\tiny Fonte: Elaborado pelo autor.}
   \end{center}
 \end{frame}
@@ -172,7 +186,7 @@
   % 3. Tire print do terminal mostrando todos os servicos (minio, iceberg-rest,
   %    trino-small/medium/large, trino-gateway, dyrasql-core) como "running/healthy"
   % 4. Salve como latex/beamer/prints/ambiente.png
-  \shot{ambiente.png}{0.58}{Elaborado pelo autor. Saída de docker compose ps.}
+  \shot{ambiente.png}{0.78}{Elaborado pelo autor. Saída de docker compose ps.}
   \end{center}
 \end{frame}
 
@@ -185,7 +199,7 @@
   % 2. No prompt execute: SELECT COUNT(*) FROM dados;
   % 3. Tire print do terminal com o resultado (e opcionalmente SHOW TABLES)
   % 4. Salve como latex/beamer/prints/dados.png
-  \shot{dados.png}{0.58}{Elaborado pelo autor. Consulta ao dataset sintético.}
+  \shot{dados.png}{0.78}{Elaborado pelo autor. Consulta ao dataset sintético.}
   \end{center}
 \end{frame}
 
@@ -199,7 +213,7 @@
   % 2. Tire print destacando os campos outputSizeInBytes e outputRowCount
   %    (alternativa: abra um JSON em src/explains/ no editor)
   % 3. Salve como latex/beamer/prints/explain.png
-  \shot{explain.png}{0.58}{Elaborado pelo autor. Metadados extraídos antes da execução.}
+  \shot{explain.png}{0.78}{Elaborado pelo autor. Metadados extraídos antes da execução.}
   \end{center}
 \end{frame}
 
@@ -212,7 +226,7 @@
   %    via Trino Gateway Proxy (mesmo cliente trino, apontando para a porta do proxy em docker-compose.yml)
   % 3. Print do Terminal A mostrando linhas "[DECISION] score=..., cluster=small/medium/large"
   % 4. Salve como latex/beamer/prints/roteamento.png
-  \shot{roteamento.png}{0.58}{Elaborado pelo autor. Score e \textit{cluster} escolhido por consulta.}
+  \shot{roteamento.png}{0.78}{Elaborado pelo autor. Score e \textit{cluster} escolhido por consulta.}
   \end{center}
 \end{frame}
 
@@ -225,7 +239,7 @@
   %    docker compose logs -f dyrasql-core   (primeira: cache miss; segunda: cache hit)
   % 3. Print do log mostrando miss seguido de hit
   % 4. Salve como latex/beamer/prints/cache.png
-  \shot{cache.png}{0.58}{Elaborado pelo autor. \textit{Cache miss} e \textit{cache hit}.}
+  \shot{cache.png}{0.90}{Elaborado pelo autor. \textit{Cache miss} e \textit{cache hit}.}
   \end{center}
 \end{frame}
 
