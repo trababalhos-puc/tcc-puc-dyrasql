@@ -1,6 +1,6 @@
 # DyraSQL - Software
 
-Framework de roteamento dinâmico de consultas SQL baseado em análise de metadados Apache Iceberg.
+Framework de roteamento dinâmico de consultas SQL.
 
 ## Arquitetura
 

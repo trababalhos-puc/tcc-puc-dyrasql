@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 type: software
 title: "DyraSQL: Roteamento Dinâmico de Consultas SQL Baseado em Metadados de Tabelas Apache Iceberg"
-abstract: "Framework para roteamento dinâmico de consultas SQL considerando características previamente disponíveis nos metadados de tabelas Apache Iceberg. O sistema direciona automaticamente consultas para clusters Trino de capacidades distintas, otimizando o uso de recursos através da análise de metadados obtidos via comando EXPLAIN (TYPE IO)."
+abstract: "Framework para roteamento dinâmico de consultas SQL. O sistema direciona automaticamente consultas para clusters Trino de capacidades distintas, melhorando o uso de recursos computacionais."
 authors:
   - family-names: "Cruz"
     given-names: "Aristides Henrique Gonçalves da"

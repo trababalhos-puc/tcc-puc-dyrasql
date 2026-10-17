@@ -103,7 +103,7 @@ Se você utilizar este software, por favor cite:
 ```bibtex
 @misc{dyrasql2026,
     author = {Cruz, Aristides Henrique Gonçalves da},
-    title = {DyraSQL: Framework para roteamento dinâmico de consultas SQL baseado em metadados de tabelas Apache Iceberg},
+    title = {DyraSQL: Framework para roteamento dinâmico de consultas SQL},
     year = {2026},
     howpublished = {GitHub},
     note = {Disponível em: https://github.com/trababalhos-puc/tcc-puc-dyrasql}

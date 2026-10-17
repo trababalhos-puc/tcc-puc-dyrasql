@@ -15,7 +15,7 @@
 
 ## Sobre o Projeto
 
-O DyraSQL é um framework para roteamento dinâmico de consultas SQL baseado em metadados de tabelas Apache Iceberg. O sistema analisa características das consultas antes da execução e as direciona automaticamente para clusters Trino de capacidades distintas (small, medium, large), otimizando o uso de recursos computacionais.
+O DyraSQL é um framework para roteamento dinâmico de consultas SQL. O sistema direciona automaticamente as consultas para clusters Trino de capacidades distintas (small, medium, large), melhorando o uso de recursos computacionais.
 
 ### Características Principais
 
