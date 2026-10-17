@@ -10,324 +10,260 @@
 % Inserting the preamble file with the packages
 \input{libs/preamble.tex}
 % Inserting the references file
-\bibliography{references.bib}
 
-% Title
-\title[Roteamento Dinâmico de Consultas SQL]{\huge\textbf{Roteamento Dinâmico de Consultas SQL}}
-% Subtitle
+\title[Roteamento Dinâmico de Consultas SQL]{Roteamento Dinâmico de Consultas SQL}
 \subtitle{Baseado em Metadados de Tabelas Apache Iceberg}
-% Author of the presentation
-\author{Aristides Henrique Gonçalves da Cruz}
-% Institute's Name
-\institute[PUCMinas]{
-% email for contact
-    \normalsize{\email{arihenriquedev@hotmail.com}}
-    \speciality{Sistemas de Informação}
-    \department{ICEI}
-    PUCMinas São Gabriel
+\author[Aristides H. G. da Cruz]{Aristides Henrique Gonçalves da Cruz}
+\institute[PUC Minas]{
+  Sistemas de Informação \\[0.25em]
+  ICEI, PUC Minas, Unidade São Gabriel \\[0.35em]
+  \email{arihenriquedev@hotmail.com}
 }
-% date of the presentation
-\date{Novembro de 2025}
+\date{Outubro de 2026}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Start Document of the Presentation                                           %%               
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Macro de imagem: se o arquivo existir em prints/, exibe; senao mostra caixa de aviso
+\newcommand{\shot}[3]{% arquivo, altura, legenda
+  \IfFileExists{prints/#1}{%
+    \includegraphics[width=0.95\textwidth,height=#2\textheight,keepaspectratio]{prints/#1}}{%
+    \fbox{\parbox[c][#2\textheight][c]{0.9\textwidth}{\centering\Large\textcolor{red}{PRINT PENDENTE: #1}}}}
+  \\[0.3em]{\tiny Fonte: #3}}
+
 \begin{document}
-% insert the code style
-    \input{libs/code_style}
+\input{libs/code_style}
 
-% Slide 1: Capa
-    \begin{frame}{}
-        \centering{\calligra{Entrega Final}}
-        \maketitle
+% 1 Capa
+\begin{frame}{}
+  \centering{\calligra{Apresentação Final}}
+  \maketitle
+  \vspace{0.2cm}
+  \centering
+  \begin{tabular}{rl}
+    \textbf{Trabalho:} & Trabalho de Conclusão de Curso \\
+    \textbf{Orientador:} & Prof. Gustavo Luís Soares \\
+  \end{tabular}
+\end{frame}
 
-        \hspace{1.5cm}  {
-            \resizebox{0.8\textwidth}{!}{
-                \begin{tabular}{llll}
-                    \textbf{Trabalho:}  & \textsc{Trabalho de Conclusão de Curso} & & \\
-                    \textbf{Curso:}  & \textsc{Sistemas de Informação} & & \\
-                    \textbf{Instituição:}  & \textsc{PUC Minas - Unidade São Gabriel} & & \\
-                \end{tabular}
-            }
-        }
+% 2 Contexto
+\begin{frame}{Contexto}
+  \begin{itemize}
+    \item Volume crescente em \textit{data lakes} e \textit{lakehouses} exige melhor aproveitamento no consumo dos dados por consulta
+    \item \textit{Apache Iceberg} como formato de tabela com metadados hierárquicos
+    \item \textit{Trino} como \textit{engine} de consultas distribuído
+    \item Em geral, o \textit{cluster} de execução é escolhido de forma estática
+  \end{itemize}
+  \begin{alertblock}{Problema}
+    Consultas leves ocupam \textit{clusters} robustos e consultas pesadas falham ou degradam em \textit{clusters} pequenos, com aproveitamento ineficiente dos recursos de processamento.
+  \end{alertblock}
+\end{frame}
 
-        \normalsize
-    \end{frame}
+% 3 Motivacao
+\begin{frame}{Motivação}
+  \begin{itemize}
+    \item Provisionamento excessivo eleva custos operacionais e financeiros, além de desperdiçar recursos computacionais
+    \item Subdimensionamento aumenta falhas e tempo de resposta
+    \item Metadados do \textit{Iceberg} permitem estimar o custo \textbf{antes} da execução
+    \item Lacuna: roteamento entre \textit{clusters} \textit{Trino} de capacidades distintas
+  \end{itemize}
+\end{frame}
 
-% Slide 2: Estrutura da apresentação
-    \begin{frame}{Estrutura da Apresentação}
-        \begin{enumerate}
-            \item \textbf{Objetivos e Justificativa}
-            \begin{itemize}
-                \item Objetivo Geral
-                \item Objetivos Específicos
-                \item Justificativa
-            \end{itemize}
-            \vspace{0.3cm}
-            \item \textbf{Metodologia}
-            \begin{itemize}
-                \item Arquitetura (Diagramas C4)
-                \item Algoritmo de Decisão
-            \end{itemize}
-            \vspace{0.3cm}
-            \item \textbf{Expectativas e Resultados}
-            \vspace{0.3cm}
-            \item \textbf{Conclusão}
-        \end{enumerate}
-    \end{frame}
+% 4 Objetivos
+\begin{frame}{Objetivos}
+  \begin{block}{Objetivo Geral}
+    Desenvolver o \textit{DyraSQL}, mecanismo que usa \textit{EXPLAIN (TYPE IO)} para definir automaticamente o \textit{cluster} mais adequado para cada consulta SQL.
+  \end{block}
+  \begin{enumerate}
+    \item Mapear metadados \textit{Iceberg} úteis para estimar custo
+    \item Definir regras de decisão
+    \item Construir protótipo local
+    \item Realizar experimentos controlados
+  \end{enumerate}
+\end{frame}
 
-% Slide 3: Objetivo Geral
-    \begin{frame}{Objetivo Geral}
-        \begin{alertblock}{}
-            Desenvolver o \textit{DyraSQL}, um mecanismo de decisão que utiliza metadados de tabelas \textit{Apache Iceberg} através do comando \textit{EXPLAIN (TYPE IO)} do \textit{Trino} para definir automaticamente o \textit{cluster} mais adequado para execução de consultas SQL.
-        \end{alertblock}
-        
-        \vspace{0.5cm}
-        \begin{block}{Problema}
-            Escolha estática de \textit{clusters} \textit{Trino} (leve versus robusto) sem considerar características dos dados e complexidade das consultas.
-        \end{block}
-    \end{frame}
+% 5 Referencial teorico
+\begin{frame}{Referencial Teórico}
+  \begin{itemize}
+    \item \textit{Apache Iceberg}: \textit{snapshots}, manifestos e estatísticas por arquivo (\textit{data skipping})
+    \item \textit{Trino}: \textit{EXPLAIN (TYPE IO)} retorna \textit{outputSizeInBytes} e linhas estimadas
+    \item \textit{Trino Gateway}: balanceamento e roteamento entre \textit{clusters}
+    \item \textit{Lakehouse}: unificação de \textit{data lake} e \textit{warehouse}
+  \end{itemize}
+  \begin{alertblock}{Trabalhos relacionados}
+    Strausz et al. (2025) selecionam o \textit{engine} SQL. O \textit{DyraSQL} mantém o mesmo \textit{engine} (\textit{Trino}) e seleciona o \textit{cluster} com o dimensionamento mais adequado (\textit{small}, \textit{medium} ou \textit{large}).
+  \end{alertblock}
+\end{frame}
 
-% Slide 4: Objetivos Específicos
-    \begin{frame}{Objetivos Específicos}
-        \begin{enumerate}
-            \item Mapear e caracterizar os metadados disponíveis em tabelas \textit{Apache Iceberg}, identificando indicadores de volume de dados, complexidade da query e custo esperado de execução.
-            \vspace{0.2cm}
-            \item Estabelecer regras de decisão para roteamento de consultas, classificando-as em \textit{clusters} leve, intermediário e robusto.
-            \vspace{0.2cm}
-            \item Projetar e desenvolver um protótipo funcional do \textit{DyraSQL} em ambiente local, utilizando o \textit{Trino}, Docker Compose, MinIO e PostgreSQL.
-            \vspace{0.2cm}
-            \item Realizar experimentos controlados em cenários distintos de carga de trabalho, verificando a viabilidade técnica e coletando métricas de tempo de execução, consumo de recursos e custo associado.
-        \end{enumerate}
-    \end{frame}
+% 6 Arquitetura
+\begin{frame}{Metodologia - Arquitetura}
+  \begin{center}
+    \includegraphics[width=\textwidth,height=0.72\textheight,keepaspectratio]{../figuras/container.png}\\[0.15em]
+    {\tiny Fonte: Elaborado pelo autor.}
+  \end{center}
+\end{frame}
 
-% Slide 5: Justificativa
-    \begin{frame}{Justificativa}
-        \begin{block}{Necessidade}
-            \begin{itemize}
-                \item Crescimento do volume de dados em \textit{data lakes}
-                \item Necessidade de equilibrar custos e desempenho na execução de consultas SQL
-                \item Escolha estática de \textit{clusters} \textit{Trino} resulta em provisionamento excessivo ou subdimensionamento
-            \end{itemize}
-        \end{block}
-        
-        \vspace{0.3cm}
-        \begin{alertblock}{Impacto Esperado}
-            Melhor custo-benefício e utilização eficiente de recursos através de roteamento baseado em análise prévia de metadados.
-        \end{alertblock}
-    \end{frame}
+% 7 Algoritmo
+\begin{frame}{Metodologia - Algoritmo de Decisão}
+  \begin{block}{Score}
+    \begin{equation} S = w_1\, f_v + w_2\, f_c + w_3\, f_h \end{equation}
+    {\small
+    \begin{itemize}\setlength{\itemsep}{0.15em}
+      \item $f_v$: volume efetivo da consulta
+      \item $f_c$: complexidade estrutural
+      \item $f_h$: histórico de execuções
+      \item $w_1{=}0{,}5$, $w_2{=}0{,}3$, $w_3{=}0{,}2$ nos testes, ajustáveis ao ambiente
+    \end{itemize}}
+  \end{block}
+  \begin{alertblock}{Roteamento}
+    $S<0{,}3$: \textit{small} \quad $0{,}3\le S\le 0{,}7$: \textit{medium} \quad $S>0{,}7$: \textit{large}\\[0.35em]
+    {\small Decisões em \textit{cache} por \textit{fingerprint}, com \textit{TTL} de 24 horas.}
+  \end{alertblock}
+\end{frame}
 
-% Slide 6: Revisão Bibliográfica - Fundamentos
-    \begin{frame}{Revisão Bibliográfica - Fundamentos}
-        \begin{block}{Fundamentos Teóricos}
-            \begin{itemize}
-                \item \textbf{\textit{Apache Iceberg}:} Formato de tabela que oferece metadados hierárquicos para gestão eficiente de dados em \textit{data lakes}
-                \item \textbf{\textit{Trino}:} \textit{Engine} de consultas distribuído que suporta \textit{EXPLAIN (TYPE IO)} para análise prévia de custos
-                \item \textbf{Metadados para melhoria:} Informações sobre volume de dados, partições e filtros podem ser utilizadas para estimativa de custo de execução
-            \end{itemize}
-        \end{block}
-        
-        \vspace{0.2cm}
-        \begin{exampleblock}{Aproveitamento}
-            O \textit{DyraSQL} utiliza o \textit{EXPLAIN (TYPE IO)} do \textit{Trino} para extrair metadados precisos sobre volume efetivo de dados antes da execução.
-        \end{exampleblock}
-    \end{frame}
+% 8 Exemplo de calculo
+\begin{frame}{Metodologia - Exemplo de Cálculo}
+  \begin{block}{Fator volume}
+    \begin{equation*}
+      f_v = \left( \frac{\log(T_e)}{\log(T_{max})} \times 0{,}6 + \frac{\log(R_e)}{\log(R_{max})} \times 0{,}4 \right) \times (1 - F_o)
+    \end{equation*}
+  \end{block}
+  {\small
+  \begin{itemize}
+    \item $T_e = 1{,}25$~GB e $R_e = 2{,}5 \times 10^{6}$ vêm do \textit{EXPLAIN (TYPE IO)} da consulta
+    \item $T_{max}$ e $R_{max}$ são o volume máximo do \textit{warehouse} de cada ambiente (no exemplo, 1~TB e $10^{9}$ linhas)
+  \end{itemize}
+  \begin{equation*}
+    f_v = \Bigl(\tfrac{\log(1{,}25)}{\log(1000)}\times 0{,}6 + \tfrac{\log(2500000)}{\log(10^{9})}\times 0{,}4\Bigr)\times 0{,}9 = 0{,}27
+  \end{equation*}
+  }
+\end{frame}
 
-% Slide 7: Revisão Bibliográfica - Trabalhos Relacionados
-    \begin{frame}{Revisão Bibliográfica - Trabalhos Relacionados}
-        \begin{block}{Trabalhos Principais}
-            \begin{itemize}
-                \item \textbf{Xue et al. (2024):} Sistema adaptativo para execução de consultas em \textit{lakehouse} em larga escala
-                \item \textbf{Strausz et al. (2025):} Otimizador baseado em modelo de custo aprendido para \textit{workloads} SQL \textit{multi-engine}
-                \item \textbf{Weintraub et al. (2024):} Otimização de consultas em \textit{data lakes} baseada em planos de cobertura balanceados
-            \end{itemize}
-        \end{block}
-        
-        \vspace{0.2cm}
-        \begin{alertblock}{Diferenciação}
-            O \textit{DyraSQL} propõe roteamento entre \textit{clusters} \textit{Trino} de capacidades distintas (leve, intermediário e robusto) baseado em análise prévia de metadados do \textit{Apache Iceberg}.
-        \end{alertblock}
-    \end{frame}
+\begin{frame}{Metodologia - Exemplo de Cálculo}
+  \begin{block}{Fator complexidade}
+    \begin{equation*}
+      f_c = \frac{1\times 0{,}2 + 3\times 0{,}15 + 2\times 0{,}25 + 1\times 0{,}02 + 2\times 0{,}1}{2{,}0} = 0{,}69
+    \end{equation*}
+    {\small
+    \begin{itemize}\setlength{\itemsep}{0.1em}
+      \item 1 \textit{JOIN} ($0{,}2$), 3 agregações ($0{,}15$), 2 subconsultas ($0{,}25$)
+      \item 1 filtro particionado ($0{,}02$) e 2 não particionados ($0{,}1$), soma ponderada $1{,}37$
+      \item $L_c{=}2$ porque a soma $1{,}37$ não pode saturar em $1$, nem perder peso com teto grande
+    \end{itemize}}
+  \end{block}
+  \begin{block}{Fator histórico}
+    {\small
+    \begin{itemize}\setlength{\itemsep}{0.1em}
+      \item sem histórico, $f_h = 0{,}5$ (caso do exemplo, neutro)
+      \item sucesso, $f_h = S_p$ (repete a faixa que funcionou)
+      \item falha em \textit{small}/\textit{medium}, $f_h = 1 - S_p$ (busca mais capacidade)
+      \item falha no \textit{large}, $f_h = 0{,}5$ (não reduz, não é subdimensionamento)
+    \end{itemize}}
+  \end{block}
+\end{frame}
 
-% Slide 8: Metodologia
-    \begin{frame}{Metodologia}
-        \begin{enumerate}
-            \item \textbf{Extração de Metadados}
-            \begin{itemize}
-                \item Utilização do \textit{EXPLAIN (TYPE IO)} do \textit{Trino}
-                \item Extração de \textit{outputSizeInBytes}, \textit{outputRowCount}, \textit{cpuCost}
-            \end{itemize}
-            \vspace{0.2cm}
-            \item \textbf{Algoritmo de Decisão}
-            \begin{itemize}
-                \item Cálculo de \textit{Score} baseado em três fatores: volume, complexidade e histórico
-                \item Direcionamento para leve (Score < 0,3), intermediário (0,3-0,7) ou robusto (> 0,7)
-            \end{itemize}
-            \vspace{0.2cm}
-            \item \textbf{Implementação}
-            \begin{itemize}
-                \item \textit{Trino Gateway Proxy} para interceptação de consultas
-                \item \textit{DyraSQL Core} para análise e decisão de roteamento
-                \item Integração com PostgreSQL para histórico e \textit{cache}
-            \end{itemize}
-        \end{enumerate}
-    \end{frame}
+% 9 Resultados: ambiente
+\begin{frame}{Resultados - Ambiente em Execução}
+  \begin{center}
+  % ===== COMO TIRAR O PRINT =====
+  % 1. cd src && docker compose up -d   (aguarde 2-3 min)
+  % 2. docker compose ps
+  % 3. Tire print do terminal mostrando todos os servicos (minio, iceberg-rest,
+  %    trino-small/medium/large, trino-gateway, dyrasql-core) como "running/healthy"
+  % 4. Salve como latex/beamer/prints/ambiente.png
+  \shot{ambiente.png}{0.58}{Elaborado pelo autor. Saída de docker compose ps.}
+  \end{center}
+\end{frame}
 
-% Slide 9: Continuação da Metodologia - Contexto
-    \begin{frame}{Metodologia - Contexto do Sistema}
-        \vspace{-0.6cm}
-        \begin{center}
-            \includegraphics[width=0.95\textwidth,height=0.55\textheight,keepaspectratio]{../figuras/c4_1.pdf}
-        \end{center}
-        \vspace{0.05cm}
-        \tiny{\textcolor{blue_theme}{\textbf{Fonte:}} Elaborado pelo autor.}
-    \end{frame}
+% 9 Resultados: dados
+\begin{frame}{Resultados - Dados no \textit{Iceberg}}
+  \begin{center}
+  % ===== COMO TIRAR O PRINT =====
+  % 1. Com o ambiente no ar, rode:
+  %    docker compose exec trino-small trino --server http://localhost:8080 --user admin --catalog iceberg --schema analytics
+  % 2. No prompt execute: SELECT COUNT(*) FROM dados;
+  % 3. Tire print do terminal com o resultado (e opcionalmente SHOW TABLES)
+  % 4. Salve como latex/beamer/prints/dados.png
+  \shot{dados.png}{0.58}{Elaborado pelo autor. Consulta ao dataset sintético.}
+  \end{center}
+\end{frame}
 
-% Slide 10: Continuação da Metodologia - Containers
-    \begin{frame}{Metodologia - Containers do Sistema}
-        \vspace{-0.3cm}
-        \begin{center}
-            \includegraphics[width=0.95\textwidth,height=0.65\textheight,keepaspectratio]{../figuras/c4_2.pdf}
-        \end{center}
-        \vspace{0.1cm}
-        \tiny{\textcolor{blue_theme}{\textbf{Componentes:}} Trino Gateway Proxy, Trino Gateway, DyraSQL Core, Clusters de Execução}
-    \end{frame}
+% 10 Resultados: EXPLAIN
+\begin{frame}{Resultados - \textit{EXPLAIN (TYPE IO)}}
+  \begin{center}
+  % ===== COMO TIRAR O PRINT =====
+  % 1. No cliente Trino (passo do slide anterior) execute:
+  %    EXPLAIN (TYPE IO, FORMAT JSON) SELECT status, COUNT(*) FROM iceberg.analytics.dados
+  %    WHERE date BETWEEN TIMESTAMP '2024-01-01' AND TIMESTAMP '2024-01-07' GROUP BY status;
+  % 2. Tire print destacando os campos outputSizeInBytes e outputRowCount
+  %    (alternativa: abra um JSON em src/explains/ no editor)
+  % 3. Salve como latex/beamer/prints/explain.png
+  \shot{explain.png}{0.58}{Elaborado pelo autor. Metadados extraídos antes da execução.}
+  \end{center}
+\end{frame}
 
-% Slide 11: Continuação da Metodologia - Componentes
-    \begin{frame}{Metodologia - Componentes Internos}
-        \vspace{-0.3cm}
-        \begin{center}
-            \includegraphics[width=0.95\textwidth,height=0.65\textheight,keepaspectratio]{../figuras/c4_3.pdf}
-        \end{center}
-        \vspace{0.1cm}
-        \tiny{\textcolor{blue_theme}{\textbf{Fluxo:}} Interceptação → Análise → Decisão → Execução → Feedback}
-    \end{frame}
+% 11 Resultados: roteamento
+\begin{frame}{Resultados - Decisões de Roteamento}
+  \begin{center}
+  % ===== COMO TIRAR O PRINT =====
+  % 1. Terminal A: cd src && ./scripts/monitor-routing.sh
+  % 2. Terminal B: execute 3 consultas de src/query.sql (uma simples, uma media, uma pesada)
+  %    via Trino Gateway Proxy (mesmo cliente trino, apontando para a porta do proxy em docker-compose.yml)
+  % 3. Print do Terminal A mostrando linhas "[DECISION] score=..., cluster=small/medium/large"
+  % 4. Salve como latex/beamer/prints/roteamento.png
+  \shot{roteamento.png}{0.58}{Elaborado pelo autor. Score e \textit{cluster} escolhido por consulta.}
+  \end{center}
+\end{frame}
 
-% Slide 12: Continuação da Metodologia - Algoritmo
-    \begin{frame}{Metodologia - Algoritmo de Decisão}
-        \begin{block}{Fórmula de Pontuação}
-            \begin{equation}
-                S = w_1 \times f_v + w_2 \times f_c + w_3 \times f_h
-            \end{equation}
-            \begin{itemize}
-                \item $f_v$: Fator de volume (50\%)
-                \item $f_c$: Fator de complexidade (30\%)
-                \item $f_h$: Fator histórico (20\%)
-            \end{itemize}
-        \end{block}
-        
-        \vspace{0.3cm}
-        \begin{alertblock}{Decisão de Roteamento}
-            \begin{itemize}
-                \item Score $< 0,3$: \textit{cluster} leve
-                \item Score $0,3-0,7$: \textit{cluster} intermediário
-                \item Score $> 0,7$: \textit{cluster} robusto
-            \end{itemize}
-        \end{alertblock}
-    \end{frame}
+% 12 Resultados: cache
+\begin{frame}{Resultados - \textit{Cache} de Decisões}
+  \begin{center}
+  % ===== COMO TIRAR O PRINT =====
+  % 1. Rode ./scripts/limpar-cache.sh para zerar o cache
+  % 2. Execute a mesma consulta duas vezes e observe o log do dyrasql-core:
+  %    docker compose logs -f dyrasql-core   (primeira: cache miss; segunda: cache hit)
+  % 3. Print do log mostrando miss seguido de hit
+  % 4. Salve como latex/beamer/prints/cache.png
+  \shot{cache.png}{0.58}{Elaborado pelo autor. \textit{Cache miss} e \textit{cache hit}.}
+  \end{center}
+\end{frame}
 
-% Slide 13: Configurações dos Ambientes
-    \begin{frame}{Metodologia - Configurações dos Ambientes}
-        \begin{block}{\textit{cluster} leve (Score $< 0,3$)}
-            \begin{itemize}
-                \item \textbf{Memória:} 2 GB de heap
-                \item \textbf{Memória máxima por query:} 1 GB
-                \item \textbf{Tempo máximo de execução:} 5 minutos
-                \item \textbf{Uso:} Consultas leves
-            \end{itemize}
-        \end{block}
+% 13 Resumo dos resultados
+\begin{frame}{Resultados - Síntese}
+  \begin{block}{Consulta de referência}
+    \begin{equation*}
+      S = 0{,}5 \times 0{,}27 + 0{,}3 \times 0{,}69 + 0{,}2 \times 0{,}5 = 0{,}44
+    \end{equation*}
+    Volume $f_v{=}0{,}27$, complexidade $f_c{=}0{,}69$ e histórico $f_h{=}0{,}5$. Com $0{,}3 \le S \le 0{,}7$, a consulta segue para o \textit{cluster medium}.
+  \end{block}
+  \begin{itemize}
+    \item Consultas simples e com filtros estreitos tendem ao \textit{cluster small}
+    \item \textit{EXPLAIN (TYPE IO)} fornece volume compatível com os filtros de partição
+    \item Reexecuções recuperam a decisão do \textit{cache}
+  \end{itemize}
+  \vspace{0.3em}
+  {\footnotesize Limitação: \textit{dataset} sintético, sem elasticidade de nuvem.}
+\end{frame}
 
-        \begin{block}{\textit{cluster} intermediário (Score $0,3-0,7$)}
-            \begin{itemize}
-                \item \textbf{Memória:} 3 GB de heap
-                \item \textbf{Memória máxima por query:} 2 GB
-                \item \textbf{Tempo máximo de execução:} 15 minutos
-                \item \textbf{Uso:} Consultas intermediárias
-            \end{itemize}
-        \end{block}
-    \end{frame}
+% 14 Proximos passos
+\begin{frame}{Cronograma}
+  \begin{block}{Situação atual}
+    Artigo, protótipo e experimentos do \textit{DyraSQL} estão concluídos.
+  \end{block}
+  \begin{itemize}
+    \item Preparar a apresentação da banca final
+    \item Ensaio da defesa com o orientador
+    \item Entrega da versão final no Canvas e no Pergamum
+  \end{itemize}
+\end{frame}
 
-    \begin{frame}{Metodologia - Configurações dos Ambientes (continuação)}
-        \begin{block}{\textit{cluster} robusto (Score $> 0,7$)}
-            \begin{itemize}
-                \item \textbf{Memória:} 4 GB de heap
-                \item \textbf{Memória máxima por query:} 3 GB
-                \item \textbf{Tempo máximo de execução:} 30 minutos
-                \item \textbf{Uso:} Consultas pesadas
-            \end{itemize}
-        \end{block}
-
-        \vspace{0.3cm}
-        \begin{alertblock}{Configuração compartilhada}
-            \begin{itemize}
-                \item Catálogo \textit{Iceberg} REST
-                \item MinIO para armazenamento de objetos
-                \item Acesso unificado às tabelas independentemente do \textit{cluster}
-            \end{itemize}
-        \end{alertblock}
-    \end{frame}
-
-% Slide 15: Expectativas
-
-% Slide 15: Expectativas
-    \begin{frame}{Expectativas}
-        \begin{block}{Resultados Esperados}
-            \begin{itemize}
-                \item \textbf{Precisão:} Sistema capaz de calcular \textit{scores} precisos e direcionar consultas para os \textit{clusters} apropriados
-                \item \textbf{Eficiência:} Tempo de análise prévia inferior a 200ms
-                \item \textbf{Consistência:} Consultas similares recebem \textit{scores} próximos e são direcionadas para os mesmos tipos de \textit{clusters}
-                \item \textbf{Melhoria de Custo-Benefício:} Redução de custos operacionais através de roteamento inteligente
-            \end{itemize}
-        \end{block}
-    \end{frame}
-
-% Slide 16: Resultados
-    \begin{frame}{Resultados}
-        \begin{block}{Experimentos Realizados}
-            \begin{itemize}
-                \item Dataset sintético em tabelas \textit{Apache Iceberg} no MinIO
-                \item Consultas variadas: diferentes volumes, complexidades e estruturas
-                \item Métricas coletadas: precisão dos \textit{scores}, adequação das decisões, eficiência do sistema
-            \end{itemize}
-        \end{block}
-        
-        \vspace{0.3cm}
-        \begin{alertblock}{Principais Resultados}
-            \begin{itemize}
-                \item Extração de metadados eficiente: tempo médio < 200ms
-                \item \textit{Scores} precisos e consistentes para consultas similares
-                \item Diferenciação adequada entre consultas leves, intermediárias e pesadas
-            \end{itemize}
-        \end{alertblock}
-    \end{frame}
-
-% Slide 17: Desafios da Pesquisa
-    \begin{frame}{Desafios da Pesquisa}
-        \begin{block}{Desafios Identificados}
-            \begin{itemize}
-                \item \textbf{Dependência de Histórico:} Precisão das decisões depende de histórico suficiente no PostgreSQL
-                \item \textbf{Limitações do EXPLAIN:} Consultas muito complexas podem exceder 500ms de análise
-                \item \textbf{Qualidade dos Metadados:} Dependência da qualidade e atualização dos metadados do \textit{Apache Iceberg}
-                \item \textbf{Consultas Atípicas:} Consultas com características não previstas podem resultar em decisões subótimas
-            \end{itemize}
-        \end{block}
-        
-        \vspace{0.2cm}
-        \begin{alertblock}{Mitigações}
-            Sistema de \textit{cache} temporal, valores \textit{default} para casos sem histórico e aprendizado contínuo baseado em \textit{feedback}.
-        \end{alertblock}
-    \end{frame}
-
-% Slide 18: Obrigado
-    \begin{frame}{}
-        \centering
-        \vspace{2cm}
-        {\huge \calligra{Obrigado!}}
-        \vspace{1cm}
-        \begin{block}{}
-            \centering
-            \textbf{Dúvidas?}
-        \end{block}
-    \end{frame}
+% 15 Encerramento
+\begin{frame}{}
+  \centering{\calligra{Obrigado!}}\\[0.6cm]
+  Aristides Henrique Gonçalves da Cruz\\
+  Orientador: Prof. Gustavo Luís Soares\\
+  \small arihenriquedev@hotmail.com
+\end{frame}
 
 \end{document}

@@ -194,6 +194,9 @@ class HistoryManager:
             previous_score = float(row["score"] or 0.5)
             success = row["success"]
             if success is False:
+                medium_threshold = float(os.getenv("DYRASQL_MEDIUM_THRESHOLD", "0.7"))
+                if previous_score > medium_threshold:
+                    return 0.5
                 return 1.0 - previous_score
             return previous_score
         except Exception as exc:

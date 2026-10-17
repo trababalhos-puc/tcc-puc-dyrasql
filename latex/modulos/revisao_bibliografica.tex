@@ -21,7 +21,7 @@ Ding et al. (2024) apresentaram um sistema de \textit{layouts} de dados multidim
 
 A utilização de metadados para melhoria de consultas tem sido amplamente explorada na literatura, sendo que sistemas como o \textit{Apache Iceberg} oferecem estruturas hierárquicas de metadados para estimativa de volume, análise de partições e melhoria de consultas \cite{iceberg2024}. Trabalhos anteriores demonstraram a eficácia de metadados para \textit{data skipping} e melhoria de consultas \cite{weintraub2024}; o \textit{DyraSQL} estende essa abordagem para roteamento dinâmico entre diferentes \textit{clusters}.
 
-Sistemas de processamento distribuído como o \textit{Trino} e Apache Spark utilizam metadados para melhoria de planos de execução, sendo que informações sobre volume de dados, distribuição e partições são fundamentais para determinação da estratégia de processamento \cite{trinoconcepts,apachespark2025}. O \textit{DyraSQL} complementa esta abordagem através de utilização de metadados para seleção da arquitetura de processamento antes da geração do plano de execução, sendo que esta análise prévia permite direcionamento mais eficiente das consultas.
+Sistemas de processamento distribuído como o \textit{Trino} utilizam metadados para melhoria de planos de execução, sendo que informações sobre volume de dados, distribuição e partições são fundamentais para determinação da estratégia de processamento \cite{trinoconcepts}. O \textit{DyraSQL} complementa esta abordagem através de utilização de metadados para seleção da arquitetura de processamento antes da geração do plano de execução, sendo que esta análise prévia permite direcionamento mais eficiente das consultas.
 
 \subsection{Diferenças e Contribuições do \textit{DyraSQL}}
 

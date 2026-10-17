@@ -373,8 +373,10 @@ if not prev_exec:
     fh = 0.5  # Neutro
 elif prev_exec.success:
     fh = prev_exec.score  # Repetir sucesso
+elif prev_exec.score > 0.7:
+    fh = 0.5  # Falha no large: nao reduzir capacidade
 else:
-    fh = 1.0 - prev_exec.score  # Inverter falha
+    fh = 1.0 - prev_exec.score  # Falha em small/medium: buscar mais capacidade
 ```
 
 ### Score Final
