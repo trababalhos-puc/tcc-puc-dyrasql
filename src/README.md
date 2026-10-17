@@ -8,10 +8,10 @@ O sistema é composto por:
 
 - **DyraSQL Core**: Motor de decisão que analisa consultas e calcula scores
 - **Trino Gateway Proxy**: Intercepta queries e consulta o Core para roteamento
-- **Trino Gateway**: Balanceador oficial do Trino
+- **Trino Gateway**: Balanceador oficial do Trino (versão 21)
 - **3 Clusters Trino**: small, medium, large (capacidades distintas)
 - **PostgreSQL**: Cache de decisões e histórico
-- **MinIO**: Storage S3-compatible para tabelas Iceberg
+- **MinIO**: Storage S3-compatible para tabelas Iceberg (edição comunitária, tag RELEASE.2025-10-15T17-29-55Z, projeto arquivado pelos mantenedores)
 - **Iceberg REST Catalog**: Catálogo de metadados compartilhado
 
 ## Pré-requisitos
@@ -152,6 +152,14 @@ query.max-memory=2GB
 query.max-execution-time=10m
 ```
 
+## Imagens e Dependências
+
+Todas as imagens base são fixadas por digest (`imagem:tag@sha256:...`), o que impede que atualizações externas quebrem o ambiente. As versões usadas são Trino 484, PostgreSQL 16.15, Iceberg REST 1.6.0, AWS CLI 2.38.1 e Alpine 3.24.2.
+
+O MinIO (arquivado pelos mantenedores em abril de 2026) e o Trino Gateway rodam a partir de uma única imagem, `ghcr.io/trababalhos-puc/dyrasql-platform:1.0.0`, usada pelos serviços `minio` e `trino-gateway` com comandos diferentes. O código-fonte de ambos está em `vendor/` (versões e commits em `vendor/VERSIONS.md`), de modo que a imagem pode ser reconstruída sem acessar os repositórios originais.
+
+Para reconstruir e publicar a imagem (amd64 e arm64), execute `./scripts/publish-platform.sh`, que não recebe argumentos e tem as variáveis no topo do arquivo. Para usar uma versão compilada localmente, troque `image:` por `build:` com `context: .` e `dockerfile: platform/Dockerfile` nos dois serviços.
+
 ## Estrutura de Diretórios
 
 ```
@@ -165,9 +173,13 @@ src/
 ├── trino-gateway-proxy/    # Proxy de interceptação
 │   ├── app.py
 │   └── Dockerfile
-├── trino-gateway/          # Gateway oficial
-│   ├── config.yaml
-│   └── Dockerfile
+├── trino-gateway/          # Configuração do gateway oficial
+│   └── config.yaml
+├── platform/               # Imagem única (MinIO + Trino Gateway)
+│   ├── Dockerfile
+│   └── postgresql-42.7.1.jar
+├── vendor/                 # Código-fonte incorporado (MinIO e Trino Gateway)
+│   └── VERSIONS.md
 ├── trino/config/           # Configurações dos clusters
 │   ├── small/
 │   ├── medium/
@@ -176,7 +188,8 @@ src/
 │   ├── init-iceberg.sh
 │   ├── setup-gateway-backends-auto.sh
 │   ├── monitor-routing.sh
-│   └── limpar-cache.sh
+│   ├── limpar-cache.sh
+│   └── publish-platform.sh
 ├── postgres/               # Inicialização do DB
 │   └── init-dyrasql.sh
 └── docker-compose.yml      # Orquestração completa
