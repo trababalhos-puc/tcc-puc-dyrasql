@@ -1,0 +1,4 @@
+# Codigo de terceiros incorporado, fora das estatisticas de linguagem do GitHub
+src/vendor/** linguist-vendored
+latex/figuras/c4/js/** linguist-vendored
+latex/figuras/c4/**/*.html linguist-generated
