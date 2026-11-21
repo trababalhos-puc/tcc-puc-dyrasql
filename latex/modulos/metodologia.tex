@@ -12,7 +12,7 @@ A arquitetura é composta por quatro componentes. O \textit{Query Analyzer} exec
 	\centering
 	\caption{Contexto do Sistema - DyraSQL}
 	\label{fig:contexto-sistema}
-	\includegraphics[width=0.65\textwidth]{figuras/contexto.png}\\
+	\includegraphics[width=1.0\textwidth]{figuras/contexto.png}\\
 	\fonte{Elaborado pelo autor.}
 \end{figure}
 
@@ -22,21 +22,21 @@ A Figura \ref{fig:contexto-sistema} apresenta o contexto do \textit{DyraSQL}: o 
 	\centering
 	\caption{Containers do Sistema - \textit{DyraSQL}}
 	\label{fig:containers-sistema}
-	\includegraphics[width=0.65\textwidth]{figuras/container.png}\\
+	\includegraphics[width=1.0\textwidth]{figuras/container.png}\\
 	\fonte{Elaborado pelo autor.}
 \end{figure}
 
-A Figura \ref{fig:containers-sistema} detalha os \textit{containers}: o \textit{Trino Gateway Proxy} intercepta as consultas, o \textit{Trino Gateway} atua como balanceador, o \textit{DyraSQL Core} decide o roteamento e o PostgreSQL armazena histórico e \textit{cache}. Os três \textit{containers Trino} correspondem às faixas de capacidade descritas na Seção~\ref{sec:algoritmo-decisao}, com limites distintos de memória e o mesmo catálogo \textit{Iceberg} REST, o que garante dados consistentes em qualquer destino.
+A Figura \ref{fig:containers-sistema} detalha os \textit{containers}: o \textit{Trino Gateway Proxy} intercepta as consultas, o \textit{Trino Gateway} atua como balanceador, o \textit{DyraSQL Core} decide o roteamento e o PostgreSQL armazena histórico e \textit{cache}. Os três \textit{containers Trino} correspondem às faixas de capacidade descritas na Seção~\ref{sec:algoritmo-decisao}, com limites distintos de memória e o mesmo catálogo \textit{Iceberg} REST, o que garante dados consistentes em qualquer destino. Todo o ambiente é declarado em um único arquivo do Docker Compose, o que permite reproduzi-lo em outra máquina e alterar a capacidade de cada \textit{cluster} apenas pela configuração.
 
 \begin{figure}[H]
 	\centering
 	\caption{Componentes do \textit{DyraSQL} Core}
 	\label{fig:componentes-sistema}
-	\includegraphics[width=0.65\textwidth]{figuras/componentes.png}\\
+	\includegraphics[width=1.0\textwidth]{figuras/componentes.png}\\
 	\fonte{Elaborado pelo autor.}
 \end{figure}
 
-A Figura \ref{fig:componentes-sistema} apresenta os componentes internos do \textit{DyraSQL Core} e o fluxo da consulta, da interceptação ao registro no histórico. Ao receber uma consulta, o núcleo gera seu \textit{fingerprint} e verifica o \textit{cache}; na ausência de decisão válida, o \textit{Query Analyzer} obtém as estimativas de volume e a estrutura da consulta, o \textit{Decision Engine} calcula o \textit{Score} e a decisão é persistida no PostgreSQL antes de ser devolvida ao \textit{proxy}. Essa separação em módulos permite alterar os critérios de decisão sem modificar a interceptação ou a persistência.
+A Figura \ref{fig:componentes-sistema} apresenta os componentes internos do \textit{DyraSQL Core} e o fluxo da consulta, da interceptação ao registro no histórico. Ao receber uma consulta, o núcleo gera seu \textit{fingerprint} e verifica o \textit{cache}; na ausência de decisão válida, o \textit{Query Analyzer} obtém as estimativas de volume e a estrutura da consulta, o \textit{Decision Engine} calcula o \textit{Score} e a decisão é persistida no PostgreSQL antes de ser devolvida ao \textit{proxy}. Essa separação em módulos permite alterar os critérios de decisão sem modificar a interceptação ou a persistência. Como o \textit{cache} e o histórico ficam no PostgreSQL, o \textit{Query Analyzer} e o \textit{Decision Engine} não guardam estado entre requisições, e o núcleo pode ser replicado para atender mais consultas simultâneas.
 
 \subsection{Extração de Metadados Relevantes}
 
@@ -263,8 +263,8 @@ O \textit{DyraSQL} registra no PostgreSQL, para cada \textit{fingerprint}, a dec
 
 \subsection{Integração com \textit{Trino Gateway}}
 
-A integração com o \textit{Trino Gateway} oficial dispensa modificações em seu código-fonte. O \textit{gateway}, compilado a partir do código-fonte em Java e com configurações persistidas em PostgreSQL, atua como balanceador. O \textit{Trino Gateway Proxy}, desenvolvido em Python com FastAPI, intercepta cada consulta, obtém a decisão do \textit{DyraSQL Core} pelo \textit{endpoint} POST /api/v1/route, que retorna \textit{cluster}, \textit{score} e fatores (exemplo no Apêndice A), e encaminha a consulta ao \textit{cluster} selecionado.
+A integração com o \textit{Trino Gateway} oficial dispensa modificações em seu código-fonte. O \textit{gateway}, compilado a partir do código-fonte em Java e com configurações persistidas em PostgreSQL, atua como balanceador. O \textit{Trino Gateway Proxy}, desenvolvido em Python com FastAPI, intercepta cada consulta, obtém a decisão do \textit{DyraSQL Core} pelo \textit{endpoint} POST /api/v1/route, que retorna \textit{cluster}, \textit{score} e fatores (exemplo no Apêndice A), e encaminha a consulta ao \textit{cluster} selecionado. Assim, o roteamento é transparente para os clientes, que continuam se conectando ao mesmo endereço do \textit{gateway} por meio de qualquer \textit{driver} ou ferramenta compatível com o \textit{Trino}.
 
 \subsection{Implementação do \textit{framework}}
 
-O \textit{DyraSQL Core} foi implementado em Python, com módulos para análise de consultas, Algoritmo de decisão, histórico no PostgreSQL e API REST. O ambiente é orquestrado por Docker Compose e inclui o \textit{Trino Gateway}, o \textit{proxy}, o PostgreSQL, o MinIO e o catálogo REST, configurado no conector \textit{Iceberg} de cada \textit{cluster} de modo que os três compartilhem os mesmos metadados.
+O \textit{DyraSQL Core} foi implementado em Python, com módulos para análise de consultas, Algoritmo de decisão, histórico no PostgreSQL e API REST. O ambiente é orquestrado por Docker Compose e inclui o \textit{Trino Gateway}, o \textit{proxy}, o PostgreSQL, o MinIO e o catálogo REST, configurado no conector \textit{Iceberg} de cada \textit{cluster} de modo que os três compartilhem os mesmos metadados. O protótipo conta com uma suíte de 134 testes automatizados, que cobre a análise das consultas, o cálculo dos fatores, a API, o histórico e os \textit{scripts} do ambiente, todos aprovados em execução em ambiente Linux.
