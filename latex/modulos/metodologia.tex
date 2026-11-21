@@ -32,7 +32,7 @@ A Figura \ref{fig:containers-sistema} detalha os \textit{containers}: o \textit{
 	\centering
 	\caption{Componentes do \textit{DyraSQL} Core}
 	\label{fig:componentes-sistema}
-	\includegraphics[width=0.9\textwidth]{figuras/componentes.png}\\
+	\includegraphics[width=1.0\textwidth]{figuras/componentes.png}\\
 	\fonte{Elaborado pelo autor.}
 \end{figure}
 
@@ -148,7 +148,7 @@ A consulta possui 1 \textit{JOIN} com a tabela de dimensão \textit{tenant\_info
 
 O Algoritmo opera em duas fases. Na primeira, consulta o \textit{cache} no PostgreSQL pelo \textit{fingerprint} da consulta, obtido normalizando o SQL (minúsculas, espaços colapsados e literais substituídos por um marcador) e aplicando SHA-256, de modo que consultas estruturalmente idênticas com valores de filtro distintos reaproveitem a decisão. O \textit{cache} tem validade (\textit{TTL}) de 24 horas, pois o volume dos dados cresce com as ingestões. Na segunda fase, sem decisão válida, o sistema executa o \textit{EXPLAIN (TYPE IO)} e combina três fatores, volume, complexidade e histórico, no \textit{Score} da Equação \ref{eq:pontuacao}.
 
-Como salvaguarda, os literais dos filtros sobre colunas particionadas são preservados no \textit{fingerprint}, pois determinam o volume lido: consultas de mesma estrutura com intervalos distintos, como um dia e um trimestre, deixam de compartilhar a decisão, enquanto variações de outros filtros continuam reaproveitando-a. Decisões cuja execução foi registrada como falha também não são reutilizadas.
+Como salvaguarda, os literais dos filtros sobre colunas particionadas são preservados no \textit{fingerprint}, pois determinam o volume lido: consultas de mesma estrutura com intervalos distintos, como um dia e um trimestre, deixam de compartilhar a decisão, enquanto variações de outros filtros continuam reaproveitando-a. Decisões cuja execução foi registrada como falha também não são reutilizadas. O custo dessa salvaguarda é uma nova análise quando o intervalo muda: um painel que consulta sempre o dia corrente, por exemplo, executa um \textit{EXPLAIN (TYPE IO)} por dia, e as demais execuções do dia reutilizam a decisão.
 
 \begin{equation}
 \label{eq:pontuacao}
