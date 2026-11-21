@@ -8,31 +8,31 @@ Esta seção descreve como o \textit{DyraSQL} foi concebido e construído. Inici
 
 A arquitetura é composta por quatro componentes. O \textit{Query Analyzer} executa o \textit{EXPLAIN (TYPE IO)} do \textit{Trino} e analisa a estrutura da consulta. O \textit{Decision Engine} aplica o algoritmo de pontuação e seleciona o ambiente (\textit{small}, \textit{medium} ou \textit{large}). O \textit{Trino Gateway Proxy} intercepta as consultas, obtém a decisão do \textit{DyraSQL Core} e as encaminha ao \textit{cluster} selecionado por meio do \textit{Trino Gateway}. O \textit{Monitoring System} registra as execuções no histórico.
 
-\begin{figure}[!tbp]
+\begin{figure}[H]
 	\centering
 	\caption{Contexto do Sistema - DyraSQL}
 	\label{fig:contexto-sistema}
-	\includegraphics[width=1.0\textwidth]{figuras/contexto.png}\\
+	\includegraphics[width=0.8\textwidth]{figuras/contexto.png}\\
 	\fonte{Elaborado pelo autor.}
 \end{figure}
 
 A Figura \ref{fig:contexto-sistema} apresenta o contexto do \textit{DyraSQL}: o analista submete consultas SQL, que o sistema encaminha aos \textit{clusters} \textit{Trino} sobre o \textit{data lake} local. Do ponto de vista do analista, o roteamento é transparente, pois a consulta é enviada a um único ponto de entrada e não precisa indicar o \textit{cluster} de destino nem ser reescrita. É essa transparência que permite substituir regras estáticas por decisões baseadas na demanda de cada consulta sem alterar a forma como os usuários trabalham.
 
-\begin{figure}[!tbp]
+\begin{figure}[H]
 	\centering
 	\caption{Containers do Sistema - \textit{DyraSQL}}
 	\label{fig:containers-sistema}
-	\includegraphics[width=1.0\textwidth]{figuras/container.png}\\
+	\includegraphics[width=0.9\textwidth]{figuras/container.png}\\
 	\fonte{Elaborado pelo autor.}
 \end{figure}
 
 A Figura \ref{fig:containers-sistema} detalha os \textit{containers}: o \textit{Trino Gateway Proxy} intercepta as consultas, o \textit{Trino Gateway} atua como balanceador, o \textit{DyraSQL Core} decide o roteamento e o PostgreSQL armazena histórico e \textit{cache}. Os três \textit{containers Trino} correspondem às faixas de capacidade descritas na Seção~\ref{sec:algoritmo-decisao}, com limites distintos de memória e o mesmo catálogo \textit{Iceberg} REST, o que garante dados consistentes em qualquer destino.
 
-\begin{figure}[!tbp]
+\begin{figure}[H]
 	\centering
 	\caption{Componentes do \textit{DyraSQL} Core}
 	\label{fig:componentes-sistema}
-	\includegraphics[width=1.0\textwidth]{figuras/componentes.png}\\
+	\includegraphics[width=0.8\textwidth]{figuras/componentes.png}\\
 	\fonte{Elaborado pelo autor.}
 \end{figure}
 

@@ -5,10 +5,13 @@
 \usepackage{placeins}
 \usepackage{float}
 \usepackage{framed}
+\usepackage{needspace}
 \newcounter{algoritmo}
 \newenvironment{blocoalgoritmo}[2]{%
   \par
   \addvspace{0.8cm}%
+  % garante que o titulo fique na mesma pagina do inicio do quadro
+  \needspace{8\baselineskip}%
   {\centering
     \refstepcounter{algoritmo}%
     \textbf{Algoritmo \thealgoritmo{} - #1}%
