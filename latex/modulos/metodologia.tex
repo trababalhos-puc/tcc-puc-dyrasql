@@ -32,7 +32,7 @@ A Figura \ref{fig:containers-sistema} detalha os \textit{containers}: o \textit{
 	\centering
 	\caption{Componentes do \textit{DyraSQL} Core}
 	\label{fig:componentes-sistema}
-	\includegraphics[width=0.8\textwidth]{figuras/componentes.png}\\
+	\includegraphics[width=0.9\textwidth]{figuras/componentes.png}\\
 	\fonte{Elaborado pelo autor.}
 \end{figure}
 
@@ -217,7 +217,7 @@ Uma falha no \textit{small} ou no \textit{medium} indica possível subdimensiona
 S = 0,5 \times 0,71 + 0,3 \times 0,69 + 0,2 \times 0,5 = 0,66
 \end{equation}
 
-Com \textit{Score} de 0,66, a consulta é direcionada para o \textit{cluster medium} (faixa 0,6 a 0,7), valor idêntico ao retornado pela API do \textit{DyraSQL Core} no ambiente local. O Algoritmo \ref{alg:roteamento-dinamico} apresenta o pseudocódigo do fluxo completo, da verificação de \textit{cache} à seleção do \textit{cluster}.
+Com \textit{Score} de 0,66, a consulta vai ao \textit{medium}, como retornado pela API no ambiente local. O Algoritmo \ref{alg:roteamento-dinamico} apresenta o pseudocódigo completo.
 
 \begin{blocoalgoritmo}{Roteamento Dinâmico de Consultas}{alg:roteamento-dinamico}
 \begin{framed}

@@ -2,11 +2,11 @@
 \section{Experimentos e Resultados}
 \label{sec:experimentos}
 
-Esta seção apresenta o ambiente e o protocolo experimental, os resultados da classificação das consultas comparados à execução real em cada \textit{cluster}, a calibração dos parâmetros, a latência da decisão e os ensaios do histórico e do \textit{cache}. Todos os valores foram medidos na \textit{stack} local e se referem a um conjunto sintético de consultas; não se trata de uma avaliação de isolamento sob concorrência.
+Esta seção avalia a classificação das consultas, comparada à execução real em cada \textit{cluster}, com valores medidos na \textit{stack} local sobre um conjunto sintético; não se trata de uma avaliação de isolamento sob concorrência.
 
 \subsection{Ambiente de Teste}
 
-Os experimentos foram conduzidos em ambiente local orquestrado por Docker Compose, em uma máquina com 12 núcleos e 8 GB de memória disponíveis para os \textit{containers}, com tabelas \textit{Apache Iceberg} no MinIO e catálogo REST compartilhado pelos \textit{clusters} \textit{Trino} 484. Utilizou-se a Tabela \ref{tab:dataset-teste} e a tabela de dimensão \textit{tenant\_info}, com 50 linhas. Os dados foram carregados antes das medições e permaneceram inalterados. A Tabela \ref{tab:ambiente-teste} apresenta os componentes e a capacidade de cada \textit{cluster}.
+Os experimentos foram conduzidos em ambiente local orquestrado por Docker Compose, em uma máquina com 12 núcleos e 8 GB de memória disponíveis para os \textit{containers}, com tabelas \textit{Apache Iceberg} no MinIO e catálogo REST compartilhado pelos \textit{clusters} \textit{Trino} 484. Utilizou-se a Tabela \ref{tab:dataset-teste} e a tabela de dimensão \textit{tenant\_info}, com 50 linhas. Os dados foram carregados antes das medições e permaneceram inalterados. Cada \textit{cluster} é composto por um único nó, que acumula as funções de coordenador e de trabalhador, e os três utilizam a mesma imagem do \textit{Trino}, fixada por \textit{digest}, com a mesma configuração de catálogo; diferem apenas na memória da JVM, no limite de memória por consulta e no tempo máximo de execução, de 5, 15 e 30 minutos, respectivamente. Essa configuração garante que os três planejadores produzam as mesmas estimativas e que a diferença entre os destinos se resuma à capacidade, em proporção de 1 : 2 : 3 na memória por consulta. A Tabela \ref{tab:ambiente-teste} apresenta os componentes e a capacidade de cada \textit{cluster}.
 
 \begin{table}[H]
 	\centering
@@ -113,6 +113,6 @@ O ensaio sequencial do histórico informou falhas sucessivas pela API para a con
 
 \subsection{Limitações Identificadas}
 
-O \textit{dataset} é sintético, menor que os de produção e perfeitamente uniforme: 512.000 linhas em cada partição, 921.600 por \textit{tenant} e 90\% dos registros com \textit{status} ativo (Apêndice D), sem as assimetrias de cargas reais. A calibração utilizou 15 consultas elegíveis, e o elemento $M$ não detecta agrupamentos por chave de alta cardinalidade (C16), que exigiriam estatísticas de coluna. O indicador de sucesso é binário e não distingue falha por memória de erro de SQL, e o \textit{proxy} ainda não informa o resultado das execuções ao histórico.
+O \textit{dataset} é sintético e perfeitamente uniforme, com 512.000 linhas por partição (Apêndice D), sem as assimetrias de cargas reais. O elemento $M$ não detecta agrupamentos por chave de alta cardinalidade (C16), o indicador de sucesso não distingue falha por memória de erro de SQL, e o \textit{proxy} ainda não informa o resultado das execuções ao histórico.
 
 Quanto à validade, os \textit{clusters} diferem apenas na memória, e não no número de nós; em uma implantação real, \textit{clusters} maiores teriam mais processadores, o que poderia alterar a referência das varreduras. Por fim, as consultas foram executadas isoladamente, sem concorrência; os resultados validam a escolha prévia do destino, mas não demonstram isolamento entre consultas simultâneas nem ganho de vazão.
