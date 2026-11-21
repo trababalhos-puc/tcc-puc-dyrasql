@@ -2,11 +2,11 @@
 \section{Experimentos e Resultados}
 \label{sec:experimentos}
 
-Esta seção apresenta o ambiente empregado na avaliação do \textit{DyraSQL}, o protocolo experimental, os resultados das decisões de roteamento comparadas à execução real em cada \textit{cluster}, a calibração dos parâmetros do Algoritmo de decisão e a latência da decisão. Todos os valores apresentados foram medidos na \textit{stack} local.
+Esta seção apresenta o ambiente e o protocolo experimental, os resultados da classificação das consultas comparados à execução real em cada \textit{cluster}, a calibração dos parâmetros, a latência da decisão e os ensaios do histórico e do \textit{cache}. Todos os valores foram medidos na \textit{stack} local e se referem a um conjunto sintético de consultas; não se trata de uma avaliação de isolamento sob concorrência.
 
 \subsection{Ambiente de Teste}
 
-Os experimentos foram conduzidos em ambiente local orquestrado por Docker Compose, em uma máquina com 12 núcleos e 8 GB de memória disponíveis para os \textit{containers}, com tabelas \textit{Apache Iceberg} armazenadas no MinIO e catálogo REST compartilhado pelos \textit{clusters} \textit{Trino}. Utilizou-se a Tabela \ref{tab:dataset-teste}, com 46.080.000 linhas, e a tabela de dimensão \textit{tenant\_info}, com 50 linhas. Os dados foram carregados antes das medições e permaneceram inalterados durante todo o experimento, de modo que as diferenças de tempo entre os \textit{clusters} refletem apenas a capacidade de cada um. A Tabela \ref{tab:ambiente-teste} apresenta os componentes e a capacidade de cada \textit{cluster}.
+Os experimentos foram conduzidos em ambiente local orquestrado por Docker Compose, em uma máquina com 12 núcleos e 8 GB de memória disponíveis para os \textit{containers}, com tabelas \textit{Apache Iceberg} no MinIO e catálogo REST compartilhado pelos \textit{clusters} \textit{Trino} 484. Utilizou-se a Tabela \ref{tab:dataset-teste} e a tabela de dimensão \textit{tenant\_info}, com 50 linhas. Os dados foram carregados antes das medições e permaneceram inalterados. A Tabela \ref{tab:ambiente-teste} apresenta os componentes e a capacidade de cada \textit{cluster}.
 
 \begin{table}[H]
 	\centering
@@ -28,21 +28,21 @@ Os experimentos foram conduzidos em ambiente local orquestrado por Docker Compos
 	\fonte{Elaborado pelo autor.}
 \end{table}
 
-Os três \textit{clusters} compartilham o mesmo catálogo e o mesmo \textit{warehouse}, de modo que a escolha do destino altera apenas a capacidade de processamento. A capacidade por consulta (\texttt{query.\allowbreak max-memory}) é o limite que, quando excedido, faz o \textit{Trino} abortar a consulta com erro de memória. Com os três \textit{clusters} ativos simultaneamente, a soma das memórias excedeu os 8 GB da máquina e o \textit{cluster large} foi encerrado pelo sistema operacional; por isso, as execuções foram feitas com um \textit{cluster} ativo por vez, o que também evita que um \textit{cluster} dispute processador com outro durante a medição.
+Os \textit{clusters} compartilham catálogo e \textit{warehouse}, e a escolha do destino altera apenas a capacidade. Com os três ativos simultaneamente, a soma das memórias excedeu a da máquina; por isso, cada \textit{cluster} foi medido sozinho, o que também evita disputa de processador entre eles.
 
 \subsection{Protocolo Experimental}
 
-Foram elaboradas 18 consultas sobre as duas tabelas, descritas na Tabela \ref{tab:benchmark}, cobrindo três perfis: consultas leves sobre poucas partições (C01 a C06), varreduras e agregações sobre a tabela inteira (C07 a C12), e consultas com operadores intensivos em memória, como \textit{COUNT DISTINCT}, funções de janela, agrupamento por chave de alta cardinalidade e \textit{self-join} (C13 a C18). Para cada consulta, registrou-se a decisão do \textit{DyraSQL} (fatores, \textit{Score} e \textit{cluster}), obtida pela API com \textit{cache} vazio (\textit{cache miss}) e, em seguida, com a decisão já armazenada (\textit{cache hit}), medindo a latência de cada chamada. Registrou-se também o tempo de execução da consulta em cada um dos três \textit{clusters}, ou a falha, quando ocorrida. A partir desses tempos, definiu-se o \textit{cluster} de referência, de forma independente do \textit{DyraSQL}, como o menor \textit{cluster} que executa a consulta sem falha em até 1,5 vez o melhor tempo entre os três.
+Foram elaboradas 18 consultas, descritas na Tabela \ref{tab:benchmark}, em três perfis: consultas leves sobre poucas partições (C01 a C06), varreduras e agregações sobre a tabela inteira (C07 a C12) e consultas com operadores intensivos em memória (C13 a C18). Em cada \textit{cluster}, cada consulta teve uma execução de aquecimento descartada e cinco repetições, cuja mediana é o tempo considerado; uma consulta só é viável se não falhou em nenhuma repetição. A decisão foi medida cinco vezes sem e cinco com \textit{cache}, e as 18 decisões foram idênticas em todas as repetições (detalhes no Apêndice D).
 
-O critério de referência expressa o objetivo do trabalho: utilizar o menor ambiente capaz de atender a consulta sem degradação relevante. Uma decisão abaixo da referência é um \textbf{subdimensionamento}, o erro mais grave, pois a consulta falha ou degrada; uma decisão acima é um \textbf{superdimensionamento}, que desperdiça capacidade, mas não compromete a execução. Três consultas (C14, C16 e C18) falharam por memória nos três \textit{clusters} e não possuem referência; elas foram mantidas na tabela, mas excluídas das taxas de acerto, que consideram as 15 consultas restantes.
+O \textit{cluster} de referência foi definido, de forma independente do \textit{DyraSQL}, como o menor \textit{cluster} viável cuja mediana não excede 1,5 vez a melhor mediana entre os três. Seu efeito foi avaliado por análise de sensibilidade (Subseção \ref{sec:calibracao}). Uma decisão abaixo da referência é um \textbf{subdimensionamento}, o erro mais grave, pois a consulta falha ou degrada; uma decisão acima é um \textbf{superdimensionamento}, que desperdiça capacidade sem comprometer a execução.
 
 \subsection{Resultados do Roteamento}
 
-A Tabela \ref{tab:benchmark} apresenta, para cada consulta, a decisão do Algoritmo em sua formulação original, a decisão após a calibração descrita na Subseção \ref{sec:calibracao}, o \textit{cluster} de referência e os tempos medidos. A comparação entre a coluna de referência e as colunas de destino indica, consulta a consulta, se a decisão acertou, superdimensionou ou subdimensionou o ambiente. As colunas de tempo mostram por que a referência foi atribuída: para as consultas leves e as varreduras, os três \textit{clusters} têm tempos semelhantes, enquanto as consultas intensivas em memória falham nos \textit{clusters} menores.
+A Tabela \ref{tab:benchmark} apresenta, para cada consulta, a decisão nas formulações original e calibrada, o \textit{cluster} de referência e as medianas de tempo. As duas formulações usam faixas distintas: a original classifica com limiares 0,3 e 0,7 e sem o elemento $M$, e a calibrada com 0,6 e 0,7 e com $M$, de modo que um mesmo \textit{Score} pode levar a destinos diferentes.
 
 \begin{table}[H]
 	\centering
-	\caption{Decisões de roteamento e execução real nos três \textit{clusters}}
+	\caption{Decisões de roteamento e mediana do tempo de execução nos três \textit{clusters}}
 	\label{tab:benchmark}
 	\footnotesize
 	\begin{tabular}{llccccrrr}
@@ -50,45 +50,43 @@ A Tabela \ref{tab:benchmark} apresenta, para cada consulta, a decisão do Algori
 	& & \multicolumn{2}{c}{\textbf{Original}} & \textbf{Calibrado} & & \multicolumn{3}{c}{\textbf{Tempo (s)}} \\
 	\textbf{ID} & \textbf{Consulta} & $S$ & \textbf{Dest.} & $S$ / \textbf{Dest.} & \textbf{Ref.} & \textbf{S} & \textbf{M} & \textbf{L} \\
 	\hline
-	C01 & contagem na dimensão & 0,16 & S & 0,16 / S & S & 1,46 & 2,33 & 2,34 \\
-	C02 & filtro na dimensão & 0,15 & S & 0,15 / S & S & 0,51 & 0,68 & 0,80 \\
-	C03 & soma em 1 partição & 0,33 & M & 0,33 / S & S & 0,51 & 0,74 & 0,61 \\
-	C04 & agrupamento em 3 partições & 0,37 & M & 0,37 / S & S & 0,52 & 0,73 & 0,51 \\
-	C05 & \textit{join} em 1 partição & 0,41 & M & 0,41 / S & S & 0,55 & 0,83 & 0,71 \\
-	C06 & mín./máx. em 7 partições & 0,44 & M & 0,44 / S & S & 0,64 & 0,63 & 0,60 \\
-	C07 & soma na tabela inteira & 0,50 & M & 0,50 / S & S & 3,45 & 3,50 & 4,00 \\
-	C08 & agrupamento por \textit{status} & 0,54 & M & 0,54 / S & S & 4,10 & 3,22 & 2,96 \\
-	C09 & \textit{join} e agrupamento & 0,59 & M & 0,59 / S & S & 3,42 & 3,44 & 3,13 \\
-	C10 & agregação diária em 1 mês & 0,49 & M & 0,49 / S & S & 1,85 & 2,53 & 1,52 \\
-	C11 & \textit{join} por categoria & 0,58 & M & 0,58 / S & S & 3,32 & 4,68 & 3,07 \\
-	C12 & subconsulta escalar & 0,56 & M & 0,56 / S & S & 3,02 & 4,31 & 3,17 \\
-	C13 & \textit{COUNT DISTINCT} em 1 mês & 0,52 & M & 0,75 / L & L & falha & falha & 6,86 \\
+	C01 & contagem na dimensão & 0,16 & S & 0,16 / S & S & 0,09 & 0,12 & 0,12 \\
+	C02 & filtro na dimensão & 0,15 & S & 0,15 / S & S & 0,07 & 0,13 & 0,12 \\
+	C03 & soma em 1 partição & 0,33 & M & 0,33 / S & S & 0,14 & 0,22 & 0,18 \\
+	C04 & agrupamento em 3 partições & 0,37 & M & 0,37 / S & S & 0,18 & 0,26 & 0,21 \\
+	C05 & \textit{join} em 1 partição & 0,41 & M & 0,41 / S & S & 0,15 & 0,30 & 0,29 \\
+	C06 & mín./máx. em 7 partições & 0,44 & M & 0,44 / S & S & 0,34 & 0,36 & 0,28 \\
+	C07 & soma na tabela inteira & 0,50 & M & 0,50 / S & S & 2,49 & 2,52 & 2,24 \\
+	C08 & agrupamento por \textit{status} & 0,54 & M & 0,54 / S & S & 2,21 & 1,93 & 2,18 \\
+	C09 & \textit{join} e agrupamento & 0,59 & M & 0,59 / S & S & 2,04 & 1,91 & 1,99 \\
+	C10 & agregação diária em 1 mês & 0,49 & M & 0,49 / S & S & 0,99 & 0,74 & 0,74 \\
+	C11 & \textit{join} por categoria & 0,58 & M & 0,58 / S & S & 2,33 & 2,05 & 1,82 \\
+	C12 & subconsulta escalar & 0,56 & M & 0,56 / S & S & 2,25 & 1,99 & 1,72 \\
+	C13 & \textit{COUNT DISTINCT} em 1 mês & 0,52 & M & 0,75 / L & L & falha & falha & 4,82 \\
 	C14 & \textit{COUNT DISTINCT} total & 0,56 & M & 0,79 / L & -- & falha & falha & falha \\
-	C15 & função de janela & 0,56 & M & 0,78 / L & L & falha & falha & 29,04 \\
+	C15 & função de janela & 0,56 & M & 0,78 / L & L & falha & falha & 27,81 \\
 	C16 & agrupamento por chave única & 0,60 & M & 0,60 / M & -- & falha & falha & falha \\
-	C17 & \textit{self-join} em 2 semanas & 0,60 & M & 0,83 / L & M & falha & 12,52 & 10,82 \\
+	C17 & \textit{self-join} em 2 semanas & 0,60 & M & 0,83 / L & M & falha\textsuperscript{*} & 7,99 & 8,32 \\
 	C18 & \textit{self-join} total & 0,59 & M & 0,82 / L & -- & falha & falha & falha \\
 	\hline
 	\end{tabular}
-	\fonte{Elaborado pelo autor. S, M e L: \textit{small}, \textit{medium} e \textit{large}. Falha: limite de memória excedido.}
+	\fonte{Elaborado pelo autor. S, M e L: \textit{small}, \textit{medium} e \textit{large}. Original: limiares 0,3/0,7, sem $M$; Calibrado: 0,6/0,7, com $M$. Tempos: mediana de 5 repetições após aquecimento; coeficiente de variação de até 0,29 (Apêndice D). Falha: limite de memória excedido. \textsuperscript{*}Falhou em 1 das 5 repetições.}
 \end{table}
 
-Na formulação original, com limiares 0,3 e 0,7 e sem operadores intensivos em memória, o Algoritmo acertou o \textit{cluster} de referência em apenas 3 das 15 consultas (20\%). Superdimensionou 10 consultas, encaminhando ao \textit{medium} varreduras que o \textit{small} executa no mesmo tempo, e subdimensionou 2 (C13 e C15), que falham por memória no \textit{medium} e só executam no \textit{large}. Nenhum \textit{Score} ultrapassou 0,61, de modo que o \textit{cluster large} nunca foi escolhido.
+Na formulação original, o Algoritmo acertou a referência em 3 das 15 consultas elegíveis (de 18 estudadas), superdimensionou 10 e subdimensionou 2 (C13 e C15), que falham por memória no \textit{medium}; nenhum \textit{Score} ultrapassou 0,61, e o \textit{large} nunca foi escolhido. A causa aparece na comparação entre C07 e C13: na formulação original, ambas têm $f_v \approx 0,77$ e $f_c \approx 0,08$, mas a soma de C07 executa no \textit{small} em 2,49 s, enquanto o \textit{COUNT DISTINCT} de C13 excede a memória do \textit{medium}. O volume lido não determina, sozinho, a necessidade de recursos, o que motivou o elemento $M$.
 
-A Tabela \ref{tab:benchmark} evidencia a causa. As consultas C07 (soma sobre a tabela inteira) e C13 (\textit{COUNT DISTINCT} sobre um mês) têm Fator volume e Fator complexidade praticamente iguais na formulação original ($f_v \approx 0,77$ e $f_c \approx 0,08$), mas a primeira executa no \textit{small} em 3,45 s e a segunda excede a memória do \textit{medium}. O volume lido não determina, sozinho, a necessidade de recursos: uma soma processa os dados em fluxo, com memória constante, enquanto um \textit{COUNT DISTINCT} precisa manter em memória todos os valores distintos já vistos. Essa observação motivou a inclusão dos operadores intensivos em memória no Fator complexidade, descrita na Seção \ref{sec:metodologia}.
+Por perfil, nas consultas leves e nas varreduras (C01 a C12) o \textit{small} ficou dentro da tolerância do melhor tempo em todos os casos, de modo que um \textit{cluster} maior ocuparia capacidade sem ganho relevante. Nas consultas intensivas em memória, a diferença é de viabilidade: C13 e C15 só executam no \textit{large}, e C17 executa de forma estável a partir do \textit{medium}, tendo falhado em 1 das 5 repetições no \textit{small}. O único erro da configuração calibrada, C17, ilustra o limite do elemento $M$, que registra a presença do operador, e não o volume sobre o qual atua: o \textit{self-join} de duas semanas e o da tabela inteira (C18) recebem o mesmo acréscimo.
 
-A análise por perfil reforça essa interpretação. Nas consultas leves (C01 a C06), o \textit{small} foi o mais rápido ou ficou a menos de 0,1 s do melhor tempo; nas varreduras (C07 a C12), o maior ganho de um \textit{cluster} maior foi de 28\% em C08, dentro da tolerância adotada. Nesses perfis, um \textit{cluster} maior ocupa capacidade sem ganho relevante de tempo. Já nas consultas intensivas em memória, a diferença não é de tempo, mas de viabilidade: C13 e C15 só executam no \textit{large}, e C17 só a partir do \textit{medium}.
-
-O único erro da configuração calibrada, C17, ilustra o limite do elemento $M$: o \textit{self-join} restrito a duas semanas executou no \textit{medium}, enquanto o mesmo \textit{self-join} sobre a tabela inteira (C18) falhou nos três \textit{clusters}, mas ambos recebem o mesmo acréscimo, pois $M$ registra a presença do operador, e não o volume sobre o qual atua. Ponderar $M$ pelo volume estimado é uma evolução natural do Algoritmo.
+As consultas C14, C16 e C18 falharam nos três \textit{clusters} e, por não terem referência, foram excluídas das taxas de acerto; portanto, 14 acertos em 15 elegíveis não equivalem a 14 de 18 consultas bem atendidas. O \textit{DyraSQL} encaminha essas consultas ao \textit{large} (C14 e C18) ou ao \textit{medium} (C16), onde falham, pois o Algoritmo não possui uma classe ``sem destino viável''. Após a falha, o piso do histórico as eleva até o \textit{large}, sem evitar a falha. Tratar esses casos, por exemplo rejeitando a consulta ou recorrendo a mecanismos de \textit{spill} em disco, permanece como trabalho futuro.
 
 \subsection{Calibração dos Parâmetros}
 \label{sec:calibracao}
 
-Para justificar empiricamente os pesos, os limiares e o coeficiente $c_m$, os fatores medidos foram submetidos a uma busca em grade: $w_1$, $w_2$ e $w_3$ variando de 0 a 1 em passos de 0,05 (com soma 1), limiares de 0 a 1 em passos de 0,05 e $c_m \in \{0,25; 0,5; 1,0; 1,5; 2,0\}$. Entre as configurações sem nenhum subdimensionamento, escolheu-se a de maior acerto e, em caso de empate, a mais próxima da configuração original. A Tabela \ref{tab:calibracao} compara os resultados.
+Os fatores medidos foram submetidos a uma busca em grade: $w_1$, $w_2$ e $w_3$ de 0 a 1 em passos de 0,05 (com soma 1), limiares de 0 a 1 em passos de 0,05 e $c_m \in \{0,25; 0,5; 1,0; 1,5; 2,0\}$. Entre as configurações sem subdimensionamento, escolheu-se a de maior acerto e, em empate, a mais próxima da original. A Tabela \ref{tab:calibracao} resume os resultados, e o Apêndice D detalha a validação.
 
 \begin{table}[H]
 	\centering
-	\caption{Calibração dos parâmetros do Algoritmo de decisão}
+	\caption{Calibração dos parâmetros do Algoritmo de decisão (15 consultas elegíveis)}
 	\label{tab:calibracao}
 	\begin{tabular}{lccccc}
 	\hline
@@ -97,20 +95,24 @@ Para justificar empiricamente os pesos, os limiares e o coeficiente $c_m$, os fa
 	Original & 0,5 / 0,3 / 0,2 & 0,3 / 0,7 & -- & 3/15 & 2 \\
 	Melhor sem $M$ & qualquer & -- & -- & $\leq$ 9/15\textsuperscript{*} & 0 \\
 	Calibrada & 0,5 / 0,3 / 0,2 & 0,6 / 0,7 & 1,5 & 14/15 & 0 \\
-	Calibrada (\textit{leave-one-out}) & -- & -- & -- & 13/15 & -- \\
+	\textit{Leave-one-out} & por \textit{fold} & por \textit{fold} & por \textit{fold} & 13/15 & 1 \\
 	\hline
 	\end{tabular}
-	\fonte{Elaborado pelo autor. \textsuperscript{*}Sem o elemento $M$, nenhuma combinação de pesos e limiares supera 9 acertos sem subdimensionar; permitindo subdimensionamento, o máximo é 13, sempre falhando em C13 e C15.}
+	\fonte{Elaborado pelo autor. \textsuperscript{*}Sem o elemento $M$, nenhuma combinação supera 9 acertos sem subdimensionar.}
 \end{table}
 
-Três resultados se destacam. Primeiro, sem o elemento $M$, nenhum ajuste de pesos e limiares resolve o problema: a melhor configuração sem subdimensionamento acerta 9 das 15 consultas, e as que acertam mais sempre falham em C13 e C15. Isso mostra que a limitação estava nas características consideradas, e não na escolha dos coeficientes. Segundo, com o elemento $M$, a melhor configuração mantém exatamente os pesos originais (0,5 / 0,3 / 0,2), alterando apenas o limiar do \textit{small} para 0,6, e atinge 14 acertos em 15, sem subdimensionamento. O único erro (C17) é um superdimensionamento, encaminhado ao \textit{large} quando o \textit{medium} bastaria. Terceiro, para avaliar se a calibração apenas memoriza as 15 consultas, aplicou-se validação cruzada \textit{leave-one-out}: cada consulta foi classificada pela configuração calibrada sobre as outras 14, resultando em 13 acertos em 15, o que indica que o resultado se sustenta em consultas não utilizadas no ajuste. A configuração calibrada foi aplicada ao \textit{DyraSQL Core} e as 18 decisões foram refeitas pela API, reproduzindo exatamente os valores da coluna ``Calibrado'' da Tabela \ref{tab:benchmark}.
+Sem o elemento $M$, nenhum ajuste de pesos e limiares evita os subdimensionamentos, o que indica que a limitação estava nas características consideradas, e não nos coeficientes. Com $M$, a melhor configuração mantém os pesos originais e altera apenas o limiar do \textit{small}, atingindo 14 acertos em 15 elegíveis, sem subdimensionamento. Na validação \textit{leave-one-out}, para cada consulta a busca em grade completa (pesos, limiares e $c_m$) foi refeita apenas com as outras 14, e a configuração obtida classificou a consulta excluída: houve 13 acertos e 1 subdimensionamento, em C13, pois, sem ela, apenas C15 representa os operadores intensivos que exigem o \textit{large}. A escolha do elemento $M$ e do conjunto de valores de $c_m$, porém, foi feita sobre todas as consultas e não é refeita por \textit{fold}, o que pode tornar o resultado otimista. Trata-se, portanto, de evidência preliminar dentro do conjunto estudado, e não de generalização para outras bases ou cargas.
 
-\subsection{Latência da Decisão e \textit{Cache}}
+Quanto à tolerância do critério de referência, a configuração calibrada obtém 14 acertos em 15, sem subdimensionamento, tanto com 1,5 vez quanto com 2 vezes o melhor tempo. Com 1,25 vez, C10, C11 e C12 passam a ter o \textit{medium} como referência, por serem de 28\% a 34\% mais lentas no \textit{small}, e o acerto cai para 11 em 15, com esses 3 casos subdimensionados. O resultado é, portanto, sensível a tolerâncias mais estritas.
 
-Com \textit{cache} vazio, a decisão levou entre 131 e 1.912 ms, com mediana de 181 ms, tempo dominado pela chamada ao \textit{EXPLAIN (TYPE IO)}; os valores mais altos ocorreram em consultas com subconsultas, cujo planejamento é mais custoso. Com a decisão armazenada, a latência caiu para 3,5 a 26 ms, com mediana de 7 ms, e todas as 18 reexecuções retornaram a decisão do \textit{cache} sem nova chamada ao \textit{Trino}. Para comparação, as consultas pesadas da Tabela \ref{tab:benchmark} levam de 3 a 29 s, de modo que o custo da decisão é pequeno diante do custo de uma execução no \textit{cluster} errado, que pode ser a falha da consulta. Nas consultas leves (0,5 a 1,5 s), os 181 ms sem \textit{cache} são perceptíveis, mas com \textit{cache} o acréscimo cai para 7 ms, menos de 2\% da consulta mais rápida.
+\subsection{Latência da Decisão, Histórico e \textit{Cache}}
+
+Nas 90 medidas com \textit{cache} vazio, a decisão levou 83 ms na mediana, 114 ms no percentil 90, 125 ms no percentil 95 e 160 ms no máximo, tempo dominado pela chamada ao \textit{EXPLAIN (TYPE IO)}; com a decisão armazenada, 5 ms na mediana e 24 ms no percentil 95. Esses valores se referem à API do \textit{DyraSQL Core} e não incluem o percurso pelo \textit{proxy} e pelo \textit{gateway}.
+
+O ensaio sequencial do histórico informou falhas sucessivas pela API para a consulta C09. A decisão inicial foi \textit{small} ($S = 0,59$); após falha no \textit{small}, \textit{medium} ($f_h = 1,0$, $S = 0,69$); após falha no \textit{medium}, \textit{large}, com o mesmo $S = 0,69$, alcançado graças ao piso, pois o \textit{Score} permaneceria na faixa do \textit{medium}; após falha no \textit{large}, o destino foi mantido. No ensaio do \textit{cache}, a mesma estrutura com filtro de um dia e de um trimestre gerou \textit{fingerprints} distintos e fatores de volume de 0,41 e 0,81, sem reaproveitamento indevido da decisão.
 
 \subsection{Limitações Identificadas}
 
-O \textit{dataset} sintético é menor que os de produção, e a calibração utilizou 15 consultas; embora a validação \textit{leave-one-out} indique que o resultado não se limita às consultas do ajuste, um conjunto maior é necessário para generalizar os parâmetros. O elemento $M$ não detecta agrupamentos por chave de alta cardinalidade (C16), pois a cardinalidade de uma coluna não é visível na estrutura da consulta e exigiria estatísticas de coluna, como as do \textit{Iceberg}. O indicador de sucesso da execução é binário e não distingue falha por memória de erro de SQL, e metadados desatualizados reduzem a qualidade das estimativas. Também não há \textit{fallback} para quando o \textit{EXPLAIN (TYPE IO)} não responde, condição não observada nos testes.
+O \textit{dataset} é sintético, menor que os de produção e perfeitamente uniforme: 512.000 linhas em cada partição, 921.600 por \textit{tenant} e 90\% dos registros com \textit{status} ativo (Apêndice D), sem as assimetrias de cargas reais. A calibração utilizou 15 consultas elegíveis, e o elemento $M$ não detecta agrupamentos por chave de alta cardinalidade (C16), que exigiriam estatísticas de coluna. O indicador de sucesso é binário e não distingue falha por memória de erro de SQL, e o \textit{proxy} ainda não informa o resultado das execuções ao histórico.
 
-Quanto à validade, os três \textit{clusters} executaram na mesma máquina e diferem apenas na memória, e não no número de nós; em uma implantação real, \textit{clusters} maiores teriam mais processadores e tenderiam a acelerar as varreduras, o que poderia alterar a referência de algumas delas. A tolerância de 1,5 vez é uma escolha, e valores diferentes deslocariam consultas entre faixas. Por fim, as consultas foram executadas sem concorrência, de modo que o efeito do roteamento sobre a disputa por recursos entre consultas simultâneas não foi medido diretamente. O histórico foi esvaziado antes das medições, de modo que o Fator histórico ($f_h = 0,5$) não foi avaliado experimentalmente.
+Quanto à validade, os \textit{clusters} diferem apenas na memória, e não no número de nós; em uma implantação real, \textit{clusters} maiores teriam mais processadores, o que poderia alterar a referência das varreduras. Por fim, as consultas foram executadas isoladamente, sem concorrência; os resultados validam a escolha prévia do destino, mas não demonstram isolamento entre consultas simultâneas nem ganho de vazão.

@@ -76,6 +76,7 @@ class HistoryManager:
                 SELECT cluster, score, factors, created_at
                 FROM routing_decisions
                 WHERE fingerprint = %s AND expires_at > NOW()
+                  AND (success IS NULL OR success = TRUE)
                 """,
                 (fingerprint,),
             )
@@ -173,15 +174,15 @@ class HistoryManager:
         finally:
             cursor.close()
 
-    def get_historical_factor(self, fingerprint, query):
+    def _previous_execution(self, fingerprint):
+        """Retorna (cluster, score, success) da ultima decisao para o fingerprint."""
         cursor = self._cursor()
         if cursor is None:
-            return 0.5
-
+            return None
         try:
             cursor.execute(
                 """
-                SELECT score, success
+                SELECT cluster, score, success
                 FROM routing_decisions
                 WHERE fingerprint = %s
                 """,
@@ -189,21 +190,48 @@ class HistoryManager:
             )
             row = cursor.fetchone()
             if not row:
-                return 0.5
-
-            previous_score = float(row["score"] or 0.5)
-            success = row["success"]
-            if success is False:
-                medium_threshold = float(os.getenv("DYRASQL_MEDIUM_THRESHOLD", "0.7"))
-                if previous_score > medium_threshold:
-                    return 0.5
-                return 1.0 - previous_score
-            return previous_score
+                return None
+            return row["cluster"], float(row["score"] or 0.5), row["success"]
         except Exception as exc:
-            logger.warning("Erro ao calcular fator historico: %s", exc)
-            return 0.5
+            logger.warning("Erro ao consultar historico: %s", exc)
+            return None
         finally:
             cursor.close()
+
+    def get_historical_factor(self, fingerprint, query):
+        """
+        Fator historico:
+          - sem historico ou sem resultado registrado: 0,5 (neutro);
+          - execucao anterior bem-sucedida: score anterior (reforca a faixa);
+          - falha no small ou medium: 1,0 (eleva o score; ver get_minimum_cluster);
+          - falha no large: 0,5 (a causa tende a ser outra que nao a capacidade).
+        """
+        previous = self._previous_execution(fingerprint)
+        if previous is None:
+            return 0.5
+        cluster, previous_score, success = previous
+        if success is None:
+            return 0.5
+        if success:
+            return previous_score
+        if cluster in ("small", "medium"):
+            return 1.0
+        return 0.5
+
+    def get_minimum_cluster(self, fingerprint):
+        """
+        Piso de capacidade apos falha: o novo destino deve ser ao menos o cluster
+        imediatamente superior ao que falhou (ou o proprio large, se a falha
+        ocorreu nele). Retorna None quando nao ha piso.
+        """
+        previous = self._previous_execution(fingerprint)
+        if previous is None:
+            return None
+        cluster, _, success = previous
+        if success is False:
+            # falha no large: mantem o large, pois reduzir a capacidade nao corrige a falha
+            return {"small": "medium", "medium": "large", "large": "large"}.get(cluster)
+        return None
 
     def clear_cache(self):
         cursor = self._cursor()

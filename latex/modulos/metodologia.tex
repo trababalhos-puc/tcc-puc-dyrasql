@@ -8,7 +8,7 @@ Esta seção descreve como o \textit{DyraSQL} foi concebido e construído. Inici
 
 A arquitetura é composta por quatro componentes. O \textit{Query Analyzer} executa o \textit{EXPLAIN (TYPE IO)} do \textit{Trino} e analisa a estrutura da consulta. O \textit{Decision Engine} aplica o algoritmo de pontuação e seleciona o ambiente (\textit{small}, \textit{medium} ou \textit{large}). O \textit{Trino Gateway Proxy} intercepta as consultas, obtém a decisão do \textit{DyraSQL Core} e as encaminha ao \textit{cluster} selecionado por meio do \textit{Trino Gateway}. O \textit{Monitoring System} registra as execuções no histórico.
 
-\begin{figure}[H]
+\begin{figure}[!tbp]
 	\centering
 	\caption{Contexto do Sistema - DyraSQL}
 	\label{fig:contexto-sistema}
@@ -18,7 +18,7 @@ A arquitetura é composta por quatro componentes. O \textit{Query Analyzer} exec
 
 A Figura \ref{fig:contexto-sistema} apresenta o contexto do \textit{DyraSQL}: o analista submete consultas SQL, que o sistema encaminha aos \textit{clusters} \textit{Trino} sobre o \textit{data lake} local. Do ponto de vista do analista, o roteamento é transparente, pois a consulta é enviada a um único ponto de entrada e não precisa indicar o \textit{cluster} de destino nem ser reescrita. É essa transparência que permite substituir regras estáticas por decisões baseadas na demanda de cada consulta sem alterar a forma como os usuários trabalham.
 
-\begin{figure}[H]
+\begin{figure}[!tbp]
 	\centering
 	\caption{Containers do Sistema - \textit{DyraSQL}}
 	\label{fig:containers-sistema}
@@ -26,9 +26,9 @@ A Figura \ref{fig:contexto-sistema} apresenta o contexto do \textit{DyraSQL}: o 
 	\fonte{Elaborado pelo autor.}
 \end{figure}
 
-A Figura \ref{fig:containers-sistema} detalha os \textit{containers}: o \textit{Trino Gateway Proxy} intercepta as consultas, o \textit{Trino Gateway} atua como balanceador, o \textit{DyraSQL Core} decide o roteamento e o PostgreSQL armazena histórico e \textit{cache}. Os três \textit{containers Trino} correspondem às faixas de capacidade descritas na Seção~\ref{sec:algoritmo-decisao}, com limites distintos de memória e o mesmo catálogo \textit{Iceberg} REST, o que garante dados consistentes em qualquer destino. Todo o ambiente é declarado em um único arquivo do Docker Compose, o que permite reproduzi-lo em outra máquina e alterar a capacidade de cada \textit{cluster} apenas pela configuração.
+A Figura \ref{fig:containers-sistema} detalha os \textit{containers}: o \textit{Trino Gateway Proxy} intercepta as consultas, o \textit{Trino Gateway} atua como balanceador, o \textit{DyraSQL Core} decide o roteamento e o PostgreSQL armazena histórico e \textit{cache}. Os três \textit{containers Trino} correspondem às faixas de capacidade descritas na Seção~\ref{sec:algoritmo-decisao}, com limites distintos de memória e o mesmo catálogo \textit{Iceberg} REST, o que garante dados consistentes em qualquer destino.
 
-\begin{figure}[H]
+\begin{figure}[!tbp]
 	\centering
 	\caption{Componentes do \textit{DyraSQL} Core}
 	\label{fig:componentes-sistema}
@@ -36,11 +36,11 @@ A Figura \ref{fig:containers-sistema} detalha os \textit{containers}: o \textit{
 	\fonte{Elaborado pelo autor.}
 \end{figure}
 
-A Figura \ref{fig:componentes-sistema} apresenta os componentes internos do \textit{DyraSQL Core} e o fluxo da consulta, da interceptação ao registro no histórico. Ao receber uma consulta, o núcleo gera seu \textit{fingerprint} e verifica o \textit{cache}; na ausência de decisão válida, o \textit{Query Analyzer} obtém as estimativas de volume e a estrutura da consulta, o \textit{Decision Engine} calcula o \textit{Score} e a decisão é persistida no PostgreSQL antes de ser devolvida ao \textit{proxy}. Essa separação em módulos permite alterar os critérios de decisão sem modificar a interceptação ou a persistência. Como o \textit{cache} e o histórico ficam no PostgreSQL, o \textit{Query Analyzer} e o \textit{Decision Engine} não guardam estado entre requisições, e o núcleo pode ser replicado para atender mais consultas simultâneas.
+A Figura \ref{fig:componentes-sistema} apresenta os componentes internos do \textit{DyraSQL Core} e o fluxo da consulta, da interceptação ao registro no histórico. Ao receber uma consulta, o núcleo gera seu \textit{fingerprint} e verifica o \textit{cache}; na ausência de decisão válida, o \textit{Query Analyzer} obtém as estimativas de volume e a estrutura da consulta, o \textit{Decision Engine} calcula o \textit{Score} e a decisão é persistida no PostgreSQL antes de ser devolvida ao \textit{proxy}.
 
 \subsection{Extração de Metadados Relevantes}
 
-O \textit{EXPLAIN (TYPE IO)} do \textit{Trino} estima, sem executar a consulta, o volume a ser lido, retornando em \textit{JSON} o tamanho estimado em \textit{bytes} já considerando os filtros (\textit{outputSizeInBytes}), o número estimado de linhas (\textit{outputRowCount}), o custo de CPU (\textit{cpuCost}) e os filtros aplicados às colunas (\textit{columnConstraints}). A Tabela \ref{tab:siglas-calculo} apresenta as siglas utilizadas no Algoritmo de decisão.
+O \textit{EXPLAIN (TYPE IO)} do \textit{Trino} estima, sem executar a consulta, o volume a ser lido, retornando em \textit{JSON}, para cada tabela, uma estimativa do otimizador (\textit{estimate}) com o tamanho em \textit{bytes} já considerando os filtros (\textit{outputSizeInBytes}), o número de linhas (\textit{outputRowCount}) e o custo de CPU (\textit{cpuCost}), além dos filtros aplicados às colunas (\textit{columnConstraints}). O \textit{Score} utiliza apenas \textit{outputSizeInBytes} e \textit{outputRowCount}, somados entre as tabelas; um trecho real desse retorno é apresentado no Apêndice C. A Tabela \ref{tab:siglas-calculo} apresenta as siglas utilizadas no Algoritmo de decisão.
 
 \begin{table}[H]
 	\centering
@@ -148,14 +148,14 @@ A consulta possui 1 \textit{JOIN} com a tabela de dimensão \textit{tenant\_info
 
 O Algoritmo opera em duas fases. Na primeira, consulta o \textit{cache} no PostgreSQL pelo \textit{fingerprint} da consulta, obtido normalizando o SQL (minúsculas, espaços colapsados e literais substituídos por um marcador) e aplicando SHA-256, de modo que consultas estruturalmente idênticas com valores de filtro distintos reaproveitem a decisão. O \textit{cache} tem validade (\textit{TTL}) de 24 horas, pois o volume dos dados cresce com as ingestões. Na segunda fase, sem decisão válida, o sistema executa o \textit{EXPLAIN (TYPE IO)} e combina três fatores, volume, complexidade e histórico, no \textit{Score} da Equação \ref{eq:pontuacao}.
 
-Assim, duas consultas que diferem apenas na grafia, no espaçamento ou na data filtrada produzem o mesmo \textit{fingerprint}, favorecendo o reaproveitamento em consultas recorrentes, como as de painéis. Em contrapartida, consultas com a mesma estrutura e intervalos muito distintos, como um dia e um trimestre, também compartilham a decisão armazenada, embora leiam volumes diferentes; o \textit{TTL} limita, mas não elimina, esse efeito.
+Como salvaguarda, os literais dos filtros sobre colunas particionadas são preservados no \textit{fingerprint}, pois determinam o volume lido: consultas de mesma estrutura com intervalos distintos, como um dia e um trimestre, deixam de compartilhar a decisão, enquanto variações de outros filtros continuam reaproveitando-a. Decisões cuja execução foi registrada como falha também não são reutilizadas.
 
 \begin{equation}
 \label{eq:pontuacao}
 S = w_1 \times f_v + w_2 \times f_c + w_3 \times f_h
 \end{equation}
 
-\textit{Scores} menores que 0,6 são direcionados ao \textit{cluster small}, entre 0,6 e 0,7 ao \textit{medium} e maiores que 0,7 ao \textit{large}. Os pesos ($w_1 = 0,5$, $w_2 = 0,3$, $w_3 = 0,2$), os limiares e o coeficiente $c_m$ foram calibrados sobre execuções reais nos três \textit{clusters}, por busca em grade com validação cruzada (Seção \ref{sec:experimentos}).
+As faixas são: $S < 0,6$ para o \textit{cluster small}, $0,6 \leq S \leq 0,7$ para o \textit{medium} e $S > 0,7$ para o \textit{large}. Os pesos ($w_1 = 0,5$, $w_2 = 0,3$, $w_3 = 0,2$), os limiares e o coeficiente $c_m$ foram calibrados sobre execuções reais nos três \textit{clusters}, por busca em grade com validação cruzada (Seção \ref{sec:experimentos}).
 
 \subsubsection{Exemplo Prático de Cálculo}
 
@@ -165,10 +165,10 @@ O Fator volume (Equação \ref{eq:fator-volume}) normaliza logaritmicamente o ta
 
 \begin{equation}
 \label{eq:fator-volume}
-f_v = \left( \frac{\log(T_e)}{\log(T_{max})} \times 0,6 + \frac{\log(R_e)}{\log(R_{max})} \times 0,4 \right) \times (1 - F_o)
+f_v = \left( 0,6 \cdot \mathrm{clip}\!\left(\frac{\log T_e}{\log T_{max}}\right) + 0,4 \cdot \mathrm{clip}\!\left(\frac{\log R_e}{\log R_{max}}\right) \right) (1 - F_o), \quad \mathrm{clip}(x) = \min(1, \max(0, x))
 \end{equation}
 
-O tamanho é expresso em MB para que a escala comece em 1 MB; em GB, qualquer consulta abaixo de 1 GB teria logaritmo negativo e termo anulado, sem distinguir consultas de poucos e de centenas de \textit{megabytes}. Os tetos derivam da configuração do ambiente: $T_{max}$ é a memória máxima por consulta do maior \textit{cluster} (\texttt{query.\allowbreak max-memory} de 3 GB, ou 3.072 MB, no \textit{large}) e $R_{max}$ é o número de linhas da maior tabela (46.080.000), ambos ajustáveis a outro ambiente sem alteração do código. Aplicando a Equação \ref{eq:fator-volume} ao exemplo, obtém-se a Equação \ref{eq:fator-volume-exemplo}.
+O tamanho é expresso em MB, com $T_e = \max(1, \mathrm{tamanho})$ e $R_e = \max(1, \mathrm{linhas})$, de modo que volumes nulos resultam em termos iguais a zero; sem estimativas do \textit{EXPLAIN}, adota-se $f_v = 0,5$. Os tetos derivam da configuração do ambiente: $T_{max}$ é a memória máxima por consulta do maior \textit{cluster} (\texttt{query.\allowbreak max-memory} de 3 GB, ou 3.072 MB, no \textit{large}) e $R_{max}$ é o número de linhas da maior tabela (46.080.000). Bytes lidos e pico de memória são grandezas distintas, e $T_{max}$ não prevê o consumo de memória: serve como escala, ao fazer o termo de tamanho saturar quando o volume lido se iguala à capacidade do maior \textit{cluster}; a adequação dessa escala foi verificada empiricamente na calibração (Seção \ref{sec:experimentos}). Aplicando a Equação \ref{eq:fator-volume} ao exemplo, obtém-se a Equação \ref{eq:fator-volume-exemplo}.
 
 \begin{equation}
 \label{eq:fator-volume-exemplo}
@@ -191,7 +191,7 @@ f_c = \frac{1 \times 0,2 + 3 \times 0,15 + 2 \times 0,25 + 1 \times 0,02 + 2 \ti
 
 O Limite de complexidade mantém $f_c$ em $[0,1]$; $L_c = 2$ é o menor teto inteiro que não satura a consulta de referência (soma 1,37). O coeficiente $c_m = 1,5$ foi calibrado empiricamente: um operador intensivo em memória acrescenta 0,75 a $f_c$, o que foi necessário e suficiente para encaminhar ao \textit{large} as consultas que falham por memória nos \textit{clusters} menores.
 
-O Fator histórico é calculado com base em execuções anteriores da mesma consulta (mesmo \textit{fingerprint}), conforme a Tabela \ref{tab:fator-historico}. Sem histórico, o sistema utiliza o valor \textit{default} $0,5$, que representa neutralidade, de modo que a decisão passa a depender apenas de volume e complexidade. Quando a execução anterior foi bem-sucedida, o \textit{Score} prévio é reutilizado, reforçando a faixa de capacidade que já atendeu a consulta. O exemplo encontra-se na condição sem histórico.
+O Fator histórico é calculado com base em execuções anteriores da mesma consulta (mesmo \textit{fingerprint}), conforme a Tabela \ref{tab:fator-historico}. Sem histórico, o sistema utiliza o valor \textit{default} $0,5$, que representa neutralidade, de modo que a decisão passa a depender apenas de volume e complexidade. Quando a execução anterior foi bem-sucedida, o \textit{Score} prévio é reutilizado, reforçando a faixa que já atendeu a consulta. O exemplo encontra-se na condição sem histórico.
 
 \begin{table}[H]
 	\centering
@@ -201,16 +201,16 @@ O Fator histórico é calculado com base em execuções anteriores da mesma cons
 	\hline
 	\textbf{Condição} & \textbf{Valor de $f_h$} \\
 	\hline
-	Sem histórico disponível & $0,5$ \\
+	Sem histórico ou sem resultado registrado & $0,5$ \\
 	Execução anterior bem-sucedida & $S_p$ \\
-	Falha com $S_p \leq 0,7$ (\textit{small} ou \textit{medium}) & $1 - S_p$ \\
-	Falha com $S_p > 0,7$ (\textit{large}) & $0,5$ \\
+	Falha no \textit{small} ou no \textit{medium} & $1,0$ e piso no \textit{cluster} superior \\
+	Falha no \textit{large} & $0,5$ e piso no \textit{large} \\
 	\hline
 	\end{tabular}
 	\fonte{Elaborado pelo autor.}
 \end{table}
 
-Uma falha no \textit{small} ou \textit{medium} indica possível subdimensionamento, e $1 - S_p$ desloca a próxima decisão para uma faixa de maior capacidade. Uma falha no \textit{large} não justifica reduzir a capacidade, pois tende a ter outra causa, como erro na consulta; nesse caso, $f_h$ permanece neutro. Com os pesos calibrados ($w_1 = 0,5$, $w_2 = 0,3$, $w_3 = 0,2$) e $f_h = 0,5$, o Score final é calculado através da Equação \ref{eq:score-final}.
+Uma falha no \textit{small} ou no \textit{medium} indica possível subdimensionamento: $f_h$ assume o valor máximo e, como esse acréscimo nem sempre basta para cruzar o limiar seguinte, a nova decisão recebe um piso, não podendo ser inferior ao \textit{cluster} imediatamente acima do que falhou. Uma falha no \textit{large} não justifica reduzir a capacidade, pois tende a ter outra causa, como erro na consulta; $f_h$ permanece neutro e o piso mantém o \textit{large}. Com os pesos calibrados ($w_1 = 0,5$, $w_2 = 0,3$, $w_3 = 0,2$) e $f_h = 0,5$, o Score final é calculado através da Equação \ref{eq:score-final}.
 
 \begin{equation}
 \label{eq:score-final}
@@ -228,7 +228,8 @@ Entrada: consulta, acesso ao mecanismo de consulta (plano de
 
 1. Gerar fingerprint único da consulta
 2. Consultar o cache de decisões usando o fingerprint
-3. Se a decisão existir no cache e o TTL for válido, (*\pk{então}*)
+3. Se houver decisão no cache, com TTL válido e sem
+   falha registrada, (*\pk{então}*)
       Retornar o cluster armazenado
    Fim se
 4. Obter o plano de execução e os metadados junto ao
@@ -238,28 +239,29 @@ Entrada: consulta, acesso ao mecanismo de consulta (plano de
 6. Normalizar o fator de volume com base no tamanho de
    saída estimado
 7. Analisar a complexidade da consulta
-8. Consultar o histórico por consultas similares
-9. Calcular a pontuação utilizando a fórmula ponderada
-10. Se a pontuação for menor que 0.6, (*\pk{então}*)
+8. Consultar o histórico pelo mesmo fingerprint
+9. Calcular a pontuação S pela fórmula ponderada
+10. Se S < 0,6, (*\pk{então}*)
        Selecionar o cluster pequeno (small)
-    (*\pk{Senão}*) se a pontuação estiver entre 0.6 e 0.7, (*\pk{então}*)
+    (*\pk{Senão}*) se S <= 0,7, (*\pk{então}*)
        Selecionar o cluster médio (medium)
     (*\pk{Senão}*)
        Selecionar o cluster grande (large)
     Fim se
-11. Salvar a decisão e as métricas no histórico de roteamento
-12. Retornar o cluster selecionado e a pontuação calculada
+11. Se houve falha anterior, elevar o cluster ao piso
+12. Salvar a decisão no histórico de roteamento
+13. Retornar o cluster selecionado e a pontuação calculada
 \end{lstlisting}
 \end{framed}
 
 \fonte{Elaborado pelo autor.}
 \end{blocoalgoritmo}
 
-O Algoritmo \ref{alg:roteamento-dinamico} evidencia que o \textit{EXPLAIN (TYPE IO)}, etapa mais custosa da decisão, só é executado quando não há decisão válida em \textit{cache} (passos 2 e 3). Os passos 5 a 9 correspondem ao cálculo dos três fatores e do \textit{Score} descrito nesta seção, e o passo 11 registra a decisão que alimentará o Fator histórico nas execuções seguintes.
+O Algoritmo \ref{alg:roteamento-dinamico} evidencia que o \textit{EXPLAIN (TYPE IO)}, etapa mais custosa da decisão, só é executado quando não há decisão válida em \textit{cache} (passos 2 e 3). Os passos 5 a 9 correspondem ao cálculo dos três fatores e do \textit{Score} descrito nesta seção, o passo 11 aplica o piso após falha, e o passo 12 registra a decisão que alimentará o Fator histórico.
 
 \subsection{Sistema de Histórico e Aprendizado}
 
-O \textit{DyraSQL} registra no PostgreSQL, para cada \textit{fingerprint}, a decisão de roteamento e o resultado da execução, que alimentam o Fator histórico (Tabela \ref{tab:fator-historico}) nas execuções seguintes da mesma consulta. A abordagem é inspirada nos \textit{learned cost models} do Amazon Redshift \cite{ding2024}; decisões recorrentemente inadequadas indicam a necessidade de recalibrar os pesos da Equação \ref{eq:pontuacao}.
+O \textit{DyraSQL} registra no PostgreSQL, para cada \textit{fingerprint}, a decisão de roteamento e, quando informado pelo \textit{endpoint} POST /api/v1/metrics, o resultado da execução, que alimentam o Fator histórico (Tabela \ref{tab:fator-historico}) nas execuções seguintes da mesma consulta. No protótipo, o \textit{proxy} ainda não informa esse resultado automaticamente. A abordagem é inspirada nos \textit{learned cost models} do Amazon Redshift \cite{ding2024}; decisões recorrentemente inadequadas indicam a necessidade de recalibrar os pesos da Equação \ref{eq:pontuacao}.
 
 \subsection{Integração com \textit{Trino Gateway}}
 
@@ -267,4 +269,4 @@ A integração com o \textit{Trino Gateway} oficial dispensa modificações em s
 
 \subsection{Implementação do \textit{framework}}
 
-O \textit{DyraSQL Core} foi implementado em Python, com módulos para análise de consultas, Algoritmo de decisão, histórico no PostgreSQL e API REST. O ambiente é orquestrado por Docker Compose e inclui o \textit{Trino Gateway}, o \textit{proxy}, o PostgreSQL, o MinIO e o catálogo REST, configurado no conector \textit{Iceberg} de cada \textit{cluster} de modo que os três compartilhem os mesmos metadados. O protótipo conta com uma suíte de 134 testes automatizados, que cobre a análise das consultas, o cálculo dos fatores, a API, o histórico e os \textit{scripts} do ambiente, todos aprovados em execução em ambiente Linux.
+O \textit{DyraSQL Core} foi implementado em Python, com módulos para análise de consultas, Algoritmo de decisão, histórico no PostgreSQL e API REST. O ambiente é orquestrado por Docker Compose e inclui o \textit{Trino Gateway}, o \textit{proxy}, o PostgreSQL, o MinIO e o catálogo REST, configurado no conector \textit{Iceberg} de cada \textit{cluster} de modo que os três compartilhem os mesmos metadados. O protótipo conta com uma suíte de 141 testes automatizados, discriminada no Apêndice D, que cobre a análise das consultas, o cálculo dos fatores, a API, o histórico e os \textit{scripts} do ambiente, todos aprovados em ambiente Linux; esses testes verificam o comportamento do código, e não substituem os ensaios de desempenho da Seção \ref{sec:experimentos}.

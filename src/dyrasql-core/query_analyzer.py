@@ -57,9 +57,32 @@ class QueryAnalyzer:
 
         normalized = re.sub(r"\d+", "?", normalized)
 
+        # Salvaguarda de seletividade: os literais dos filtros sobre colunas
+        # particionadas determinam o volume lido; por isso sao preservados, para
+        # que consultas de mesma estrutura e intervalos distintos (ex.: um dia e
+        # um trimestre) nao compartilhem a mesma decisao em cache.
+        partition_literals = self._partition_filter_literals(query)
+        if partition_literals:
+            normalized += "|particao:" + ";".join(partition_literals)
+
         fingerprint = hashlib.sha256(normalized.encode()).hexdigest()
 
         return fingerprint
+
+    def _partition_filter_literals(self, query: str) -> list[str]:
+        """Literais comparados a colunas particionadas, em ordem estavel."""
+        try:
+            tree = sqlglot.parse_one(query, dialect="trino")
+        except Exception:
+            return []
+        literais = []
+        for cond in tree.find_all(exp.Predicate):
+            colunas = {c.name.lower() for c in cond.find_all(exp.Column)}
+            if not colunas & self.partition_columns:
+                continue
+            for lit in cond.find_all(exp.Literal):
+                literais.append(f"{','.join(sorted(colunas))}={lit.sql()}")
+        return sorted(set(literais))
 
     def _normalize_query_with_catalog(self, query: str) -> str:
         """

@@ -50,12 +50,12 @@ Os trechos a seguir ilustram um exemplo de requisição e de resposta do \textit
 \newpage
 
 \begin{center}
-\textbf{APÊNDICE B - CÓDIGO-FONTE DO PROTÓTIPO}
+\textbf{APÊNDICE B - CÓDIGO-FONTE E REPRODUÇÃO DOS EXPERIMENTOS}
 \end{center}
 
 \vspace{0.5cm}
 
-O código-fonte do \textit{DyraSQL} está disponível em repositório público, incluindo o \textit{DyraSQL Core}, o \textit{Trino Gateway Proxy}, a orquestração em Docker Compose e os scripts de geração do \textit{dataset} sintético. O endereço do repositório é apresentado no Quadro 3.
+O código-fonte do \textit{DyraSQL} está disponível em repositório público, incluindo o \textit{DyraSQL Core}, o \textit{Trino Gateway Proxy}, a orquestração em Docker Compose, os \textit{scripts} de geração e ampliação do \textit{dataset} sintético e os \textit{scripts} de medição, calibração e análise. A versão utilizada neste artigo corresponde à \textit{tag} \texttt{tcc-v1.0}, e o arquivo \texttt{REPRODUCAO.md} descreve os comandos para reproduzir os 18 casos, a calibração e a validação cruzada. O endereço do repositório é apresentado no Quadro 3.
 
 \begin{center}
 \textbf{Quadro 3 - Endereço do repositório do \textit{DyraSQL}}
@@ -64,7 +64,56 @@ O código-fonte do \textit{DyraSQL} está disponível em repositório público, 
 \begin{framed}
 \begin{verbatim}
 https://github.com/trababalhos-puc/tcc-puc-dyrasql
+tag: tcc-v1.0
 \end{verbatim}
 \end{framed}
 
 \fonte{Elaborado pelo autor.}
+
+\newpage
+
+\begin{center}
+\textbf{APÊNDICE C - TRECHO REAL DO RETORNO DO \textit{EXPLAIN (TYPE IO)}}
+\end{center}
+
+\vspace{0.5cm}
+
+O Quadro 4 reproduz, do retorno do \textit{EXPLAIN (TYPE IO)} para a consulta do Algoritmo \ref{alg:consulta-vendas}, a entrada referente à tabela \textit{dados}, obtida no ambiente local (\textit{Trino} 484). O \textit{Score} utiliza apenas \textit{outputSizeInBytes} e \textit{outputRowCount}, somados entre as tabelas lidas. O campo \textit{cpuCost} é retornado, mas não é utilizado; o campo \textit{maxMemory} é informado como zero na leitura da tabela e como indefinido (\textit{NaN}) na estimativa do plano, razão pela qual o volume lido é empregado como indicador de demanda, e não uma estimativa de memória.
+
+\begin{center}
+\textbf{Quadro 4 - Entrada da tabela \textit{dados} no retorno do \textit{EXPLAIN (TYPE IO)}}
+\end{center}
+
+\begin{framed}
+\begin{verbatim}
+{
+  "table": {
+    "catalog": "iceberg",
+    "schemaTable": {
+      "schema": "analytics",
+      "table": "dados"
+    }
+  },
+  "constraint": {
+    "none": false,
+    "columnConstraints": [
+      { "columnName": "date",
+        "type": "timestamp(6)",
+        "domain": {...} },
+      { "columnName": "status",
+        "type": "varchar",
+        "domain": {...} }
+    ]
+  },
+  "estimate": {
+    "outputRowCount": 13824000.0,
+    "outputSizeInBytes": 263178236.0,
+    "cpuCost": 263178236.0,
+    "maxMemory": 0.0,
+    "networkCost": 0.0
+  }
+}
+\end{verbatim}
+\end{framed}
+
+\fonte{Elaborado pelo autor. Os intervalos de cada filtro (\textit{domain}) foram omitidos.}

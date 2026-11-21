@@ -1,0 +1,105 @@
+\newpage
+
+\begin{center}
+\textbf{APÊNDICE D - PROTOCOLO, DISPERSÃO E VALIDAÇÃO CRUZADA}
+\end{center}
+
+\vspace{0.5cm}
+
+\textbf{Protocolo.} Cada \textit{cluster} foi medido sozinho. Para cada consulta, executou-se uma rodada de aquecimento, descartada, seguida de 5 repetições, na ordem C01 a C18. O tempo de referência é a mediana das 5 repetições, e uma consulta é viável em um \textit{cluster} somente se não falhou em nenhuma delas. A decisão foi medida 5 vezes com \textit{cache} vazio, apagando as decisões antes de cada medida, e 5 vezes com \textit{cache}. Os \textit{scripts} utilizados são \texttt{tools/\allowbreak benchmark\_\allowbreak repeticoes.py} e \texttt{tools/\allowbreak analise\_\allowbreak repeticoes.py}.
+
+\textbf{Dataset.} A tabela \textit{dados} tem 46.080.000 linhas em 90 partições diárias (1 de janeiro a 30 de março de 2024), com exatamente 512.000 linhas por partição, 50 \textit{tenants} com 921.600 linhas cada, 90\% dos registros com \textit{status} ATIVO e 10\% INATIVO, valores entre 0,38 e 11.058,74 (média de 509,66) e cerca de 44,7 milhões de chaves \textit{surrogate\_key} distintas (estimativa aproximada). A tabela \textit{tenant\_info} tem 50 linhas, 3 categorias e níveis de 1 a 10.
+
+\textbf{Latência da decisão.} Sem \textit{cache} ($n = 90$): p50 de 82,9 ms, p90 de 113,7 ms, p95 de 124,5 ms e máximo de 159,8 ms. Com \textit{cache} ($n = 90$): p50 de 5,2 ms, p90 de 21,9 ms, p95 de 23,7 ms e máximo de 26,4 ms.
+
+\begin{center}
+\textbf{Quadro 5 - Mediana do tempo (s), coeficiente de variação e referência por tolerância}
+\end{center}
+
+\begin{center}
+\footnotesize
+\begin{tabular}{lcccc}
+\hline
+\textbf{ID} & \textbf{Small} & \textbf{Medium} & \textbf{Large} & \textbf{Ref. (1,25 / 1,5 / 2,0)} \\
+\hline
+	C01 & 0,09 (0,11) & 0,12 (0,08) & 0,12 (0,05) & S / S / S \\
+	C02 & 0,07 (0,15) & 0,13 (0,09) & 0,12 (0,05) & S / S / S \\
+	C03 & 0,14 (0,18) & 0,22 (0,21) & 0,18 (0,17) & S / S / S \\
+	C04 & 0,18 (0,18) & 0,26 (0,20) & 0,21 (0,07) & S / S / S \\
+	C05 & 0,15 (0,09) & 0,30 (0,08) & 0,29 (0,18) & S / S / S \\
+	C06 & 0,34 (0,29) & 0,36 (0,17) & 0,28 (0,07) & S / S / S \\
+	C07 & 2,49 (0,14) & 2,52 (0,09) & 2,24 (0,08) & S / S / S \\
+	C08 & 2,21 (0,07) & 1,93 (0,07) & 2,18 (0,06) & S / S / S \\
+	C09 & 2,04 (0,04) & 1,91 (0,12) & 1,99 (0,10) & S / S / S \\
+	C10 & 0,99 (0,13) & 0,74 (0,05) & 0,74 (0,09) & M / S / S \\
+	C11 & 2,33 (0,05) & 2,05 (0,05) & 1,82 (0,03) & M / S / S \\
+	C12 & 2,25 (0,02) & 1,99 (0,05) & 1,72 (0,04) & M / S / S \\
+	C13 & falha (5/5) & falha (5/5) & 4,82 (0,08) & L / L / L \\
+	C14 & falha (5/5) & falha (5/5) & falha (5/5) & -- / -- / -- \\
+	C15 & falha (5/5) & falha (5/5) & 27,81 (0,08) & L / L / L \\
+	C16 & falha (5/5) & falha (5/5) & falha (5/5) & -- / -- / -- \\
+	C17 & falha (1/5) & 7,99 (0,04) & 8,32 (0,04) & M / M / M \\
+	C18 & falha (5/5) & falha (5/5) & falha (5/5) & -- / -- / -- \\
+\hline
+\end{tabular}
+\end{center}
+
+\fonte{Elaborado pelo autor. Entre parênteses, o coeficiente de variação das 5 repetições ou o número de falhas.}
+
+\textbf{Validação cruzada.} Em cada \textit{fold}, uma consulta elegível foi excluída, a busca em grade completa (pesos, limiares e $c_m$) foi refeita com as outras 14, e a configuração resultante classificou a consulta excluída. A escolha do elemento $M$ e do conjunto de valores de $c_m$ foi feita antes, sobre todas as consultas, e não é refeita por \textit{fold}.
+
+\begin{center}
+\textbf{Quadro 6 - Resultado de cada \textit{fold} do \textit{leave-one-out}}
+\end{center}
+
+\begin{center}
+\footnotesize
+\begin{tabular}{lccccl}
+\hline
+\textbf{Excluída} & \textbf{Ref.} & \textbf{Pesos} & \textbf{Limiares} & $c_m$ & \textbf{Resultado} \\
+\hline
+	C01 & S & 0,50 / 0,30 / 0,20 & 0,60 / 0,70 & 1,50 & acerto \\
+	C02 & S & 0,50 / 0,30 / 0,20 & 0,60 / 0,70 & 1,50 & acerto \\
+	C03 & S & 0,50 / 0,30 / 0,20 & 0,60 / 0,70 & 1,50 & acerto \\
+	C04 & S & 0,50 / 0,30 / 0,20 & 0,60 / 0,70 & 1,50 & acerto \\
+	C05 & S & 0,50 / 0,30 / 0,20 & 0,60 / 0,70 & 1,50 & acerto \\
+	C06 & S & 0,50 / 0,30 / 0,20 & 0,60 / 0,70 & 1,50 & acerto \\
+	C07 & S & 0,50 / 0,30 / 0,20 & 0,60 / 0,70 & 1,50 & acerto \\
+	C08 & S & 0,50 / 0,30 / 0,20 & 0,60 / 0,70 & 1,50 & acerto \\
+	C09 & S & 0,50 / 0,30 / 0,20 & 0,60 / 0,70 & 1,50 & acerto \\
+	C10 & S & 0,50 / 0,30 / 0,20 & 0,60 / 0,70 & 1,50 & acerto \\
+	C11 & S & 0,50 / 0,30 / 0,20 & 0,60 / 0,70 & 1,50 & acerto \\
+	C12 & S & 0,50 / 0,30 / 0,20 & 0,60 / 0,70 & 1,50 & acerto \\
+	C13 & L & 0,05 / 0,70 / 0,25 & 0,40 / 0,65 & 1,00 & subdimensionou \\
+	C15 & L & 0,50 / 0,30 / 0,20 & 0,60 / 0,70 & 1,50 & acerto \\
+	C17 & M & 0,50 / 0,30 / 0,20 & 0,60 / 0,70 & 1,50 & superdimensionou \\
+\hline
+\end{tabular}
+\end{center}
+
+\fonte{Elaborado pelo autor.}
+
+\begin{center}
+\textbf{Quadro 7 - Suítes de testes automatizados}
+\end{center}
+
+\begin{center}
+\footnotesize
+\begin{tabular}{lrl}
+\hline
+\textbf{Arquivo} & \textbf{Testes} & \textbf{Escopo} \\
+\hline
+\texttt{test\_query\_analyzer.py} & 24 & análise SQL, \textit{fingerprint} e \textit{EXPLAIN} \\
+\texttt{test\_decision\_engine.py} & 11 & fatores, faixas e piso após falha \\
+\texttt{test\_history\_manager.py} & 17 & \textit{cache} e fator histórico \\
+\texttt{test\_api\_route.py} & 19 & API de roteamento e métricas \\
+\texttt{test\_trino\_gateway\_proxy.py} & 34 & \textit{proxy} do \textit{Trino Gateway} \\
+\texttt{test\_scripts\_shell.py} & 13 & sintaxe dos \textit{scripts} do ambiente \\
+demais arquivos & 23 & geração de dados e casos auxiliares \\
+\hline
+\textbf{Total} & \textbf{141} & executados com \texttt{python -m pytest tests} \\
+\hline
+\end{tabular}
+\end{center}
+
+\fonte{Elaborado pelo autor. Testes unitários e de integração com dependências simuladas; não substituem os ensaios de desempenho.}

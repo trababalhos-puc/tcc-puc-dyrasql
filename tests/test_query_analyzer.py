@@ -22,6 +22,21 @@ def test_fingerprint_stable_across_literals(analyzer):
     assert analyzer.generate_fingerprint(q1) == analyzer.generate_fingerprint(q2)
 
 
+def test_fingerprint_separates_partition_intervals(analyzer):
+    """Mesma estrutura com intervalos distintos sobre a coluna particionada."""
+    base = "SELECT sum(valor) FROM dados WHERE date BETWEEN TIMESTAMP '{}' AND TIMESTAMP '{}'"
+    um_dia = base.format("2024-01-01", "2024-01-01")
+    trimestre = base.format("2024-01-01", "2024-03-31")
+    assert analyzer.generate_fingerprint(um_dia) != analyzer.generate_fingerprint(trimestre)
+
+
+def test_fingerprint_keeps_reuse_for_non_partition_literals(analyzer):
+    """Literais fora da coluna particionada continuam normalizados."""
+    q1 = "SELECT sum(valor) FROM dados WHERE date = TIMESTAMP '2024-01-05' AND status = 'ATIVO'"
+    q2 = "SELECT sum(valor) FROM dados WHERE date = TIMESTAMP '2024-01-05' AND status = 'INATIVO'"
+    assert analyzer.generate_fingerprint(q1) == analyzer.generate_fingerprint(q2)
+
+
 def test_fingerprint_differs_for_structure(analyzer):
     q1 = "SELECT * FROM dados WHERE id = 1"
     q2 = "SELECT * FROM dados JOIN other ON dados.id = other.id WHERE id = 1"

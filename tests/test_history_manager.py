@@ -31,20 +31,38 @@ def test_historical_factor_miss(history_manager_with_cursor):
 
 def test_historical_factor_success(history_manager_with_cursor):
     hm, cursor = history_manager_with_cursor
-    cursor.fetchone.return_value = {"score": 0.44, "success": True}
+    cursor.fetchone.return_value = {"cluster": "small", "score": 0.44, "success": True}
     assert hm.get_historical_factor("fp", "q") == 0.44
+    assert hm.get_minimum_cluster("fp") is None
 
 
-def test_historical_factor_failure_medium(history_manager_with_cursor):
+def test_historical_factor_without_result_is_neutral(history_manager_with_cursor):
     hm, cursor = history_manager_with_cursor
-    cursor.fetchone.return_value = {"score": 0.44, "success": False}
-    assert abs(hm.get_historical_factor("fp", "q") - (1.0 - 0.44)) < 1e-9
+    cursor.fetchone.return_value = {"cluster": "medium", "score": 0.65, "success": None}
+    assert hm.get_historical_factor("fp", "q") == 0.5
+    assert hm.get_minimum_cluster("fp") is None
+
+
+def test_historical_factor_failure_small_raises(history_manager_with_cursor):
+    hm, cursor = history_manager_with_cursor
+    cursor.fetchone.return_value = {"cluster": "small", "score": 0.59, "success": False}
+    assert hm.get_historical_factor("fp", "q") == 1.0
+    assert hm.get_minimum_cluster("fp") == "medium"
+
+
+def test_historical_factor_failure_medium_raises(history_manager_with_cursor):
+    # caso apontado na revisao: Sp = 0,60 nao pode reduzir o fator
+    hm, cursor = history_manager_with_cursor
+    cursor.fetchone.return_value = {"cluster": "medium", "score": 0.60, "success": False}
+    assert hm.get_historical_factor("fp", "q") == 1.0
+    assert hm.get_minimum_cluster("fp") == "large"
 
 
 def test_historical_factor_failure_large_does_not_downsize(history_manager_with_cursor):
     hm, cursor = history_manager_with_cursor
-    cursor.fetchone.return_value = {"score": 0.8, "success": False}
+    cursor.fetchone.return_value = {"cluster": "large", "score": 0.8, "success": False}
     assert hm.get_historical_factor("fp", "q") == 0.5
+    assert hm.get_minimum_cluster("fp") == "large"
 
 
 def test_get_cached_decision_hit(history_manager_with_cursor):

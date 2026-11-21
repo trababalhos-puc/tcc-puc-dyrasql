@@ -111,7 +111,7 @@ def test_route_cache_miss(api_client, article_metadata, article_complexity):
     assert response.status_code == 200
     data = response.json()
     assert data["cached"] is False
-    assert data["cluster"] == "medium"
+    assert data["cluster"] == "small"  # S = 0,57 < 0,6 (limiar calibrado)
     assert abs(data["score"] - 0.57) < 0.03
     app_module.history_manager.save_decision.assert_called()
 
@@ -132,6 +132,18 @@ def test_save_metrics(api_client):
     assert response.status_code == 200
     assert response.json()["status"] == "success"
     app_module.history_manager.save_metrics.assert_called()
+
+
+def test_save_metrics_propagates_failure(api_client):
+    """Uma falha informada em "metrics" deve chegar ao historico como success=False."""
+    client, app_module = api_client
+    response = client.post(
+        "/api/v1/metrics",
+        json={"fingerprint": "abc", "metrics": {"success": False, "execution_time": 2.5}},
+    )
+    assert response.status_code == 200
+    saved = app_module.history_manager.save_metrics.call_args[0][0]
+    assert saved == {"fingerprint": "abc", "success": False, "execution_time": 2.5}
 
 
 def test_save_metrics_error(api_client):

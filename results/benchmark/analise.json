@@ -1,0 +1,870 @@
+{
+  "consultas": {
+    "C01": {
+      "tempos": {
+        "small": {
+          "ok": true,
+          "n": 5,
+          "mediana": 0.088,
+          "min": 0.077,
+          "max": 0.106,
+          "cv": 0.112
+        },
+        "medium": {
+          "ok": true,
+          "n": 5,
+          "mediana": 0.121,
+          "min": 0.11,
+          "max": 0.141,
+          "cv": 0.083
+        },
+        "large": {
+          "ok": true,
+          "n": 5,
+          "mediana": 0.117,
+          "min": 0.109,
+          "max": 0.126,
+          "cv": 0.046
+        }
+      },
+      "referencia": {
+        "1.25": "small",
+        "1.5": "small",
+        "2.0": "small"
+      }
+    },
+    "C02": {
+      "tempos": {
+        "small": {
+          "ok": true,
+          "n": 5,
+          "mediana": 0.074,
+          "min": 0.058,
+          "max": 0.091,
+          "cv": 0.155
+        },
+        "medium": {
+          "ok": true,
+          "n": 5,
+          "mediana": 0.13,
+          "min": 0.11,
+          "max": 0.146,
+          "cv": 0.093
+        },
+        "large": {
+          "ok": true,
+          "n": 5,
+          "mediana": 0.122,
+          "min": 0.116,
+          "max": 0.13,
+          "cv": 0.046
+        }
+      },
+      "referencia": {
+        "1.25": "small",
+        "1.5": "small",
+        "2.0": "small"
+      }
+    },
+    "C03": {
+      "tempos": {
+        "small": {
+          "ok": true,
+          "n": 5,
+          "mediana": 0.14,
+          "min": 0.083,
+          "max": 0.142,
+          "cv": 0.185
+        },
+        "medium": {
+          "ok": true,
+          "n": 5,
+          "mediana": 0.221,
+          "min": 0.184,
+          "max": 0.329,
+          "cv": 0.208
+        },
+        "large": {
+          "ok": true,
+          "n": 5,
+          "mediana": 0.184,
+          "min": 0.179,
+          "max": 0.27,
+          "cv": 0.175
+        }
+      },
+      "referencia": {
+        "1.25": "small",
+        "1.5": "small",
+        "2.0": "small"
+      }
+    },
+    "C04": {
+      "tempos": {
+        "small": {
+          "ok": true,
+          "n": 5,
+          "mediana": 0.176,
+          "min": 0.132,
+          "max": 0.228,
+          "cv": 0.185
+        },
+        "medium": {
+          "ok": true,
+          "n": 5,
+          "mediana": 0.258,
+          "min": 0.181,
+          "max": 0.31,
+          "cv": 0.203
+        },
+        "large": {
+          "ok": true,
+          "n": 5,
+          "mediana": 0.208,
+          "min": 0.184,
+          "max": 0.232,
+          "cv": 0.075
+        }
+      },
+      "referencia": {
+        "1.25": "small",
+        "1.5": "small",
+        "2.0": "small"
+      }
+    },
+    "C05": {
+      "tempos": {
+        "small": {
+          "ok": true,
+          "n": 5,
+          "mediana": 0.15,
+          "min": 0.138,
+          "max": 0.18,
+          "cv": 0.092
+        },
+        "medium": {
+          "ok": true,
+          "n": 5,
+          "mediana": 0.296,
+          "min": 0.265,
+          "max": 0.319,
+          "cv": 0.077
+        },
+        "large": {
+          "ok": true,
+          "n": 5,
+          "mediana": 0.29,
+          "min": 0.237,
+          "max": 0.403,
+          "cv": 0.179
+        }
+      },
+      "referencia": {
+        "1.25": "small",
+        "1.5": "small",
+        "2.0": "small"
+      }
+    },
+    "C06": {
+      "tempos": {
+        "small": {
+          "ok": true,
+          "n": 5,
+          "mediana": 0.335,
+          "min": 0.251,
+          "max": 0.571,
+          "cv": 0.295
+        },
+        "medium": {
+          "ok": true,
+          "n": 5,
+          "mediana": 0.364,
+          "min": 0.288,
+          "max": 0.448,
+          "cv": 0.17
+        },
+        "large": {
+          "ok": true,
+          "n": 5,
+          "mediana": 0.278,
+          "min": 0.261,
+          "max": 0.315,
+          "cv": 0.071
+        }
+      },
+      "referencia": {
+        "1.25": "small",
+        "1.5": "small",
+        "2.0": "small"
+      }
+    },
+    "C07": {
+      "tempos": {
+        "small": {
+          "ok": true,
+          "n": 5,
+          "mediana": 2.49,
+          "min": 2.149,
+          "max": 3.251,
+          "cv": 0.143
+        },
+        "medium": {
+          "ok": true,
+          "n": 5,
+          "mediana": 2.522,
+          "min": 2.019,
+          "max": 2.56,
+          "cv": 0.085
+        },
+        "large": {
+          "ok": true,
+          "n": 5,
+          "mediana": 2.242,
+          "min": 2.206,
+          "max": 2.691,
+          "cv": 0.077
+        }
+      },
+      "referencia": {
+        "1.25": "small",
+        "1.5": "small",
+        "2.0": "small"
+      }
+    },
+    "C08": {
+      "tempos": {
+        "small": {
+          "ok": true,
+          "n": 5,
+          "mediana": 2.209,
+          "min": 2.077,
+          "max": 2.546,
+          "cv": 0.072
+        },
+        "medium": {
+          "ok": true,
+          "n": 5,
+          "mediana": 1.93,
+          "min": 1.796,
+          "max": 2.146,
+          "cv": 0.065
+        },
+        "large": {
+          "ok": true,
+          "n": 5,
+          "mediana": 2.177,
+          "min": 2.012,
+          "max": 2.355,
+          "cv": 0.058
+        }
+      },
+      "referencia": {
+        "1.25": "small",
+        "1.5": "small",
+        "2.0": "small"
+      }
+    },
+    "C09": {
+      "tempos": {
+        "small": {
+          "ok": true,
+          "n": 5,
+          "mediana": 2.045,
+          "min": 1.93,
+          "max": 2.141,
+          "cv": 0.039
+        },
+        "medium": {
+          "ok": true,
+          "n": 5,
+          "mediana": 1.906,
+          "min": 1.806,
+          "max": 2.468,
+          "cv": 0.125
+        },
+        "large": {
+          "ok": true,
+          "n": 5,
+          "mediana": 1.991,
+          "min": 1.814,
+          "max": 2.435,
+          "cv": 0.105
+        }
+      },
+      "referencia": {
+        "1.25": "small",
+        "1.5": "small",
+        "2.0": "small"
+      }
+    },
+    "C10": {
+      "tempos": {
+        "small": {
+          "ok": true,
+          "n": 5,
+          "mediana": 0.987,
+          "min": 0.88,
+          "max": 1.254,
+          "cv": 0.128
+        },
+        "medium": {
+          "ok": true,
+          "n": 5,
+          "mediana": 0.739,
+          "min": 0.691,
+          "max": 0.792,
+          "cv": 0.051
+        },
+        "large": {
+          "ok": true,
+          "n": 5,
+          "mediana": 0.737,
+          "min": 0.72,
+          "max": 0.905,
+          "cv": 0.09
+        }
+      },
+      "referencia": {
+        "1.25": "medium",
+        "1.5": "small",
+        "2.0": "small"
+      }
+    },
+    "C11": {
+      "tempos": {
+        "small": {
+          "ok": true,
+          "n": 5,
+          "mediana": 2.328,
+          "min": 2.051,
+          "max": 2.386,
+          "cv": 0.053
+        },
+        "medium": {
+          "ok": true,
+          "n": 5,
+          "mediana": 2.047,
+          "min": 1.926,
+          "max": 2.214,
+          "cv": 0.052
+        },
+        "large": {
+          "ok": true,
+          "n": 5,
+          "mediana": 1.821,
+          "min": 1.718,
+          "max": 1.872,
+          "cv": 0.03
+        }
+      },
+      "referencia": {
+        "1.25": "medium",
+        "1.5": "small",
+        "2.0": "small"
+      }
+    },
+    "C12": {
+      "tempos": {
+        "small": {
+          "ok": true,
+          "n": 5,
+          "mediana": 2.247,
+          "min": 2.134,
+          "max": 2.269,
+          "cv": 0.022
+        },
+        "medium": {
+          "ok": true,
+          "n": 5,
+          "mediana": 1.99,
+          "min": 1.829,
+          "max": 2.081,
+          "cv": 0.048
+        },
+        "large": {
+          "ok": true,
+          "n": 5,
+          "mediana": 1.724,
+          "min": 1.623,
+          "max": 1.831,
+          "cv": 0.04
+        }
+      },
+      "referencia": {
+        "1.25": "medium",
+        "1.5": "small",
+        "2.0": "small"
+      }
+    },
+    "C13": {
+      "tempos": {
+        "small": {
+          "ok": false,
+          "falhas": 5,
+          "n": 5
+        },
+        "medium": {
+          "ok": false,
+          "falhas": 5,
+          "n": 5
+        },
+        "large": {
+          "ok": true,
+          "n": 5,
+          "mediana": 4.822,
+          "min": 4.159,
+          "max": 5.094,
+          "cv": 0.077
+        }
+      },
+      "referencia": {
+        "1.25": "large",
+        "1.5": "large",
+        "2.0": "large"
+      }
+    },
+    "C14": {
+      "tempos": {
+        "small": {
+          "ok": false,
+          "falhas": 5,
+          "n": 5
+        },
+        "medium": {
+          "ok": false,
+          "falhas": 5,
+          "n": 5
+        },
+        "large": {
+          "ok": false,
+          "falhas": 5,
+          "n": 5
+        }
+      },
+      "referencia": {
+        "1.25": null,
+        "1.5": null,
+        "2.0": null
+      }
+    },
+    "C15": {
+      "tempos": {
+        "small": {
+          "ok": false,
+          "falhas": 5,
+          "n": 5
+        },
+        "medium": {
+          "ok": false,
+          "falhas": 5,
+          "n": 5
+        },
+        "large": {
+          "ok": true,
+          "n": 5,
+          "mediana": 27.813,
+          "min": 26.266,
+          "max": 32.866,
+          "cv": 0.081
+        }
+      },
+      "referencia": {
+        "1.25": "large",
+        "1.5": "large",
+        "2.0": "large"
+      }
+    },
+    "C16": {
+      "tempos": {
+        "small": {
+          "ok": false,
+          "falhas": 5,
+          "n": 5
+        },
+        "medium": {
+          "ok": false,
+          "falhas": 5,
+          "n": 5
+        },
+        "large": {
+          "ok": false,
+          "falhas": 5,
+          "n": 5
+        }
+      },
+      "referencia": {
+        "1.25": null,
+        "1.5": null,
+        "2.0": null
+      }
+    },
+    "C17": {
+      "tempos": {
+        "small": {
+          "ok": false,
+          "falhas": 1,
+          "n": 5
+        },
+        "medium": {
+          "ok": true,
+          "n": 5,
+          "mediana": 7.991,
+          "min": 7.764,
+          "max": 8.624,
+          "cv": 0.037
+        },
+        "large": {
+          "ok": true,
+          "n": 5,
+          "mediana": 8.317,
+          "min": 8.179,
+          "max": 9.169,
+          "cv": 0.042
+        }
+      },
+      "referencia": {
+        "1.25": "medium",
+        "1.5": "medium",
+        "2.0": "medium"
+      }
+    },
+    "C18": {
+      "tempos": {
+        "small": {
+          "ok": false,
+          "falhas": 5,
+          "n": 5
+        },
+        "medium": {
+          "ok": false,
+          "falhas": 5,
+          "n": 5
+        },
+        "large": {
+          "ok": false,
+          "falhas": 5,
+          "n": 5
+        }
+      },
+      "referencia": {
+        "1.25": null,
+        "1.5": null,
+        "2.0": null
+      }
+    }
+  },
+  "elegiveis": [
+    "C01",
+    "C02",
+    "C03",
+    "C04",
+    "C05",
+    "C06",
+    "C07",
+    "C08",
+    "C09",
+    "C10",
+    "C11",
+    "C12",
+    "C13",
+    "C15",
+    "C17"
+  ],
+  "original": {
+    "acertos": 3,
+    "subdimensionadas": 2
+  },
+  "calibrada": {
+    "w": [
+      0.5,
+      0.3,
+      0.2
+    ],
+    "limiares": [
+      0.6,
+      0.7
+    ],
+    "c_m": 1.5,
+    "acertos": 14,
+    "subdimensionadas": 0
+  },
+  "leave_one_out": {
+    "acertos": 13,
+    "subdimensionadas": 1,
+    "folds": [
+      {
+        "fora": "C01",
+        "referencia": "small",
+        "w": [
+          0.5,
+          0.3,
+          0.2
+        ],
+        "limiares": [
+          0.6,
+          0.7
+        ],
+        "c_m": 1.5,
+        "acerto": true,
+        "subdimensionou": false
+      },
+      {
+        "fora": "C02",
+        "referencia": "small",
+        "w": [
+          0.5,
+          0.3,
+          0.2
+        ],
+        "limiares": [
+          0.6,
+          0.7
+        ],
+        "c_m": 1.5,
+        "acerto": true,
+        "subdimensionou": false
+      },
+      {
+        "fora": "C03",
+        "referencia": "small",
+        "w": [
+          0.5,
+          0.3,
+          0.2
+        ],
+        "limiares": [
+          0.6,
+          0.7
+        ],
+        "c_m": 1.5,
+        "acerto": true,
+        "subdimensionou": false
+      },
+      {
+        "fora": "C04",
+        "referencia": "small",
+        "w": [
+          0.5,
+          0.3,
+          0.2
+        ],
+        "limiares": [
+          0.6,
+          0.7
+        ],
+        "c_m": 1.5,
+        "acerto": true,
+        "subdimensionou": false
+      },
+      {
+        "fora": "C05",
+        "referencia": "small",
+        "w": [
+          0.5,
+          0.3,
+          0.2
+        ],
+        "limiares": [
+          0.6,
+          0.7
+        ],
+        "c_m": 1.5,
+        "acerto": true,
+        "subdimensionou": false
+      },
+      {
+        "fora": "C06",
+        "referencia": "small",
+        "w": [
+          0.5,
+          0.3,
+          0.2
+        ],
+        "limiares": [
+          0.6,
+          0.7
+        ],
+        "c_m": 1.5,
+        "acerto": true,
+        "subdimensionou": false
+      },
+      {
+        "fora": "C07",
+        "referencia": "small",
+        "w": [
+          0.5,
+          0.3,
+          0.2
+        ],
+        "limiares": [
+          0.6,
+          0.7
+        ],
+        "c_m": 1.5,
+        "acerto": true,
+        "subdimensionou": false
+      },
+      {
+        "fora": "C08",
+        "referencia": "small",
+        "w": [
+          0.5,
+          0.3,
+          0.2
+        ],
+        "limiares": [
+          0.6,
+          0.7
+        ],
+        "c_m": 1.5,
+        "acerto": true,
+        "subdimensionou": false
+      },
+      {
+        "fora": "C09",
+        "referencia": "small",
+        "w": [
+          0.5,
+          0.3,
+          0.2
+        ],
+        "limiares": [
+          0.6,
+          0.7
+        ],
+        "c_m": 1.5,
+        "acerto": true,
+        "subdimensionou": false
+      },
+      {
+        "fora": "C10",
+        "referencia": "small",
+        "w": [
+          0.5,
+          0.3,
+          0.2
+        ],
+        "limiares": [
+          0.6,
+          0.7
+        ],
+        "c_m": 1.5,
+        "acerto": true,
+        "subdimensionou": false
+      },
+      {
+        "fora": "C11",
+        "referencia": "small",
+        "w": [
+          0.5,
+          0.3,
+          0.2
+        ],
+        "limiares": [
+          0.6,
+          0.7
+        ],
+        "c_m": 1.5,
+        "acerto": true,
+        "subdimensionou": false
+      },
+      {
+        "fora": "C12",
+        "referencia": "small",
+        "w": [
+          0.5,
+          0.3,
+          0.2
+        ],
+        "limiares": [
+          0.6,
+          0.7
+        ],
+        "c_m": 1.5,
+        "acerto": true,
+        "subdimensionou": false
+      },
+      {
+        "fora": "C13",
+        "referencia": "large",
+        "w": [
+          0.05,
+          0.7,
+          0.25
+        ],
+        "limiares": [
+          0.4,
+          0.65
+        ],
+        "c_m": 1.0,
+        "acerto": false,
+        "subdimensionou": true
+      },
+      {
+        "fora": "C15",
+        "referencia": "large",
+        "w": [
+          0.5,
+          0.3,
+          0.2
+        ],
+        "limiares": [
+          0.6,
+          0.7
+        ],
+        "c_m": 1.5,
+        "acerto": true,
+        "subdimensionou": false
+      },
+      {
+        "fora": "C17",
+        "referencia": "medium",
+        "w": [
+          0.5,
+          0.3,
+          0.2
+        ],
+        "limiares": [
+          0.6,
+          0.7
+        ],
+        "c_m": 1.5,
+        "acerto": false,
+        "subdimensionou": false
+      }
+    ]
+  },
+  "sensibilidade_tolerancia": {
+    "1.25": {
+      "elegiveis": 15,
+      "acertos": 11,
+      "subdimensionadas": 3
+    },
+    "1.5": {
+      "elegiveis": 15,
+      "acertos": 14,
+      "subdimensionadas": 0
+    },
+    "2.0": {
+      "elegiveis": 15,
+      "acertos": 14,
+      "subdimensionadas": 0
+    }
+  },
+  "latencia_decisao_ms": {
+    "sem_cache": {
+      "n": 90,
+      "p50": 82.9,
+      "p90": 113.7,
+      "p95": 124.5,
+      "max": 159.8
+    },
+    "com_cache": {
+      "n": 90,
+      "p50": 5.2,
+      "p90": 21.9,
+      "p95": 23.7,
+      "max": 26.4
+    }
+  }
+}

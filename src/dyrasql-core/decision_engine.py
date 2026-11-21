@@ -15,11 +15,13 @@ logger = logging.getLogger(__name__)
 class DecisionEngine:
     """Calcula o score e seleciona o cluster apropriado"""
 
+    CLUSTERS = ("small", "medium", "large")
+
     def __init__(self):
         self.w1 = float(os.getenv("DYRASQL_WEIGHT_VOLUME", "0.5"))
         self.w2 = float(os.getenv("DYRASQL_WEIGHT_COMPLEXITY", "0.3"))
         self.w3 = float(os.getenv("DYRASQL_WEIGHT_HISTORICAL", "0.2"))
-        self.small_threshold = float(os.getenv("DYRASQL_SMALL_THRESHOLD", "0.3"))
+        self.small_threshold = float(os.getenv("DYRASQL_SMALL_THRESHOLD", "0.6"))
         self.medium_threshold = float(os.getenv("DYRASQL_MEDIUM_THRESHOLD", "0.7"))
 
         total_weight = self.w1 + self.w2 + self.w3
@@ -45,6 +47,11 @@ class DecisionEngine:
         fh = history_manager.get_historical_factor(fingerprint, query)
         score = self.w1 * fv + self.w2 * fc + self.w3 * fh
         cluster = self._select_cluster(score)
+        # Piso apos falha: nunca reencaminhar a um cluster igual ou menor que o que falhou.
+        minimum = history_manager.get_minimum_cluster(fingerprint)
+        if minimum in self.CLUSTERS and self.CLUSTERS.index(minimum) > self.CLUSTERS.index(cluster):
+            logger.info("Piso por falha anterior: %s -> %s", cluster, minimum)
+            cluster = minimum
         decision = {
             "cluster": cluster,
             "score": score,

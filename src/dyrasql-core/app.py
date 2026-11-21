@@ -172,7 +172,9 @@ async def save_metrics(request_data: MetricsRequest):
     Endpoint para salvar métricas pós-execução
     """
     try:
-        data = request_data.dict()
+        # As metricas chegam aninhadas em "metrics"; o HistoryManager le os campos
+        # (success, execution_time, cost) no primeiro nivel.
+        data = {"fingerprint": request_data.fingerprint, **(request_data.metrics or {})}
         history_manager.save_metrics(data)
         logger.info(f"Métricas salvas para fingerprint: {data['fingerprint']}")
 
