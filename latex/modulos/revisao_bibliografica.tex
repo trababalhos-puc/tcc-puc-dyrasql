@@ -1,30 +1,46 @@
+\FloatBarrier
 \section{Revisão Bibliográfica}
 \label{sec:revisao-bibliografica}
 
-Esta seção apresenta uma revisão de trabalhos relacionados ao roteamento dinâmico de consultas, melhoria de custo-benefício em ambientes de processamento e utilização de metadados para tomada de decisões em sistemas de dados. A revisão bibliográfica complementa o referencial teórico apresentado na Seção~\ref{sec:referencial-teorico}, focando em trabalhos que abordam problemas similares ao proposto neste trabalho e técnicas relacionadas utilizadas na literatura.
+Esta seção revisa trabalhos relacionados ao roteamento e à execução adaptativa de consultas, ao custo de processamento em \textit{data lakes} e ao uso de metadados, e posiciona o \textit{DyraSQL} em relação a eles. Para cada trabalho, destaca-se o que é decidido, em que momento da execução e com base em qual informação, critérios que são sintetizados ao final em uma comparação direta.
 
 \subsection{Trabalhos sobre Roteamento Dinâmico de Consultas}
 
-Xue et al. (2024) propuseram um sistema adaptativo que ajusta dinamicamente a estratégia de execução em ambientes de \textit{lakehouse} em larga escala, conforme características da consulta e condições do ambiente \cite{xue2024}; o \textit{DyraSQL} complementa essa abordagem através de análise prévia de metadados antes da execução, em vez de ajustes em tempo real.
+Xue et al. (2024) propuseram um sistema que ajusta dinamicamente a estratégia de execução em \textit{lakehouses} de larga escala, conforme características da consulta e condições do ambiente \cite{xue2024}. A abordagem demonstra a importância de adaptar a execução ao perfil de cada consulta, mas atua sobre uma execução já iniciada e depende de integração ao motor. O \textit{DyraSQL}, em vez de ajustar a execução em andamento, decide o ambiente antes dela.
 
-Strausz, Pardon e Giurgiu (2025) propuseram um otimizador baseado em modelo de custo aprendido para \textit{workloads} SQL \textit{multi-engine}, prevendo por aprendizado de máquina o custo de execução em diferentes \textit{engines} \cite{strausz2025}; o \textit{DyraSQL} utiliza abordagem similar através do Fator histórico, mas foca em roteamento entre configurações de \textit{clusters Trino}, e não entre \textit{engines} distintas.
+Strausz, Pardon e Giurgiu (2025) propuseram um otimizador para \textit{workloads} SQL \textit{multi-engine} que prevê, por aprendizado de máquina, o custo de execução em diferentes \textit{engines} \cite{strausz2025}; o \textit{DyraSQL} também decide com base no custo esperado, mas entre \textit{clusters Trino} de capacidades distintas, e sem treinamento de modelo.
 
-Zhang, Zhang e Meng (2025) exploraram elasticidade em tempo de execução, ajustando recursos computacionais durante a execução com base em métricas de \textit{performance} em tempo real \cite{zhang2025}; o \textit{DyraSQL} é complementar, pois realiza a análise prévia de metadados para seleção do \textit{cluster} antes da submissão, e não ajustes durante a execução.
+Zhang, Zhang e Meng (2025) exploraram a elasticidade em tempo de execução, ajustando recursos durante a execução com base em métricas de \textit{performance} \cite{zhang2025}. Essa elasticidade reage à carga observada, mas não impede que uma consulta pesada seja iniciada em um ambiente sem capacidade para ela. O \textit{DyraSQL} é complementar, pois seleciona o \textit{cluster} antes da submissão, podendo coexistir com mecanismos elásticos dentro de cada \textit{cluster}.
 
-\subsection{Trabalhos sobre Custos em \textit{data lakes}}
+Além dos trabalhos acadêmicos, a solução usualmente adotada para distribuir consultas entre \textit{clusters} \textit{Trino} é o \textit{Trino Gateway}, cujas regras de roteamento são escritas na linguagem de expressões MVEL e avaliam atributos da requisição, como cabeçalhos HTTP, o usuário e propriedades obtidas por análise sintática da consulta, como os catálogos e as tabelas referenciados \cite{trinogateway}. Essas regras permitem, por exemplo, encaminhar ao grupo de ETL as consultas enviadas por uma ferramenta de orquestração, mas não consideram o volume que a consulta lerá nem as operações que ela executará. O \textit{gateway} também admite delegar a escolha a um serviço externo, que recebe as informações da requisição e devolve o grupo de destino \cite{trinogateway}, mecanismo que evidencia a demanda por decisões de roteamento mais elaboradas do que regras estáticas e que é compatível com a abordagem do \textit{DyraSQL}.
 
-Weintraub et al. (2024) propuseram uma abordagem de melhoria de consultas em \textit{data lakes} baseada em planos de cobertura balanceados, utilizando índices e metadados para reduzir o volume de dados via \textit{data skipping} \cite{weintraub2024}; o \textit{DyraSQL} usa abordagem similar de análise de metadados do \textit{Apache Iceberg}, mas para direcionar consultas entre \textit{clusters}, e não para otimizar dentro de uma única arquitetura.
+\subsection{Trabalhos sobre Custos e Metadados em \textit{data lakes}}
 
-Ding et al. (2024) apresentaram um sistema de \textit{layouts} de dados multidimensionais automatizados no Amazon Redshift, que usa aprendizado de máquina para organizar dados conforme padrões de consultas \cite{ding2024}; o \textit{DyraSQL} utiliza abordagem similar de aprendizado contínuo, ajustando pesos do modelo de decisão a partir do histórico de custo e \textit{performance}, mas com foco em roteamento entre arquiteturas de processamento, e não em organização de dados.
-
-\subsection{Trabalhos sobre Utilização de Metadados}
-
-A utilização de metadados para melhoria de consultas tem sido amplamente explorada na literatura, sendo que sistemas como o \textit{Apache Iceberg} oferecem estruturas hierárquicas de metadados para estimativa de volume, análise de partições e melhoria de consultas \cite{iceberg2024}. Trabalhos anteriores demonstraram a eficácia de metadados para \textit{data skipping} e melhoria de consultas \cite{weintraub2024}; o \textit{DyraSQL} estende essa abordagem para roteamento dinâmico entre diferentes \textit{clusters}.
-
-Sistemas de processamento distribuído como o \textit{Trino} utilizam metadados para melhoria de planos de execução, sendo que informações sobre volume de dados, distribuição e partições são fundamentais para determinação da estratégia de processamento \cite{trinoconcepts}. O \textit{DyraSQL} complementa esta abordagem através de utilização de metadados para seleção da arquitetura de processamento antes da geração do plano de execução, sendo que esta análise prévia permite direcionamento mais eficiente das consultas.
+Weintraub et al. (2024) utilizaram índices e metadados para reduzir o volume lido em \textit{data lakes} por meio de \textit{data skipping} \cite{weintraub2024}; o \textit{DyraSQL} também se apoia em metadados, mas para escolher entre \textit{clusters}, e não para otimizar a leitura em uma única arquitetura. Ding et al. (2024) automatizaram, com aprendizado de máquina, a organização física dos dados no Amazon Redshift conforme os padrões de consulta \cite{ding2024}; o \textit{DyraSQL} também ajusta seus parâmetros a partir de execuções observadas, mas por calibração empírica de uma fórmula interpretável, e com foco no roteamento, e não na organização dos dados. De modo geral, metadados de volume, distribuição e partições já orientam planos de execução no \textit{Trino} \cite{trinoconcepts} e otimizações em tabelas \textit{Apache Iceberg} \cite{iceberg2024}; o \textit{DyraSQL} os utiliza em uma etapa anterior, a escolha do ambiente de execução.
 
 \subsection{Diferenças e Contribuições do \textit{DyraSQL}}
 
-O \textit{DyraSQL} diferencia-se dos trabalhos relacionados através de sua abordagem de roteamento dinâmico baseado em análise prévia de metadados do \textit{Apache Iceberg} para direcionamento de consultas entre \textit{clusters} \textit{Trino} de capacidades distintas. Enquanto trabalhos anteriores focam em melhoria dentro de uma única arquitetura \cite{weintraub2024} ou seleção entre diferentes \textit{engines} \cite{strausz2025}, o \textit{DyraSQL} propõe roteamento entre níveis de infraestrutura (\textit{small}, \textit{medium} e \textit{large}) baseado em características de cada consulta identificadas através de metadados.
+Entre as soluções que decidem o \textit{cluster} de destino antes da execução, o \textit{Trino Gateway} baseia-se em quem envia a consulta, e não em quanto ela exige, e o trabalho de Strausz et al. decide entre \textit{engines} distintas mediante treinamento de modelo. As abordagens de Xue et al. e Zhang et al. atuam durante a execução e dependem de integração ao motor, enquanto as de Weintraub et al. e Ding et al. otimizam a leitura ou a organização dos dados em uma única arquitetura. O \textit{DyraSQL} é a única das soluções comparadas que decide o \textit{cluster} antes da execução com base na demanda estimada da consulta, sem treinamento e sem alteração do motor, utilizando apenas o \textit{EXPLAIN (TYPE IO)} e a estrutura do SQL. Em contrapartida, sua precisão depende de que as características consideradas capturem o que de fato consome recursos, limitação examinada na Seção \ref{sec:experimentos}, em que a abordagem selecionou o menor \textit{cluster} adequado em 14 de 15 consultas, sem subdimensionamento.
 
-A principal contribuição do \textit{DyraSQL} reside na combinação de análise prévia de metadados, algoritmo de decisão baseado em pontuação e sistema de histórico para roteamento dinâmico que melhora a relação entre custo e \textit{performance}, complementando trabalhos que focam em melhoria durante a execução \cite{zhang2025} ou seleção entre \textit{engines} \cite{strausz2025} com uma camada adicional de seleção prévia do \textit{cluster}. Os experimentos em ambiente local demonstram que essa abordagem resulta em classificação consistente das consultas.
+\begin{table}[H]
+	\centering
+	\caption{Comparação entre o \textit{DyraSQL} e trabalhos relacionados}
+	\label{tab:comparativo}
+	\footnotesize
+	\begin{tabular}{p{2.3cm}p{3.0cm}p{1.9cm}p{3.0cm}p{3.2cm}}
+	\hline
+	\textbf{Trabalho} & \textbf{O que decide} & \textbf{Momento} & \textbf{Base da decisão} & \textbf{Requisitos de adoção} \\
+	\hline
+	\textit{Trino Gateway} & \textit{Cluster} de destino & Antes da execução & Regras estáticas sobre usuário, origem ou cabeçalhos & Configuração manual das regras \\
+	Xue et al. (2024) & Estratégia de execução & Durante a execução & Características da consulta e condições do ambiente & Integração ao motor de execução \\
+	Strausz et al. (2025) & \textit{Engine} de destino & Antes da execução & Custo previsto por modelo aprendido & Treinamento de modelo de aprendizado de máquina \\
+	Zhang et al. (2025) & Recursos alocados & Durante a execução & Métricas de \textit{performance} em tempo real & Elasticidade no motor de execução \\
+	Weintraub et al. (2024) & Dados lidos (\textit{data skipping}) & Planejamento da consulta & Índices e metadados & Estruturas de índice sobre o \textit{data lake} \\
+	Ding et al. (2024) & \textit{Layout} físico dos dados & Fora da consulta & Padrões históricos de consulta & Modelo de aprendizado de máquina no \textit{warehouse} \\
+	\textbf{\textit{DyraSQL}} & \textbf{\textit{Cluster} de destino} & \textbf{Antes da execução} & \textbf{Volume estimado, estrutura da consulta e histórico} & \textbf{Nenhuma alteração no motor; sem treinamento} \\
+	\hline
+	\end{tabular}
+	\fonte{Elaborado pelo autor.}
+\end{table}
+
+A Tabela \ref{tab:comparativo} compara o \textit{DyraSQL} com os trabalhos revisados e com o \textit{Trino Gateway}, solução usualmente empregada para distribuir consultas entre \textit{clusters} \textit{Trino} \cite{trinogateway}, segundo o que cada solução decide, em que momento, com base em qual informação e o que exige para ser adotada.

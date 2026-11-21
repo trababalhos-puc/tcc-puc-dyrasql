@@ -1,0 +1,11 @@
+Diagn?stico ao vivo - 13/10/2026
+Apenas status e permiss?es p?blicas; tokens n?o s?o registrados.
+{"repository": "minio/mc", "token_http": 200, "anonymous_access": [], "manifest_http": 401}
+{"repository": "minio/minio", "token_http": 200, "anonymous_access": [], "manifest_http": 401}
+{"repository": "library/postgres", "token_http": 200, "anonymous_access": [{"actions": ["pull"], "name": "library/postgres", "parameters": {"pull_limit": "100", "pull_limit_interval": "21600", "registry_region": "us-east-1"}, "type": "repository"}], "manifest_http": 200}
+quay.io/minio/mc latest manifest: HTTP 401
+Conclus?o observada: sem acesso an?nimo ?s imagens MinIO; acesso ao postgres funciona.
+N?o se conclui apenas deste teste se houve exclus?o definitiva ou altera??o de visibilidade.
+Fontes consultadas:
+https://github.com/minio/mc (arquivado; README ainda sugere docker pull minio/mc)
+https://github.com/minio/minio/releases/tag/RELEASE.2025-10-15T17-29-55Z (orienta compilar containers a partir do c?digo)

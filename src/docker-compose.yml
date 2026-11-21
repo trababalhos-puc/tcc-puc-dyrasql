@@ -189,10 +189,12 @@ services:
       DYRASQL_WEIGHT_VOLUME: "0.5"
       DYRASQL_WEIGHT_COMPLEXITY: "0.3"
       DYRASQL_WEIGHT_HISTORICAL: "0.2"
-      DYRASQL_SMALL_THRESHOLD: "0.3"
+      DYRASQL_SMALL_THRESHOLD: "0.6"
       DYRASQL_MEDIUM_THRESHOLD: "0.7"
-      DYRASQL_MAX_SIZE_GB: "10"
-      DYRASQL_MAX_ROWS: "1000000000"
+      # Calibracao do Fator volume pelo ambiente: T_max = query.max-memory do
+      # cluster large; R_max = linhas da maior tabela (iceberg.analytics.dados).
+      DYRASQL_MAX_SIZE_GB: "3"
+      DYRASQL_MAX_ROWS: "46080000"
       SAVE_EXPLAINS: "true"
       EXPLAINS_DIR: /app/explains
     volumes:

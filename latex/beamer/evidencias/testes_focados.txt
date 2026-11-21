@@ -1,0 +1,58 @@
+$ C:\Users\arihenrique\developer\tcc-puc-dyrasql\.venv\Scripts\python.exe -m pytest -v --no-cov tests/test_decision_engine.py tests/test_query_analyzer.py tests/test_api_route.py --junitxml=C:\Users\arihenrique\developer\tcc-puc-dyrasql\latex\beamer\evidencias\focados.xml
+============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-8.3.4, pluggy-1.6.0 -- C:\Users\arihenrique\developer\tcc-puc-dyrasql\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\arihenrique\developer\tcc-puc-dyrasql
+configfile: pytest.ini
+plugins: anyio-3.7.1, asyncio-0.24.0, cov-6.0.0
+asyncio: mode=Mode.AUTO, default_loop_scope=function
+collecting ... collected 43 items
+
+tests/test_decision_engine.py::test_volume_factor_article_example PASSED [  2%]
+tests/test_decision_engine.py::test_volume_factor_empty_metadata PASSED  [  4%]
+tests/test_decision_engine.py::test_complexity_factor_article_example PASSED [  6%]
+tests/test_decision_engine.py::test_select_cluster_thresholds PASSED     [  9%]
+tests/test_decision_engine.py::test_decide_article_example PASSED        [ 11%]
+tests/test_decision_engine.py::test_decide_high_score_routes_to_large PASSED [ 13%]
+tests/test_decision_engine.py::test_decide_low_score_routes_to_small PASSED [ 16%]
+tests/test_query_analyzer.py::test_fingerprint_stable_across_literals PASSED [ 18%]
+tests/test_query_analyzer.py::test_fingerprint_differs_for_structure PASSED [ 20%]
+tests/test_query_analyzer.py::test_analyze_complexity_counts PASSED      [ 23%]
+tests/test_query_analyzer.py::test_analyze_complexity_invalid_sql PASSED [ 25%]
+tests/test_query_analyzer.py::test_extract_where_clause PASSED           [ 27%]
+tests/test_query_analyzer.py::test_extract_where_clause_absent PASSED    [ 30%]
+tests/test_query_analyzer.py::test_normalize_query_adds_iceberg_catalog PASSED [ 32%]
+tests/test_query_analyzer.py::test_parse_explain_io PASSED               [ 34%]
+tests/test_query_analyzer.py::test_explain_io_success PASSED             [ 37%]
+tests/test_query_analyzer.py::test_explain_io_error PASSED               [ 39%]
+tests/test_query_analyzer.py::test_explain_io_no_data PASSED             [ 41%]
+tests/test_query_analyzer.py::test_analyze_query_io_success PASSED       [ 44%]
+tests/test_query_analyzer.py::test_analyze_query_io_failure PASSED       [ 46%]
+tests/test_query_analyzer.py::test_extract_tables_fallback PASSED        [ 48%]
+tests/test_query_analyzer.py::test_extract_tables_from_explain PASSED    [ 51%]
+tests/test_query_analyzer.py::test_execute_trino_query_http_error PASSED [ 53%]
+tests/test_query_analyzer.py::test_execute_trino_query_success PASSED    [ 55%]
+tests/test_query_analyzer.py::test_execute_trino_query_exception PASSED  [ 58%]
+tests/test_query_analyzer.py::test_save_explain_writes_file PASSED       [ 60%]
+tests/test_api_route.py::test_health PASSED                              [ 62%]
+tests/test_api_route.py::test_route_cache_hit PASSED                     [ 65%]
+tests/test_api_route.py::test_route_cache_miss PASSED                    [ 67%]
+tests/test_api_route.py::test_route_error PASSED                         [ 69%]
+tests/test_api_route.py::test_save_metrics PASSED                        [ 72%]
+tests/test_api_route.py::test_save_metrics_error PASSED                  [ 74%]
+tests/test_api_route.py::test_get_cluster_url PASSED                     [ 76%]
+tests/test_api_route.py::test_trino_info_fallback PASSED                 [ 79%]
+tests/test_api_route.py::test_trino_info_proxy PASSED                    [ 81%]
+tests/test_api_route.py::test_statement_empty_query PASSED               [ 83%]
+tests/test_api_route.py::test_statement_keepalive PASSED                 [ 86%]
+tests/test_api_route.py::test_statement_metadata_query PASSED            [ 88%]
+tests/test_api_route.py::test_statement_with_analysis PASSED             [ 90%]
+tests/test_api_route.py::test_statement_cache_hit PASSED                 [ 93%]
+tests/test_api_route.py::test_statement_timeout PASSED                   [ 95%]
+tests/test_api_route.py::test_proxy_other_get PASSED                     [ 97%]
+tests/test_api_route.py::test_proxy_other_error PASSED                   [100%]
+
+- generated xml file: C:\Users\arihenrique\developer\tcc-puc-dyrasql\latex\beamer\evidencias\focados.xml -
+============================= 43 passed in 1.37s ==============================
+
+EXIT_CODE=0

@@ -1,0 +1,35 @@
+[
+  {
+    "input_gib": 0.01,
+    "input_rows": 10,
+    "cluster": "small",
+    "score": 0.0,
+    "factors": {
+      "volume": 0,
+      "complexity": 0,
+      "historical": 0
+    }
+  },
+  {
+    "input_gib": 1.25,
+    "input_rows": 2500000,
+    "cluster": "medium",
+    "score": 0.44218070134416576,
+    "factors": {
+      "volume": 0.27336140268833165,
+      "complexity": 0.6849999999999999,
+      "historical": 0.5
+    }
+  },
+  {
+    "input_gib": 900,
+    "input_rows": 500000000,
+    "cluster": "large",
+    "score": 0.9398612259362595,
+    "factors": {
+      "volume": 0.8797224518725193,
+      "complexity": 1,
+      "historical": 1
+    }
+  }
+]

@@ -1,0 +1,18 @@
+{
+  "n": 15,
+  "original_sem_memoria": {
+    "acertos": 3,
+    "subdimensionadas": 2
+  },
+  "calibrado": {
+    "w1": 0.5,
+    "w2": 0.3,
+    "w3": 0.2,
+    "limiar_small": 0.6,
+    "limiar_medium": 0.7,
+    "c_m": 1.5,
+    "acertos": 14,
+    "subdimensionadas": 0
+  },
+  "leave_one_out_acertos": 13
+}

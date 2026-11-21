@@ -1,0 +1,292 @@
+$ C:\Users\arihenrique\developer\tcc-puc-dyrasql\.venv\Scripts\python.exe -m pytest -q --junitxml=C:\Users\arihenrique\developer\tcc-puc-dyrasql\latex\beamer\evidencias\completos.xml
+.........................................F.............................. [ 60%]
+........FFFFFFFFFFFF............................                         [100%]
+================================== FAILURES ===================================
+_______________________ test_generate_insert_statements _______________________
+
+tmp_path = WindowsPath('C:/Users/arihenrique/AppData/Local/Temp/pytest-of-arihenrique/pytest-324/test_generate_insert_statement0')
+
+    def test_generate_insert_statements(tmp_path):
+        output = tmp_path / "out.sql"
+        gd.generate_insert_statements(
+            num_records=5,
+            start_date="2024-01-01",
+            num_days=30,
+            batch_size=2,
+            output_file=str(output),
+        )
+>       content = output.read_text(encoding="utf-8")
+
+tests\test_generate_data.py:60: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\..\AppData\Local\Programs\Python\Python311\Lib\pathlib.py:1059: in read_text
+    return f.read()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <encodings.utf_8.IncrementalDecoder object at 0x000002088C74F190>
+input = b'-- ======================================================================\r\n-- Dados Sint\xe9ticos Gerados Automati...", "versao": "1.0", "metadados": {"gerado_em": "2026-10-13T22:25:56.953955", "tipo": "A"}}\', \'SK00000005\');\r\n\r\n'
+final = True
+
+>   ???
+E   UnicodeDecodeError: 'utf-8' codec can't decode byte 0xe9 in position 88: invalid continuation byte
+
+<frozen codecs>:322: UnicodeDecodeError
+---------------------------- Captured stdout call -----------------------------
+Gerando 5 registros...
+Range de datas: 2024-01-01 até 2024-01-30
+Batch size: 2 registros por INSERT
+Arquivo de saída: C:\Users\arihenrique\AppData\Local\Temp\pytest-of-arihenrique\pytest-324\test_generate_insert_statement0\out.sql
+
+Batch 1/3: Gerando registros 1 a 2...
+Batch 2/3: Gerando registros 3 a 4...
+Batch 3/3: Gerando registros 5 a 5...
+
+
+✓ Arquivo gerado: C:\Users\arihenrique\AppData\Local\Temp\pytest-of-arihenrique\pytest-324\test_generate_insert_statement0\out.sql
+✓ Total de registros: 5
+✓ Tamanho aproximado: ~0.0 MB
+__________ test_shell_script_exists_and_executable[debug-ide-raw.sh] __________
+
+script_name = 'debug-ide-raw.sh'
+
+    @pytest.mark.parametrize("script_name", SHELL_SCRIPTS)
+    def test_shell_script_exists_and_executable(script_name):
+        path = SCRIPTS_DIR / script_name
+        assert path.is_file()
+>       assert path.stat().st_mode & 0o111
+E       AssertionError: assert (33206 & 73)
+E        +  where 33206 = os.stat_result(st_mode=33206, st_ino=844424931660943, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=748, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726).st_mode
+E        +    where os.stat_result(st_mode=33206, st_ino=844424931660943, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=748, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726) = stat()
+E        +      where stat = WindowsPath('C:/Users/arihenrique/developer/tcc-puc-dyrasql/src/scripts/debug-ide-raw.sh').stat
+
+tests\test_scripts_shell.py:26: AssertionError
+__________ test_shell_script_exists_and_executable[init-iceberg.sh] ___________
+
+script_name = 'init-iceberg.sh'
+
+    @pytest.mark.parametrize("script_name", SHELL_SCRIPTS)
+    def test_shell_script_exists_and_executable(script_name):
+        path = SCRIPTS_DIR / script_name
+        assert path.is_file()
+>       assert path.stat().st_mode & 0o111
+E       AssertionError: assert (33206 & 73)
+E        +  where 33206 = os.stat_result(st_mode=33206, st_ino=844424931660946, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=1134, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726).st_mode
+E        +    where os.stat_result(st_mode=33206, st_ino=844424931660946, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=1134, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726) = stat()
+E        +      where stat = WindowsPath('C:/Users/arihenrique/developer/tcc-puc-dyrasql/src/scripts/init-iceberg.sh').stat
+
+tests\test_scripts_shell.py:26: AssertionError
+__________ test_shell_script_exists_and_executable[limpar-cache.sh] ___________
+
+script_name = 'limpar-cache.sh'
+
+    @pytest.mark.parametrize("script_name", SHELL_SCRIPTS)
+    def test_shell_script_exists_and_executable(script_name):
+        path = SCRIPTS_DIR / script_name
+        assert path.is_file()
+>       assert path.stat().st_mode & 0o111
+E       AssertionError: assert (33206 & 73)
+E        +  where 33206 = os.stat_result(st_mode=33206, st_ino=844424931660948, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=612, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726).st_mode
+E        +    where os.stat_result(st_mode=33206, st_ino=844424931660948, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=612, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726) = stat()
+E        +      where stat = WindowsPath('C:/Users/arihenrique/developer/tcc-puc-dyrasql/src/scripts/limpar-cache.sh').stat
+
+tests\test_scripts_shell.py:26: AssertionError
+_________ test_shell_script_exists_and_executable[monitor-routing.sh] _________
+
+script_name = 'monitor-routing.sh'
+
+    @pytest.mark.parametrize("script_name", SHELL_SCRIPTS)
+    def test_shell_script_exists_and_executable(script_name):
+        path = SCRIPTS_DIR / script_name
+        assert path.is_file()
+>       assert path.stat().st_mode & 0o111
+E       AssertionError: assert (33206 & 73)
+E        +  where 33206 = os.stat_result(st_mode=33206, st_ino=844424931660950, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=926, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726).st_mode
+E        +    where os.stat_result(st_mode=33206, st_ino=844424931660950, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=926, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726) = stat()
+E        +      where stat = WindowsPath('C:/Users/arihenrique/developer/tcc-puc-dyrasql/src/scripts/monitor-routing.sh').stat
+
+tests\test_scripts_shell.py:26: AssertionError
+___ test_shell_script_exists_and_executable[setup-gateway-backends-auto.sh] ___
+
+script_name = 'setup-gateway-backends-auto.sh'
+
+    @pytest.mark.parametrize("script_name", SHELL_SCRIPTS)
+    def test_shell_script_exists_and_executable(script_name):
+        path = SCRIPTS_DIR / script_name
+        assert path.is_file()
+>       assert path.stat().st_mode & 0o111
+E       AssertionError: assert (33206 & 73)
+E        +  where 33206 = os.stat_result(st_mode=33206, st_ino=844424931660951, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=4489, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726).st_mode
+E        +    where os.stat_result(st_mode=33206, st_ino=844424931660951, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=4489, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726) = stat()
+E        +      where stat = WindowsPath('C:/Users/arihenrique/developer/tcc-puc-dyrasql/src/scripts/setup-gateway-backends-auto.sh').stat
+
+tests\test_scripts_shell.py:26: AssertionError
+__________ test_shell_script_exists_and_executable[GUIA_GERADOR.sh] ___________
+
+script_name = 'GUIA_GERADOR.sh'
+
+    @pytest.mark.parametrize("script_name", SHELL_SCRIPTS)
+    def test_shell_script_exists_and_executable(script_name):
+        path = SCRIPTS_DIR / script_name
+        assert path.is_file()
+>       assert path.stat().st_mode & 0o111
+E       AssertionError: assert (33206 & 73)
+E        +  where 33206 = os.stat_result(st_mode=33206, st_ino=844424931660941, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=5805, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726).st_mode
+E        +    where os.stat_result(st_mode=33206, st_ino=844424931660941, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=5805, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726) = stat()
+E        +      where stat = WindowsPath('C:/Users/arihenrique/developer/tcc-puc-dyrasql/src/scripts/GUIA_GERADOR.sh').stat
+
+tests\test_scripts_shell.py:26: AssertionError
+_________________ test_shell_script_syntax[debug-ide-raw.sh] __________________
+
+script_name = 'debug-ide-raw.sh'
+
+    @pytest.mark.parametrize("script_name", SHELL_SCRIPTS)
+    def test_shell_script_syntax(script_name):
+        path = SCRIPTS_DIR / script_name
+        result = subprocess.run(
+            ["bash", "-n", str(path)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+>       assert result.returncode == 0, result.stderr
+E       AssertionError: /bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptsdebug-ide-raw.sh: No such file or directory
+E         
+E       assert 127 == 0
+E        +  where 127 = CompletedProcess(args=['bash', '-n', 'C:\\Users\\arihenrique\\developer\\tcc-puc-dyrasql\\src\\scripts\\debug-ide-raw.... stderr='/bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptsdebug-ide-raw.sh: No such file or directory\n').returncode
+
+tests\test_scripts_shell.py:38: AssertionError
+__________________ test_shell_script_syntax[init-iceberg.sh] __________________
+
+script_name = 'init-iceberg.sh'
+
+    @pytest.mark.parametrize("script_name", SHELL_SCRIPTS)
+    def test_shell_script_syntax(script_name):
+        path = SCRIPTS_DIR / script_name
+        result = subprocess.run(
+            ["bash", "-n", str(path)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+>       assert result.returncode == 0, result.stderr
+E       AssertionError: /bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptsinit-iceberg.sh: No such file or directory
+E         
+E       assert 127 == 0
+E        +  where 127 = CompletedProcess(args=['bash', '-n', 'C:\\Users\\arihenrique\\developer\\tcc-puc-dyrasql\\src\\scripts\\init-iceberg.s..., stderr='/bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptsinit-iceberg.sh: No such file or directory\n').returncode
+
+tests\test_scripts_shell.py:38: AssertionError
+__________________ test_shell_script_syntax[limpar-cache.sh] __________________
+
+script_name = 'limpar-cache.sh'
+
+    @pytest.mark.parametrize("script_name", SHELL_SCRIPTS)
+    def test_shell_script_syntax(script_name):
+        path = SCRIPTS_DIR / script_name
+        result = subprocess.run(
+            ["bash", "-n", str(path)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+>       assert result.returncode == 0, result.stderr
+E       AssertionError: /bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptslimpar-cache.sh: No such file or directory
+E         
+E       assert 127 == 0
+E        +  where 127 = CompletedProcess(args=['bash', '-n', 'C:\\Users\\arihenrique\\developer\\tcc-puc-dyrasql\\src\\scripts\\limpar-cache.s..., stderr='/bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptslimpar-cache.sh: No such file or directory\n').returncode
+
+tests\test_scripts_shell.py:38: AssertionError
+________________ test_shell_script_syntax[monitor-routing.sh] _________________
+
+script_name = 'monitor-routing.sh'
+
+    @pytest.mark.parametrize("script_name", SHELL_SCRIPTS)
+    def test_shell_script_syntax(script_name):
+        path = SCRIPTS_DIR / script_name
+        result = subprocess.run(
+            ["bash", "-n", str(path)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+>       assert result.returncode == 0, result.stderr
+E       AssertionError: /bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptsmonitor-routing.sh: No such file or directory
+E         
+E       assert 127 == 0
+E        +  where 127 = CompletedProcess(args=['bash', '-n', 'C:\\Users\\arihenrique\\developer\\tcc-puc-dyrasql\\src\\scripts\\monitor-routin...tderr='/bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptsmonitor-routing.sh: No such file or directory\n').returncode
+
+tests\test_scripts_shell.py:38: AssertionError
+__________ test_shell_script_syntax[setup-gateway-backends-auto.sh] ___________
+
+script_name = 'setup-gateway-backends-auto.sh'
+
+    @pytest.mark.parametrize("script_name", SHELL_SCRIPTS)
+    def test_shell_script_syntax(script_name):
+        path = SCRIPTS_DIR / script_name
+        result = subprocess.run(
+            ["bash", "-n", str(path)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+>       assert result.returncode == 0, result.stderr
+E       AssertionError: /bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptssetup-gateway-backends-auto.sh: No such file or directory
+E         
+E       assert 127 == 0
+E        +  where 127 = CompletedProcess(args=['bash', '-n', 'C:\\Users\\arihenrique\\developer\\tcc-puc-dyrasql\\src\\scripts\\setup-gateway-...bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptssetup-gateway-backends-auto.sh: No such file or directory\n').returncode
+
+tests\test_scripts_shell.py:38: AssertionError
+__________________ test_shell_script_syntax[GUIA_GERADOR.sh] __________________
+
+script_name = 'GUIA_GERADOR.sh'
+
+    @pytest.mark.parametrize("script_name", SHELL_SCRIPTS)
+    def test_shell_script_syntax(script_name):
+        path = SCRIPTS_DIR / script_name
+        result = subprocess.run(
+            ["bash", "-n", str(path)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+>       assert result.returncode == 0, result.stderr
+E       AssertionError: /bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptsGUIA_GERADOR.sh: No such file or directory
+E         
+E       assert 127 == 0
+E        +  where 127 = CompletedProcess(args=['bash', '-n', 'C:\\Users\\arihenrique\\developer\\tcc-puc-dyrasql\\src\\scripts\\GUIA_GERADOR.s..., stderr='/bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptsGUIA_GERADOR.sh: No such file or directory\n').returncode
+
+tests\test_scripts_shell.py:38: AssertionError
+- generated xml file: C:\Users\arihenrique\developer\tcc-puc-dyrasql\latex\beamer\evidencias\completos.xml -
+
+---------- coverage: platform win32, python 3.11.9-final-0 -----------
+Name                                     Stmts   Miss  Cover   Missing
+----------------------------------------------------------------------
+src\dyrasql-core\__init__.py                 0      0   100%
+src\dyrasql-core\app.py                    248     21    92%   304-305, 355, 384-385, 425-427, 451, 473-484, 522
+src\dyrasql-core\decision_engine.py         58      1    98%   27
+src\dyrasql-core\history_manager.py        118      3    97%   65, 148-149
+src\dyrasql-core\metadata_connector.py      12      0   100%
+src\dyrasql-core\query_analyzer.py         272     19    93%   103, 107-108, 114-117, 139, 163, 217-222, 271-273, 283, 354, 357, 360, 540-541, 569
+src\scripts\generate_data.py                92      0   100%
+src\trino-gateway-proxy\app.py             196      8    96%   93-97, 166-169, 308, 349, 373
+src\trino-gateway\add_h2_dependency.py      53      2    96%   35-36
+----------------------------------------------------------------------
+TOTAL                                     1049     54    95%
+
+Required test coverage of 90% reached. Total coverage: 94.85%
+=========================== short test summary info ===========================
+FAILED tests/test_generate_data.py::test_generate_insert_statements - Unicode...
+FAILED tests/test_scripts_shell.py::test_shell_script_exists_and_executable[debug-ide-raw.sh]
+FAILED tests/test_scripts_shell.py::test_shell_script_exists_and_executable[init-iceberg.sh]
+FAILED tests/test_scripts_shell.py::test_shell_script_exists_and_executable[limpar-cache.sh]
+FAILED tests/test_scripts_shell.py::test_shell_script_exists_and_executable[monitor-routing.sh]
+FAILED tests/test_scripts_shell.py::test_shell_script_exists_and_executable[setup-gateway-backends-auto.sh]
+FAILED tests/test_scripts_shell.py::test_shell_script_exists_and_executable[GUIA_GERADOR.sh]
+FAILED tests/test_scripts_shell.py::test_shell_script_syntax[debug-ide-raw.sh]
+FAILED tests/test_scripts_shell.py::test_shell_script_syntax[init-iceberg.sh]
+FAILED tests/test_scripts_shell.py::test_shell_script_syntax[limpar-cache.sh]
+FAILED tests/test_scripts_shell.py::test_shell_script_syntax[monitor-routing.sh]
+FAILED tests/test_scripts_shell.py::test_shell_script_syntax[setup-gateway-backends-auto.sh]
+FAILED tests/test_scripts_shell.py::test_shell_script_syntax[GUIA_GERADOR.sh]
+13 failed, 107 passed in 3.32s
+
+EXIT_CODE=1

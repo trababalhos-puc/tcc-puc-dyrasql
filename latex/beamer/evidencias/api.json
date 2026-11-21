@@ -1,0 +1,35 @@
+{
+  "health": {
+    "status": "healthy",
+    "service": "dyrasql-core"
+  },
+  "miss": {
+    "fingerprint": "00745e4f4b58d0c277749ab3e862efa345553abb59ee3af8114378b284575612",
+    "cluster": "medium",
+    "score": 0.44218070134416576,
+    "factors": {
+      "volume": 0.27336140268833165,
+      "complexity": 0.6849999999999999,
+      "historical": 0.5
+    },
+    "cached": false,
+    "cluster_url": "http://trino-medium:8080"
+  },
+  "hit": {
+    "fingerprint": "00745e4f4b58d0c277749ab3e862efa345553abb59ee3af8114378b284575612",
+    "cluster": "medium",
+    "score": 0.44218070134416576,
+    "factors": {
+      "volume": 0.27336140268833165,
+      "complexity": 0.6849999999999999,
+      "historical": 0.5
+    },
+    "cached": true,
+    "cluster_url": "http://trino-medium:8080"
+  },
+  "http_status": [
+    200,
+    200,
+    200
+  ]
+}

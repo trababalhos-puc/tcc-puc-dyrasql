@@ -1,0 +1,168 @@
+{
+  "parametros": {
+    "preco": 0.24,
+    "coord": 1,
+    "small": 2,
+    "medium": 3,
+    "large": 10,
+    "horas_comerciais": 10,
+    "dias_uteis": 22,
+    "pesadas_dia": 3,
+    "duracao_h": 0.5,
+    "startup_min": 10,
+    "saida": "latex/tabelas"
+  },
+  "cenarios": {
+    "A": {
+      "horas_no": 7920,
+      "custo": 1900.8,
+      "economia_vs_A": 0.0
+    },
+    "B": {
+      "horas_no": 2160,
+      "custo": 518.4,
+      "economia_vs_A": 0.7273
+    },
+    "C": {
+      "horas_no": 3700.0,
+      "custo": 888.0,
+      "economia_vs_A": 0.5328
+    },
+    "D": {
+      "horas_no": 10960,
+      "custo": 2630.4,
+      "economia_vs_A": -0.3838
+    }
+  },
+  "C_por_cluster": {
+    "small": {
+      "horas_no": 2160,
+      "custo": 518.4,
+      "economia_vs_A": 0.7273
+    },
+    "medium": {
+      "horas_no": 880,
+      "custo": 211.2,
+      "economia_vs_A": 0.8889
+    },
+    "large": {
+      "horas_no": 660.0,
+      "custo": 158.4,
+      "economia_vs_A": 0.9167
+    }
+  },
+  "sensibilidade": [
+    {
+      "pesadas_dia": 1,
+      "duracao_h": 0.25,
+      "horas_no": 3177.5,
+      "custo": 762.6,
+      "economia_vs_A": 0.5988
+    },
+    {
+      "pesadas_dia": 1,
+      "duracao_h": 0.5,
+      "horas_no": 3260.0,
+      "custo": 782.4,
+      "economia_vs_A": 0.5884
+    },
+    {
+      "pesadas_dia": 1,
+      "duracao_h": 1,
+      "horas_no": 3425.0,
+      "custo": 822.0,
+      "economia_vs_A": 0.5676
+    },
+    {
+      "pesadas_dia": 1,
+      "duracao_h": 2,
+      "horas_no": 3755.0,
+      "custo": 901.2,
+      "economia_vs_A": 0.5259
+    },
+    {
+      "pesadas_dia": 3,
+      "duracao_h": 0.25,
+      "horas_no": 3452.5,
+      "custo": 828.6,
+      "economia_vs_A": 0.5641
+    },
+    {
+      "pesadas_dia": 3,
+      "duracao_h": 0.5,
+      "horas_no": 3700.0,
+      "custo": 888.0,
+      "economia_vs_A": 0.5328
+    },
+    {
+      "pesadas_dia": 3,
+      "duracao_h": 1,
+      "horas_no": 4195.0,
+      "custo": 1006.8,
+      "economia_vs_A": 0.4703
+    },
+    {
+      "pesadas_dia": 3,
+      "duracao_h": 2,
+      "horas_no": 5185.0,
+      "custo": 1244.4,
+      "economia_vs_A": 0.3453
+    },
+    {
+      "pesadas_dia": 6,
+      "duracao_h": 0.25,
+      "horas_no": 3865.0,
+      "custo": 927.6,
+      "economia_vs_A": 0.512
+    },
+    {
+      "pesadas_dia": 6,
+      "duracao_h": 0.5,
+      "horas_no": 4360.0,
+      "custo": 1046.4,
+      "economia_vs_A": 0.4495
+    },
+    {
+      "pesadas_dia": 6,
+      "duracao_h": 1,
+      "horas_no": 5350.0,
+      "custo": 1284.0,
+      "economia_vs_A": 0.3245
+    },
+    {
+      "pesadas_dia": 6,
+      "duracao_h": 2,
+      "horas_no": 7330.0,
+      "custo": 1759.2,
+      "economia_vs_A": 0.0745
+    },
+    {
+      "pesadas_dia": 12,
+      "duracao_h": 0.25,
+      "horas_no": 4690.0,
+      "custo": 1125.6,
+      "economia_vs_A": 0.4078
+    },
+    {
+      "pesadas_dia": 12,
+      "duracao_h": 0.5,
+      "horas_no": 5680.0,
+      "custo": 1363.2,
+      "economia_vs_A": 0.2828
+    },
+    {
+      "pesadas_dia": 12,
+      "duracao_h": 1,
+      "horas_no": 7660.0,
+      "custo": 1838.4,
+      "economia_vs_A": 0.0328
+    },
+    {
+      "pesadas_dia": 12,
+      "duracao_h": 2,
+      "horas_no": 11620.0,
+      "custo": 2788.8,
+      "economia_vs_A": -0.4672
+    }
+  ]
+}

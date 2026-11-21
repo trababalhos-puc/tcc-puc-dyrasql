@@ -278,3 +278,20 @@ def test_save_explain_writes_file(tmp_path, monkeypatch):
     )
     files = list(tmp_path.glob("*.json"))
     assert len(files) == 1
+
+
+def test_analyze_complexity_memory_intensive(analyzer):
+    leve = analyzer.analyze_complexity(
+        "SELECT tenant_id, sum(valor) FROM dados WHERE valor > (SELECT avg(valor) FROM dados) GROUP BY tenant_id"
+    )
+    distinct = analyzer.analyze_complexity("SELECT count(DISTINCT surrogate_key) FROM dados")
+    janela = analyzer.analyze_complexity(
+        "SELECT max(rn) FROM (SELECT row_number() OVER (PARTITION BY tenant_id ORDER BY valor) AS rn FROM dados)"
+    )
+    self_join = analyzer.analyze_complexity(
+        "SELECT count(*) FROM dados a JOIN dados b ON a.surrogate_key = b.surrogate_key"
+    )
+    assert leve["memory_intensive"] == 0
+    assert distinct["memory_intensive"] == 1
+    assert janela["memory_intensive"] == 1
+    assert self_join["memory_intensive"] == 1

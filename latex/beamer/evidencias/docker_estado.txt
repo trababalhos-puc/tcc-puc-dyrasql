@@ -1,0 +1,4 @@
+$ docker compose -f src/docker-compose.yml ps -a
+NAME      IMAGE     COMMAND   SERVICE   CREATED   STATUS    PORTS
+
+EXIT_CODE=0

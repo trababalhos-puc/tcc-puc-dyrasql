@@ -8,7 +8,7 @@ from decision_engine import DecisionEngine
 def test_volume_factor_article_example(article_metadata):
     engine = DecisionEngine()
     fv = engine._calculate_volume_factor(article_metadata)
-    assert abs(fv - 0.27) < 0.02
+    assert abs(fv - 0.54) < 0.02  # escala em MB (T_max=1000 GB, R_max=1e9)
 
 
 def test_volume_factor_empty_metadata():
@@ -43,9 +43,9 @@ def test_decide_article_example(article_metadata, article_complexity, mock_histo
         history_manager=mock_history_manager,
     )
 
-    assert abs(decision["score"] - 0.44) < 0.03
+    assert abs(decision["score"] - 0.57) < 0.03
     assert decision["cluster"] == "medium"
-    assert abs(decision["factors"]["volume"] - 0.27) < 0.02
+    assert abs(decision["factors"]["volume"] - 0.54) < 0.02
     assert abs(decision["factors"]["complexity"] - 0.69) < 0.01
     assert decision["factors"]["historical"] == 0.5
 
@@ -90,3 +90,18 @@ def test_decide_low_score_routes_to_small(mock_history_manager):
     decision = engine.decide("q", "fp", metadata, complexity, mock_history_manager)
     assert decision["cluster"] == "small"
     assert decision["score"] < 0.3
+
+
+def test_volume_factor_sub_gb_not_negative():
+    engine = DecisionEngine()
+    metadata = {"t": {"total_size_bytes": 50 * 1024**2, "total_records": 1_000_000}}
+    assert engine._calculate_volume_factor(metadata) > 0
+
+
+def test_complexity_factor_memory_intensive():
+    engine = DecisionEngine()
+    base = {"joins": 0, "aggregations": 1, "subqueries": 0,
+            "partitioned_filters": 0, "non_partitioned_filters": 0}
+    leve = engine._calculate_complexity_factor(base)
+    pesada = engine._calculate_complexity_factor({**base, "memory_intensive": 1})
+    assert abs((pesada - leve) - 0.75) < 1e-9

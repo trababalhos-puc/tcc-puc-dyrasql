@@ -1,0 +1,3 @@
+$ wsl -d Ubuntu -- sh -c git -c core.autocrlf=false clone --quiet --no-hardlinks /mnt/c/Users/arihenrique/developer/tcc-puc-dyrasql /tmp/dyrasql-pitch-lf-20261013
+
+EXIT_CODE=0

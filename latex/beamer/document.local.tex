@@ -1,0 +1,241 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[brazilian]{babel}
+\usepackage{lmodern,booktabs,tikz}
+\usetikzlibrary{arrows.meta,positioning}
+\definecolor{navy}{HTML}{10233F}
+\definecolor{teal}{HTML}{087E8B}
+\definecolor{gold}{HTML}{D6A437}
+\definecolor{muted}{HTML}{526176}
+\definecolor{paper}{HTML}{F3F6FA}
+\setbeamercolor{normal text}{fg=navy,bg=white}
+\setbeamercolor{structure}{fg=teal}
+\setbeamercolor{frametitle}{fg=navy,bg=paper}
+\setbeamercolor{block title}{fg=white,bg=navy}
+\setbeamercolor{block body}{fg=navy,bg=paper}
+\setbeamerfont{frametitle}{size=\Large,series=\bfseries}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize items}[circle]
+\setbeamersize{text margin left=8mm,text margin right=8mm}
+\setbeamertemplate{footline}{\hspace{8mm}\color{muted}\tiny Aristides H. G. da Cruz\quad|\quad Orientador: Gustavo Luís Soares\hfill DyraSQL\quad\insertframenumber\hspace{8mm}\vspace{3mm}}
+\setbeamertemplate{frametitle}{\vspace{4mm}\insertframetitle\par\vspace{1mm}{\color{gold}\rule{13mm}{1.2mm}}\vspace{1mm}}
+\setbeamerfont{block title}{size=\normalsize,series=\bfseries}
+\setbeamerfont{block body}{size=\normalsize}
+\newcommand{\source}[1]{\par\vspace{2mm}{\scriptsize\color{muted}Fonte: #1}}
+\newcommand{\evidence}[2]{\begin{center}\includegraphics[width=\textwidth,height=.66\textheight,keepaspectratio]{evidencias/#1}\end{center}\source{#2}}
+\hypersetup{pdftitle={DyraSQL - Pitch de TCC},pdfauthor={Aristides Henrique Gonçalves da Cruz; Orientador: Gustavo Luís Soares}}
+\title{DyraSQL}
+\author{Aristides Henrique Gonçalves da Cruz}
+\date{13 de outubro de 2026}
+\begin{document}
+% Pitch: slides 1 a 12. Roteiro de gravação em roteiro_pitch.md (6 minutos).
+\begin{frame}[plain]
+\vspace{4mm}
+{\color{teal}\small PUC MINAS\quad/\quad SISTEMAS DE INFORMAÇÃO}
+\vspace{7mm}
+
+{\fontsize{38}{42}\selectfont\bfseries DyraSQL}\par
+\vspace{3mm}
+{\LARGE Roteamento dinâmico de consultas SQL}\par
+\vspace{2mm}
+{\large Baseado em metadados de tabelas Apache Iceberg}
+\vspace{5mm}
+
+{\color{gold}\rule{21mm}{1.5mm}}\par
+\vspace{4mm}
+Aristides Henrique Gonçalves da Cruz\par
+{\small Orientador: Gustavo Luís Soares}\par
+\vspace{2mm}
+{\small\color{muted}Trabalho de Conclusão de Curso\quad|\quad Outubro de 2026}
+\end{frame}
+
+\begin{frame}{Contexto e motivação}
+\begin{columns}[T,onlytextwidth]
+\column{.48\textwidth}
+\begin{block}{Dados compartilhados}
+Data lakes separam armazenamento e processamento. O mesmo conjunto de dados pode ser consultado por ambientes de capacidades distintas.
+\end{block}
+\column{.48\textwidth}
+\begin{block}{Demandas diferentes}
+Consultas variam em volume, junções, agregações e filtros. Uma configuração fixa pode superdimensionar consultas simples ou limitar as complexas.
+\end{block}
+\end{columns}
+\vspace{4mm}
+\begin{block}{Pergunta de pesquisa}
+Como usar informações disponíveis antes da execução para escolher entre três faixas de capacidade do Trino?
+\end{block}
+\source{Artigo do TCC; Strausz, Pardon e Giurgiu (2025).}
+\end{frame}
+
+\begin{frame}{Objetivo e contribuição}
+\begin{block}{Objetivo geral}
+Desenvolver um mecanismo de decisão que combine metadados e características SQL para selecionar o destino de execução.
+\end{block}
+\vspace{3mm}
+\begin{enumerate}
+\item Extrair estimativas de volume e características estruturais da consulta.
+\item Calcular um score e selecionar \texttt{small}, \texttt{medium} ou \texttt{large}.
+\item Integrar análise, decisão e histórico em um protótipo reproduzível.
+\item Verificar a lógica e delimitar o que ainda depende de avaliação integrada.
+\end{enumerate}
+\source{Objetivos do TCC e módulos do protótipo.}
+\end{frame}
+
+\begin{frame}{Referencial teórico}
+\begin{description}
+\item[Apache Iceberg] Snapshots, manifestos e estatísticas organizam os metadados das tabelas.
+\item[Trino] O \texttt{EXPLAIN (TYPE IO)} descreve os objetos acessados e suas estimativas; estimativa não equivale a bytes físicos medidos.
+\item[Trino Gateway] Provê um ponto de entrada para múltiplos clusters e políticas de roteamento.
+\item[Trabalho relacionado] Strausz et al. (2025) investigam seleção de engines com modelo de custo aprendido.
+\end{description}
+\vspace{2mm}
+\textbf{Abordagem do DyraSQL:} regra explícita de pontuação entre capacidades do mesmo motor, com pesos configuráveis.
+\source{Apache Iceberg, Table Spec; Trino, EXPLAIN; Trino Gateway; arXiv:2506.02802.}
+\end{frame}
+
+\begin{frame}{Metodologia e arquitetura do protótipo}
+\begin{center}
+\begin{tikzpicture}[node distance=4mm and 5mm, every node/.style={font=\small,align=center},
+box/.style={draw=teal,rounded corners=2pt,fill=paper,minimum height=12mm,text width=25mm},
+arr/.style={-{Latex[length=2mm]},thick,draw=teal}]
+\node[box] (sql) {Consulta SQL\\Cliente / Proxy};
+\node[box,right=of sql] (analysis) {Análise SQL\\e EXPLAIN};
+\node[box,right=of analysis] (score) {DyraSQL Core\\Score / decisão};
+\node[box,right=of score] (trino) {Trino\\small / medium / large};
+\node[box,below=8mm of score] (pg) {PostgreSQL\\Cache / histórico};
+\node[box,below=8mm of trino] (lake) {Iceberg REST\\MinIO};
+\draw[arr] (sql)--(analysis);\draw[arr] (analysis)--(score);\draw[arr] (score)--(trino);
+\draw[arr] (score)--(pg);\draw[arr] (pg.west)-| (analysis.south);
+\draw[arr] (trino)--(lake);
+\end{tikzpicture}
+\end{center}
+Pesquisa aplicada com desenvolvimento e verificação experimental do protótipo.
+\begin{itemize}
+\item Identificação da consulta por fingerprint; consulta ao cache antes da análise.
+\item Na ausência de cache: análise, cálculo dos fatores e armazenamento da decisão.
+\end{itemize}
+\source{Código em src/; diagrama conceitual, sem indicação de serviços ativos.}
+\end{frame}
+
+\begin{frame}{Como o algoritmo seleciona o destino}
+\begin{equation*}
+\boxed{S = 0{,}5 f_v + 0{,}3 f_c + 0{,}2 f_h}
+\end{equation*}
+\begin{columns}[T,onlytextwidth]
+\column{.49\textwidth}
+\begin{block}{Fatores normalizados}
+\begin{itemize}
+\item $f_v$: tamanho e linhas estimados.
+\item $f_c$: operações e filtros SQL.
+\item $f_h$: histórico de execução; valor padrão 0,5 quando ausente.
+\end{itemize}
+\end{block}
+\column{.46\textwidth}
+\begin{block}{Regra de seleção}
+\begin{tabular}{ll}
+\toprule Faixa & Destino\\\midrule
+$S < 0{,}3$ & \texttt{small}\\[2mm]
+$0{,}3 \leq S \leq 0{,}7$ & \texttt{medium}\\[2mm]
+$S > 0{,}7$ & \texttt{large}\\\bottomrule
+\end{tabular}
+\end{block}
+\end{columns}
+\vspace{3mm}
+Os pesos são parâmetros fixos configuráveis nesta versão; a implementação não treina um modelo de aprendizado.
+\source{decision\_engine.py; history\_manager.py.}
+\end{frame}
+
+\begin{frame}{Resultados: execução local da decisão}
+\evidence{02_decisoes.png}{execução do código do DecisionEngine; entradas controladas em decisoes.json.}
+\end{frame}
+
+\begin{frame}{Resultados: requisições à API e cache}
+\evidence{04_api_cache.png}{TestClient da aplicação; Trino e PostgreSQL simulados nesta coleta.}
+\end{frame}
+
+\begin{frame}{Resultados: verificação automatizada}
+\evidence{06_testes_linux.png}{pytest no WSL/Ubuntu, checkout isolado LF; testes\_linux\_lf.txt e linux\_lf.xml.}
+\end{frame}
+
+\begin{frame}{Limitações e alcance das evidências}
+\begin{block}{O que foi demonstrado nesta coleta}
+Execução do cálculo de score, classificação em três faixas, análise sintática e respostas HTTP da API com dependências controladas.
+\end{block}
+\vspace{2mm}
+\begin{itemize}
+\item A inicialização integrada foi bloqueada no download das imagens MinIO.
+\item Não há nova execução distribuída de consultas nem medição de custo, memória ou latência de EXPLAIN nesta coleta.
+\item Testes com mocks verificam o comportamento do código; não comprovam a integração com serviços reais.
+\end{itemize}
+\source{docker\_compose.txt; testes\_completos.txt; testes\_linux.txt.}
+\end{frame}
+
+\begin{frame}{Cronograma das próximas atividades}
+\small
+\begin{tabular}{p{24mm}p{67mm}p{39mm}}
+\toprule Período & Atividade & Entregável\\\midrule
+Situação atual & Artigo finalizado pelo autor; material do pitch preparado. & Slides e evidências locais.\\[3mm]
+Antes de gravar & Revisar resultados e texto com o orientador; ensaiar a apresentação. & Roteiro entre 5 e 7 minutos.\\[3mm]
+Gravação & Narrar os slides com identificação do autor e do orientador. & Vídeo de apresentação.\\[3mm]
+Antes da entrega & Publicar como não listado; registrar URL e obter autorização prévia do orientador. & PDF do link e entrega autorizada.\\\bottomrule
+\end{tabular}
+\vspace{4mm}
+\normalsize\color{muted}Sequência de conclusão proposta; datas dependem do prazo da disciplina e da revisão do orientador.
+\end{frame}
+
+\begin{frame}{Contribuição e encerramento}
+\begin{block}{Contribuição do trabalho}
+Um protótipo de roteamento com regra explícita que combina volume, estrutura SQL e histórico para selecionar entre capacidades do Trino.
+\end{block}
+\vspace{4mm}
+\textbf{Resultado verificável:} lógica e API exercitadas localmente, com logs, entradas e respostas preservados.
+\vspace{4mm}
+
+\textbf{Continuidade técnica:} reproduzir a infraestrutura com imagens disponíveis e avaliar desempenho e custo com cargas controladas.
+\vspace{5mm}
+
+{\large\color{teal}Obrigado!}\par
+\small Aristides Henrique Gonçalves da Cruz\quad|\quad Orientador: Gustavo Luís Soares
+\end{frame}
+
+\appendix
+\begin{frame}{Apoio: análise sintática executada}
+\evidence{03_analise_sql.png}{análise real com QueryAnalyzer e SQLGlot; consulta não executada em banco.}
+\end{frame}
+
+\begin{frame}{Apoio: execução inicial no Windows}
+\evidence{01_testes.png}{saída original do pytest no Windows; falhas de portabilidade preservadas no log.}
+\end{frame}
+
+\begin{frame}{Apoio: inicialização integrada bloqueada}
+\evidence{05_integracao.png}{docker compose; diagnóstico de acesso aos registros em diagnostico\_minio.txt.}
+\end{frame}
+
+\begin{frame}{Apoio: logs da aplicação local}
+\evidence{07_logs.png}{execucao\_local.txt; chamadas em processo e dependências externas simuladas.}
+\end{frame}
+
+\begin{frame}{Apoio: diferenças entre ambientes de teste}
+\evidence{08_portabilidade.png}{logs originais Windows, WSL com CRLF e checkout Linux LF.}
+\end{frame}
+
+\begin{frame}{Apoio: diagnóstico de acesso às imagens MinIO}
+\evidence{09_registro_minio.png}{consultas anônimas reais aos registros; diagnostico\_minio.txt.}
+\end{frame}
+
+\begin{frame}{Referências principais}
+\footnotesize
+\begin{thebibliography}{9}
+\bibitem{iceberg} APACHE SOFTWARE FOUNDATION. \textbf{Apache Iceberg Table Spec}.\par
+\url{https://iceberg.apache.org/spec/}
+\bibitem{trino} TRINODB. \textbf{EXPLAIN}. Documentação Trino.\par
+\url{https://trino.io/docs/current/sql/explain.html}
+\bibitem{gateway} TRINODB. \textbf{Trino Gateway: Overview}.\par
+\url{https://trinodb.github.io/trino-gateway/}
+\bibitem{strausz} STRAUSZ, A.; PARDON, N.; GIURGIU, I. \textbf{A Learned Cost Model-based Cross-engine Optimizer for SQL Workloads}. 2025.\par
+\url{https://arxiv.org/abs/2506.02802}
+\end{thebibliography}
+\source{Fontes consultadas em 13 out. 2026. Slides de apoio fora do roteiro cronometrado.}
+\end{frame}
+\end{document}

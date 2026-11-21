@@ -112,7 +112,7 @@ def test_route_cache_miss(api_client, article_metadata, article_complexity):
     data = response.json()
     assert data["cached"] is False
     assert data["cluster"] == "medium"
-    assert abs(data["score"] - 0.44) < 0.03
+    assert abs(data["score"] - 0.57) < 0.03
     app_module.history_manager.save_decision.assert_called()
 
 

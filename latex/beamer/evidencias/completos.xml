@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="13" skipped="0" tests="120" time="3.301" timestamp="2026-10-13T22:25:54.957668-03:00" hostname="DESKTOP-V4K0BBN"><testcase classname="tests.test_add_h2_dependency" name="test_update_pom_adds_h2" time="0.027" /><testcase classname="tests.test_add_h2_dependency" name="test_update_pom_updates_existing_h2" time="0.015" /><testcase classname="tests.test_add_h2_dependency" name="test_update_pom_missing_dependencies" time="0.009" /><testcase classname="tests.test_add_h2_dependency" name="test_main_uses_argument" time="0.005" /><testcase classname="tests.test_api_route" name="test_health" time="0.035" /><testcase classname="tests.test_api_route" name="test_route_cache_hit" time="0.009" /><testcase classname="tests.test_api_route" name="test_route_cache_miss" time="0.009" /><testcase classname="tests.test_api_route" name="test_route_error" time="0.010" /><testcase classname="tests.test_api_route" name="test_save_metrics" time="0.007" /><testcase classname="tests.test_api_route" name="test_save_metrics_error" time="0.007" /><testcase classname="tests.test_api_route" name="test_get_cluster_url" time="0.003" /><testcase classname="tests.test_api_route" name="test_trino_info_fallback" time="0.007" /><testcase classname="tests.test_api_route" name="test_trino_info_proxy" time="0.008" /><testcase classname="tests.test_api_route" name="test_statement_empty_query" time="0.007" /><testcase classname="tests.test_api_route" name="test_statement_keepalive" time="0.008" /><testcase classname="tests.test_api_route" name="test_statement_metadata_query" time="0.007" /><testcase classname="tests.test_api_route" name="test_statement_with_analysis" time="0.008" /><testcase classname="tests.test_api_route" name="test_statement_cache_hit" time="0.007" /><testcase classname="tests.test_api_route" name="test_statement_timeout" time="0.006" /><testcase classname="tests.test_api_route" name="test_proxy_other_get" time="0.008" /><testcase classname="tests.test_api_route" name="test_proxy_other_error" time="0.008" /><testcase classname="tests.test_coverage_extra" name="test_history_save_metrics_no_connection" time="0.004" /><testcase classname="tests.test_coverage_extra" name="test_history_get_cached_invalid_json_factors" time="0.003" /><testcase classname="tests.test_coverage_extra" name="test_history_query_errors" time="0.003" /><testcase classname="tests.test_coverage_extra" name="test_execute_trino_with_next_uri" time="0.002" /><testcase classname="tests.test_coverage_extra" name="test_execute_trino_query_error_in_json" time="0.002" /><testcase classname="tests.test_coverage_extra" name="test_explain_io_json_decode_error" time="0.016" /><testcase classname="tests.test_coverage_extra" name="test_parse_explain_safe_float_nan" time="0.001" /><testcase classname="tests.test_decision_engine" name="test_volume_factor_article_example" time="0.001" /><testcase classname="tests.test_decision_engine" name="test_volume_factor_empty_metadata" time="0.001" /><testcase classname="tests.test_decision_engine" name="test_complexity_factor_article_example" time="0.001" /><testcase classname="tests.test_decision_engine" name="test_select_cluster_thresholds" time="0.001" /><testcase classname="tests.test_decision_engine" name="test_decide_article_example" time="0.002" /><testcase classname="tests.test_decision_engine" name="test_decide_high_score_routes_to_large" time="0.002" /><testcase classname="tests.test_decision_engine" name="test_decide_low_score_routes_to_small" time="0.002" /><testcase classname="tests.test_generate_data" name="test_generate_tenant_id" time="0.001" /><testcase classname="tests.test_generate_data" name="test_generate_status" time="0.001" /><testcase classname="tests.test_generate_data" name="test_generate_valor" time="0.001" /><testcase classname="tests.test_generate_data" name="test_generate_date" time="0.017" /><testcase classname="tests.test_generate_data" name="test_generate_document" time="0.001" /><testcase classname="tests.test_generate_data" name="test_generate_surrogate_key" time="0.001" /><testcase classname="tests.test_generate_data" name="test_generate_insert_statements" time="0.010"><failure message="UnicodeDecodeError: 'utf-8' codec can't decode byte 0xe9 in position 88: invalid continuation byte">tmp_path = WindowsPath('C:/Users/arihenrique/AppData/Local/Temp/pytest-of-arihenrique/pytest-324/test_generate_insert_statement0')
+
+    def test_generate_insert_statements(tmp_path):
+        output = tmp_path / "out.sql"
+        gd.generate_insert_statements(
+            num_records=5,
+            start_date="2024-01-01",
+            num_days=30,
+            batch_size=2,
+            output_file=str(output),
+        )
+&gt;       content = output.read_text(encoding="utf-8")
+
+tests\test_generate_data.py:60: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+..\..\AppData\Local\Programs\Python\Python311\Lib\pathlib.py:1059: in read_text
+    return f.read()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;encodings.utf_8.IncrementalDecoder object at 0x000002088C74F190&gt;
+input = b'-- ======================================================================\r\n-- Dados Sint\xe9ticos Gerados Automati...", "versao": "1.0", "metadados": {"gerado_em": "2026-10-13T22:25:56.953955", "tipo": "A"}}\', \'SK00000005\');\r\n\r\n'
+final = True
+
+&gt;   ???
+E   UnicodeDecodeError: 'utf-8' codec can't decode byte 0xe9 in position 88: invalid continuation byte
+
+&lt;frozen codecs&gt;:322: UnicodeDecodeError</failure></testcase><testcase classname="tests.test_generate_data" name="test_generate_large_dataset" time="0.003" /><testcase classname="tests.test_generate_data" name="test_main_records" time="0.012" /><testcase classname="tests.test_generate_data" name="test_main_size_gb" time="0.004" /><testcase classname="tests.test_history_manager" name="test_historical_factor_default_without_connection" time="0.003" /><testcase classname="tests.test_history_manager" name="test_historical_factor_miss" time="0.003" /><testcase classname="tests.test_history_manager" name="test_historical_factor_success" time="0.003" /><testcase classname="tests.test_history_manager" name="test_historical_factor_failure" time="0.003" /><testcase classname="tests.test_history_manager" name="test_get_cached_decision_hit" time="0.003" /><testcase classname="tests.test_history_manager" name="test_get_cached_decision_miss" time="0.035" /><testcase classname="tests.test_history_manager" name="test_get_cached_decision_no_connection" time="0.003" /><testcase classname="tests.test_history_manager" name="test_save_decision" time="0.003" /><testcase classname="tests.test_history_manager" name="test_save_decision_no_connection" time="0.002" /><testcase classname="tests.test_history_manager" name="test_save_metrics" time="0.003" /><testcase classname="tests.test_history_manager" name="test_clear_cache" time="0.003" /><testcase classname="tests.test_history_manager" name="test_clear_cache_no_connection" time="0.002" /><testcase classname="tests.test_history_manager" name="test_get_cached_decision_factors_as_string" time="0.003" /><testcase classname="tests.test_history_manager" name="test_cursor_reconnects_when_closed" time="0.002" /><testcase classname="tests.test_metadata_connector" name="test_get_metadata_without_catalog" time="0.001" /><testcase classname="tests.test_metadata_connector" name="test_get_metadata_with_catalog_still_none" time="0.001" /><testcase classname="tests.test_query_analyzer" name="test_fingerprint_stable_across_literals" time="0.003" /><testcase classname="tests.test_query_analyzer" name="test_fingerprint_differs_for_structure" time="0.002" /><testcase classname="tests.test_query_analyzer" name="test_analyze_complexity_counts" time="0.008" /><testcase classname="tests.test_query_analyzer" name="test_analyze_complexity_invalid_sql" time="0.003" /><testcase classname="tests.test_query_analyzer" name="test_extract_where_clause" time="0.003" /><testcase classname="tests.test_query_analyzer" name="test_extract_where_clause_absent" time="0.002" /><testcase classname="tests.test_query_analyzer" name="test_normalize_query_adds_iceberg_catalog" time="0.003" /><testcase classname="tests.test_query_analyzer" name="test_parse_explain_io" time="0.002" /><testcase classname="tests.test_query_analyzer" name="test_explain_io_success" time="0.003" /><testcase classname="tests.test_query_analyzer" name="test_explain_io_error" time="0.004" /><testcase classname="tests.test_query_analyzer" name="test_explain_io_no_data" time="0.003" /><testcase classname="tests.test_query_analyzer" name="test_analyze_query_io_success" time="0.003" /><testcase classname="tests.test_query_analyzer" name="test_analyze_query_io_failure" time="0.003" /><testcase classname="tests.test_query_analyzer" name="test_extract_tables_fallback" time="0.004" /><testcase classname="tests.test_query_analyzer" name="test_extract_tables_from_explain" time="0.003" /><testcase classname="tests.test_query_analyzer" name="test_execute_trino_query_http_error" time="0.003" /><testcase classname="tests.test_query_analyzer" name="test_execute_trino_query_success" time="0.004" /><testcase classname="tests.test_query_analyzer" name="test_execute_trino_query_exception" time="0.004" /><testcase classname="tests.test_query_analyzer" name="test_save_explain_writes_file" time="0.004" /><testcase classname="tests.test_scripts_shell" name="test_shell_script_exists_and_executable[debug-ide-raw.sh]" time="0.001"><failure message="AssertionError: assert (33206 &amp; 73)&#10; +  where 33206 = os.stat_result(st_mode=33206, st_ino=844424931660943, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=748, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726).st_mode&#10; +    where os.stat_result(st_mode=33206, st_ino=844424931660943, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=748, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726) = stat()&#10; +      where stat = WindowsPath('C:/Users/arihenrique/developer/tcc-puc-dyrasql/src/scripts/debug-ide-raw.sh').stat">script_name = 'debug-ide-raw.sh'
+
+    @pytest.mark.parametrize("script_name", SHELL_SCRIPTS)
+    def test_shell_script_exists_and_executable(script_name):
+        path = SCRIPTS_DIR / script_name
+        assert path.is_file()
+&gt;       assert path.stat().st_mode &amp; 0o111
+E       AssertionError: assert (33206 &amp; 73)
+E        +  where 33206 = os.stat_result(st_mode=33206, st_ino=844424931660943, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=748, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726).st_mode
+E        +    where os.stat_result(st_mode=33206, st_ino=844424931660943, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=748, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726) = stat()
+E        +      where stat = WindowsPath('C:/Users/arihenrique/developer/tcc-puc-dyrasql/src/scripts/debug-ide-raw.sh').stat
+
+tests\test_scripts_shell.py:26: AssertionError</failure></testcase><testcase classname="tests.test_scripts_shell" name="test_shell_script_exists_and_executable[init-iceberg.sh]" time="0.001"><failure message="AssertionError: assert (33206 &amp; 73)&#10; +  where 33206 = os.stat_result(st_mode=33206, st_ino=844424931660946, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=1134, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726).st_mode&#10; +    where os.stat_result(st_mode=33206, st_ino=844424931660946, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=1134, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726) = stat()&#10; +      where stat = WindowsPath('C:/Users/arihenrique/developer/tcc-puc-dyrasql/src/scripts/init-iceberg.sh').stat">script_name = 'init-iceberg.sh'
+
+    @pytest.mark.parametrize("script_name", SHELL_SCRIPTS)
+    def test_shell_script_exists_and_executable(script_name):
+        path = SCRIPTS_DIR / script_name
+        assert path.is_file()
+&gt;       assert path.stat().st_mode &amp; 0o111
+E       AssertionError: assert (33206 &amp; 73)
+E        +  where 33206 = os.stat_result(st_mode=33206, st_ino=844424931660946, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=1134, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726).st_mode
+E        +    where os.stat_result(st_mode=33206, st_ino=844424931660946, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=1134, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726) = stat()
+E        +      where stat = WindowsPath('C:/Users/arihenrique/developer/tcc-puc-dyrasql/src/scripts/init-iceberg.sh').stat
+
+tests\test_scripts_shell.py:26: AssertionError</failure></testcase><testcase classname="tests.test_scripts_shell" name="test_shell_script_exists_and_executable[limpar-cache.sh]" time="0.001"><failure message="AssertionError: assert (33206 &amp; 73)&#10; +  where 33206 = os.stat_result(st_mode=33206, st_ino=844424931660948, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=612, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726).st_mode&#10; +    where os.stat_result(st_mode=33206, st_ino=844424931660948, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=612, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726) = stat()&#10; +      where stat = WindowsPath('C:/Users/arihenrique/developer/tcc-puc-dyrasql/src/scripts/limpar-cache.sh').stat">script_name = 'limpar-cache.sh'
+
+    @pytest.mark.parametrize("script_name", SHELL_SCRIPTS)
+    def test_shell_script_exists_and_executable(script_name):
+        path = SCRIPTS_DIR / script_name
+        assert path.is_file()
+&gt;       assert path.stat().st_mode &amp; 0o111
+E       AssertionError: assert (33206 &amp; 73)
+E        +  where 33206 = os.stat_result(st_mode=33206, st_ino=844424931660948, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=612, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726).st_mode
+E        +    where os.stat_result(st_mode=33206, st_ino=844424931660948, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=612, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726) = stat()
+E        +      where stat = WindowsPath('C:/Users/arihenrique/developer/tcc-puc-dyrasql/src/scripts/limpar-cache.sh').stat
+
+tests\test_scripts_shell.py:26: AssertionError</failure></testcase><testcase classname="tests.test_scripts_shell" name="test_shell_script_exists_and_executable[monitor-routing.sh]" time="0.001"><failure message="AssertionError: assert (33206 &amp; 73)&#10; +  where 33206 = os.stat_result(st_mode=33206, st_ino=844424931660950, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=926, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726).st_mode&#10; +    where os.stat_result(st_mode=33206, st_ino=844424931660950, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=926, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726) = stat()&#10; +      where stat = WindowsPath('C:/Users/arihenrique/developer/tcc-puc-dyrasql/src/scripts/monitor-routing.sh').stat">script_name = 'monitor-routing.sh'
+
+    @pytest.mark.parametrize("script_name", SHELL_SCRIPTS)
+    def test_shell_script_exists_and_executable(script_name):
+        path = SCRIPTS_DIR / script_name
+        assert path.is_file()
+&gt;       assert path.stat().st_mode &amp; 0o111
+E       AssertionError: assert (33206 &amp; 73)
+E        +  where 33206 = os.stat_result(st_mode=33206, st_ino=844424931660950, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=926, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726).st_mode
+E        +    where os.stat_result(st_mode=33206, st_ino=844424931660950, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=926, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726) = stat()
+E        +      where stat = WindowsPath('C:/Users/arihenrique/developer/tcc-puc-dyrasql/src/scripts/monitor-routing.sh').stat
+
+tests\test_scripts_shell.py:26: AssertionError</failure></testcase><testcase classname="tests.test_scripts_shell" name="test_shell_script_exists_and_executable[setup-gateway-backends-auto.sh]" time="0.001"><failure message="AssertionError: assert (33206 &amp; 73)&#10; +  where 33206 = os.stat_result(st_mode=33206, st_ino=844424931660951, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=4489, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726).st_mode&#10; +    where os.stat_result(st_mode=33206, st_ino=844424931660951, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=4489, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726) = stat()&#10; +      where stat = WindowsPath('C:/Users/arihenrique/developer/tcc-puc-dyrasql/src/scripts/setup-gateway-backends-auto.sh').stat">script_name = 'setup-gateway-backends-auto.sh'
+
+    @pytest.mark.parametrize("script_name", SHELL_SCRIPTS)
+    def test_shell_script_exists_and_executable(script_name):
+        path = SCRIPTS_DIR / script_name
+        assert path.is_file()
+&gt;       assert path.stat().st_mode &amp; 0o111
+E       AssertionError: assert (33206 &amp; 73)
+E        +  where 33206 = os.stat_result(st_mode=33206, st_ino=844424931660951, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=4489, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726).st_mode
+E        +    where os.stat_result(st_mode=33206, st_ino=844424931660951, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=4489, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726) = stat()
+E        +      where stat = WindowsPath('C:/Users/arihenrique/developer/tcc-puc-dyrasql/src/scripts/setup-gateway-backends-auto.sh').stat
+
+tests\test_scripts_shell.py:26: AssertionError</failure></testcase><testcase classname="tests.test_scripts_shell" name="test_shell_script_exists_and_executable[GUIA_GERADOR.sh]" time="0.001"><failure message="AssertionError: assert (33206 &amp; 73)&#10; +  where 33206 = os.stat_result(st_mode=33206, st_ino=844424931660941, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=5805, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726).st_mode&#10; +    where os.stat_result(st_mode=33206, st_ino=844424931660941, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=5805, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726) = stat()&#10; +      where stat = WindowsPath('C:/Users/arihenrique/developer/tcc-puc-dyrasql/src/scripts/GUIA_GERADOR.sh').stat">script_name = 'GUIA_GERADOR.sh'
+
+    @pytest.mark.parametrize("script_name", SHELL_SCRIPTS)
+    def test_shell_script_exists_and_executable(script_name):
+        path = SCRIPTS_DIR / script_name
+        assert path.is_file()
+&gt;       assert path.stat().st_mode &amp; 0o111
+E       AssertionError: assert (33206 &amp; 73)
+E        +  where 33206 = os.stat_result(st_mode=33206, st_ino=844424931660941, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=5805, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726).st_mode
+E        +    where os.stat_result(st_mode=33206, st_ino=844424931660941, st_dev=1315515662, st_nlink=1, st_uid=0, st_gid=0, st_size=5805, st_atime=1791940876, st_mtime=1791940726, st_ctime=1791940726) = stat()
+E        +      where stat = WindowsPath('C:/Users/arihenrique/developer/tcc-puc-dyrasql/src/scripts/GUIA_GERADOR.sh').stat
+
+tests\test_scripts_shell.py:26: AssertionError</failure></testcase><testcase classname="tests.test_scripts_shell" name="test_shell_script_syntax[debug-ide-raw.sh]" time="0.137"><failure message="AssertionError: /bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptsdebug-ide-raw.sh: No such file or directory&#10;  &#10;assert 127 == 0&#10; +  where 127 = CompletedProcess(args=['bash', '-n', 'C:\\Users\\arihenrique\\developer\\tcc-puc-dyrasql\\src\\scripts\\debug-ide-raw.... stderr='/bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptsdebug-ide-raw.sh: No such file or directory\n').returncode">script_name = 'debug-ide-raw.sh'
+
+    @pytest.mark.parametrize("script_name", SHELL_SCRIPTS)
+    def test_shell_script_syntax(script_name):
+        path = SCRIPTS_DIR / script_name
+        result = subprocess.run(
+            ["bash", "-n", str(path)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+&gt;       assert result.returncode == 0, result.stderr
+E       AssertionError: /bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptsdebug-ide-raw.sh: No such file or directory
+E         
+E       assert 127 == 0
+E        +  where 127 = CompletedProcess(args=['bash', '-n', 'C:\\Users\\arihenrique\\developer\\tcc-puc-dyrasql\\src\\scripts\\debug-ide-raw.... stderr='/bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptsdebug-ide-raw.sh: No such file or directory\n').returncode
+
+tests\test_scripts_shell.py:38: AssertionError</failure></testcase><testcase classname="tests.test_scripts_shell" name="test_shell_script_syntax[init-iceberg.sh]" time="0.090"><failure message="AssertionError: /bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptsinit-iceberg.sh: No such file or directory&#10;  &#10;assert 127 == 0&#10; +  where 127 = CompletedProcess(args=['bash', '-n', 'C:\\Users\\arihenrique\\developer\\tcc-puc-dyrasql\\src\\scripts\\init-iceberg.s..., stderr='/bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptsinit-iceberg.sh: No such file or directory\n').returncode">script_name = 'init-iceberg.sh'
+
+    @pytest.mark.parametrize("script_name", SHELL_SCRIPTS)
+    def test_shell_script_syntax(script_name):
+        path = SCRIPTS_DIR / script_name
+        result = subprocess.run(
+            ["bash", "-n", str(path)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+&gt;       assert result.returncode == 0, result.stderr
+E       AssertionError: /bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptsinit-iceberg.sh: No such file or directory
+E         
+E       assert 127 == 0
+E        +  where 127 = CompletedProcess(args=['bash', '-n', 'C:\\Users\\arihenrique\\developer\\tcc-puc-dyrasql\\src\\scripts\\init-iceberg.s..., stderr='/bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptsinit-iceberg.sh: No such file or directory\n').returncode
+
+tests\test_scripts_shell.py:38: AssertionError</failure></testcase><testcase classname="tests.test_scripts_shell" name="test_shell_script_syntax[limpar-cache.sh]" time="0.098"><failure message="AssertionError: /bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptslimpar-cache.sh: No such file or directory&#10;  &#10;assert 127 == 0&#10; +  where 127 = CompletedProcess(args=['bash', '-n', 'C:\\Users\\arihenrique\\developer\\tcc-puc-dyrasql\\src\\scripts\\limpar-cache.s..., stderr='/bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptslimpar-cache.sh: No such file or directory\n').returncode">script_name = 'limpar-cache.sh'
+
+    @pytest.mark.parametrize("script_name", SHELL_SCRIPTS)
+    def test_shell_script_syntax(script_name):
+        path = SCRIPTS_DIR / script_name
+        result = subprocess.run(
+            ["bash", "-n", str(path)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+&gt;       assert result.returncode == 0, result.stderr
+E       AssertionError: /bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptslimpar-cache.sh: No such file or directory
+E         
+E       assert 127 == 0
+E        +  where 127 = CompletedProcess(args=['bash', '-n', 'C:\\Users\\arihenrique\\developer\\tcc-puc-dyrasql\\src\\scripts\\limpar-cache.s..., stderr='/bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptslimpar-cache.sh: No such file or directory\n').returncode
+
+tests\test_scripts_shell.py:38: AssertionError</failure></testcase><testcase classname="tests.test_scripts_shell" name="test_shell_script_syntax[monitor-routing.sh]" time="0.091"><failure message="AssertionError: /bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptsmonitor-routing.sh: No such file or directory&#10;  &#10;assert 127 == 0&#10; +  where 127 = CompletedProcess(args=['bash', '-n', 'C:\\Users\\arihenrique\\developer\\tcc-puc-dyrasql\\src\\scripts\\monitor-routin...tderr='/bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptsmonitor-routing.sh: No such file or directory\n').returncode">script_name = 'monitor-routing.sh'
+
+    @pytest.mark.parametrize("script_name", SHELL_SCRIPTS)
+    def test_shell_script_syntax(script_name):
+        path = SCRIPTS_DIR / script_name
+        result = subprocess.run(
+            ["bash", "-n", str(path)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+&gt;       assert result.returncode == 0, result.stderr
+E       AssertionError: /bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptsmonitor-routing.sh: No such file or directory
+E         
+E       assert 127 == 0
+E        +  where 127 = CompletedProcess(args=['bash', '-n', 'C:\\Users\\arihenrique\\developer\\tcc-puc-dyrasql\\src\\scripts\\monitor-routin...tderr='/bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptsmonitor-routing.sh: No such file or directory\n').returncode
+
+tests\test_scripts_shell.py:38: AssertionError</failure></testcase><testcase classname="tests.test_scripts_shell" name="test_shell_script_syntax[setup-gateway-backends-auto.sh]" time="0.090"><failure message="AssertionError: /bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptssetup-gateway-backends-auto.sh: No such file or directory&#10;  &#10;assert 127 == 0&#10; +  where 127 = CompletedProcess(args=['bash', '-n', 'C:\\Users\\arihenrique\\developer\\tcc-puc-dyrasql\\src\\scripts\\setup-gateway-...bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptssetup-gateway-backends-auto.sh: No such file or directory\n').returncode">script_name = 'setup-gateway-backends-auto.sh'
+
+    @pytest.mark.parametrize("script_name", SHELL_SCRIPTS)
+    def test_shell_script_syntax(script_name):
+        path = SCRIPTS_DIR / script_name
+        result = subprocess.run(
+            ["bash", "-n", str(path)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+&gt;       assert result.returncode == 0, result.stderr
+E       AssertionError: /bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptssetup-gateway-backends-auto.sh: No such file or directory
+E         
+E       assert 127 == 0
+E        +  where 127 = CompletedProcess(args=['bash', '-n', 'C:\\Users\\arihenrique\\developer\\tcc-puc-dyrasql\\src\\scripts\\setup-gateway-...bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptssetup-gateway-backends-auto.sh: No such file or directory\n').returncode
+
+tests\test_scripts_shell.py:38: AssertionError</failure></testcase><testcase classname="tests.test_scripts_shell" name="test_shell_script_syntax[GUIA_GERADOR.sh]" time="0.090"><failure message="AssertionError: /bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptsGUIA_GERADOR.sh: No such file or directory&#10;  &#10;assert 127 == 0&#10; +  where 127 = CompletedProcess(args=['bash', '-n', 'C:\\Users\\arihenrique\\developer\\tcc-puc-dyrasql\\src\\scripts\\GUIA_GERADOR.s..., stderr='/bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptsGUIA_GERADOR.sh: No such file or directory\n').returncode">script_name = 'GUIA_GERADOR.sh'
+
+    @pytest.mark.parametrize("script_name", SHELL_SCRIPTS)
+    def test_shell_script_syntax(script_name):
+        path = SCRIPTS_DIR / script_name
+        result = subprocess.run(
+            ["bash", "-n", str(path)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+&gt;       assert result.returncode == 0, result.stderr
+E       AssertionError: /bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptsGUIA_GERADOR.sh: No such file or directory
+E         
+E       assert 127 == 0
+E        +  where 127 = CompletedProcess(args=['bash', '-n', 'C:\\Users\\arihenrique\\developer\\tcc-puc-dyrasql\\src\\scripts\\GUIA_GERADOR.s..., stderr='/bin/bash: C:Usersarihenriquedevelopertcc-puc-dyrasqlsrcscriptsGUIA_GERADOR.sh: No such file or directory\n').returncode
+
+tests\test_scripts_shell.py:38: AssertionError</failure></testcase><testcase classname="tests.test_scripts_shell" name="test_sql_init_files_exist" time="0.001" /><testcase classname="tests.test_trino_gateway_proxy" name="test_health" time="0.005" /><testcase classname="tests.test_trino_gateway_proxy" name="test_login_type_get" time="0.004" /><testcase classname="tests.test_trino_gateway_proxy" name="test_login_type_post" time="0.004" /><testcase classname="tests.test_trino_gateway_proxy" name="test_get_statement_not_allowed" time="0.004" /><testcase classname="tests.test_trino_gateway_proxy" name="test_info_fallback" time="0.007" /><testcase classname="tests.test_trino_gateway_proxy" name="test_info_success" time="0.009" /><testcase classname="tests.test_trino_gateway_proxy" name="test_statement_empty" time="0.004" /><testcase classname="tests.test_trino_gateway_proxy" name="test_get_routing_decision_success" time="0.006" /><testcase classname="tests.test_trino_gateway_proxy" name="test_get_routing_decision_cached" time="0.005" /><testcase classname="tests.test_trino_gateway_proxy" name="test_get_routing_decision_error_status" time="0.005" /><testcase classname="tests.test_trino_gateway_proxy" name="test_get_routing_decision_timeout" time="0.007" /><testcase classname="tests.test_trino_gateway_proxy" name="test_get_routing_decision_exception" time="0.005" /><testcase classname="tests.test_trino_gateway_proxy" name="test_statement_keepalive" time="0.008" /><testcase classname="tests.test_trino_gateway_proxy" name="test_statement_with_routing" time="0.008" /><testcase classname="tests.test_trino_gateway_proxy" name="test_statement_fallback_when_no_decision" time="0.009" /><testcase classname="tests.test_trino_gateway_proxy" name="test_statement_timeout" time="0.011" /><testcase classname="tests.test_trino_gateway_proxy" name="test_proxy_login_type_path" time="0.006" /><testcase classname="tests.test_trino_gateway_proxy" name="test_proxy_ui_get" time="0.010" /><testcase classname="tests.test_trino_gateway_proxy" name="test_proxy_ui_fallback_then_cluster" time="0.010" /><testcase classname="tests.test_trino_gateway_proxy" name="test_proxy_other_post" time="0.008" /><testcase classname="tests.test_trino_gateway_proxy" name="test_proxy_other_get" time="0.008" /><testcase classname="tests.test_trino_gateway_proxy" name="test_proxy_other_methods[put-put]" time="0.010" /><testcase classname="tests.test_trino_gateway_proxy" name="test_proxy_other_methods[delete-delete]" time="0.008" /><testcase classname="tests.test_trino_gateway_proxy" name="test_proxy_other_methods[head-head]" time="0.010" /><testcase classname="tests.test_trino_gateway_proxy" name="test_proxy_other_methods[options-options]" time="0.011" /><testcase classname="tests.test_trino_gateway_proxy" name="test_proxy_other_error" time="0.009" /><testcase classname="tests.test_trino_gateway_proxy" name="test_startup_shutdown" time="0.004" /></testsuite></testsuites>

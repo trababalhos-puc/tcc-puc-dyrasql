@@ -68,14 +68,18 @@ class DecisionEngine:
         max_rows = float(os.getenv("DYRASQL_MAX_ROWS", "1000000000"))
         optimization_factor = 0.1
 
-        # Valores efetivos (garantindo mínimos para log)
-        effective_size_gb = max(0.001, total_size_gb)
+        # Valores efetivos (garantindo mínimos para log). O tamanho e medido em MB,
+        # de modo que a escala logaritmica comeca em 1 MB; em GB, qualquer consulta
+        # abaixo de 1 GB teria log negativo e termo de tamanho nulo.
+        effective_size_mb = max(1.0, total_size_gb * 1024)
+        max_size_mb = max_size_gb * 1024
         effective_rows = max(1, total_rows)
 
         # Normalização logarítmica conforme artigo (Equação 2)
         # fv = (log(Te) / log(Tmax) * 0.6 + log(Re) / log(Rmax) * 0.4) * (1 - Fo)
-        normalized_size = min(1.0, math.log(effective_size_gb) / math.log(max_size_gb))
-        normalized_rows = min(1.0, math.log(effective_rows) / math.log(max_rows))
+        # Cada termo e limitado a [0, 1].
+        normalized_size = max(0.0, min(1.0, math.log(effective_size_mb) / math.log(max_size_mb)))
+        normalized_rows = max(0.0, min(1.0, math.log(effective_rows) / math.log(max_rows)))
 
         # Pesos conforme artigo: 0.6 para tamanho, 0.4 para linhas
         fv = (normalized_size * 0.6 + normalized_rows * 0.4) * (1 - optimization_factor)
@@ -97,13 +101,18 @@ class DecisionEngine:
         subqueries = complexity.get("subqueries", 0)
         partitioned_filters = complexity.get("partitioned_filters", 0)
         non_partitioned_filters = complexity.get("non_partitioned_filters", 0)
+        memory_intensive = complexity.get("memory_intensive", 0)
         complexity_limit = 2.0
+        # Coeficiente de operadores intensivos em memoria (DISTINCT, janela,
+        # self-join) calibrado no benchmark local (tools/calibrate_weights.py).
+        memory_coef = float(os.getenv("DYRASQL_MEMORY_COEF", "1.5"))
         fc = (
             joins * 0.2
             + aggregations * 0.15
             + subqueries * 0.25
             + partitioned_filters * 0.02
             + non_partitioned_filters * 0.1
+            + memory_intensive * memory_coef
         ) / complexity_limit
         fc = max(0, min(1, fc))
         logger.debug("Fator complexidade: joins=%s aggs=%s fc=%.3f", joins, aggregations, fc)

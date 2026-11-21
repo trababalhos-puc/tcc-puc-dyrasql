@@ -1,0 +1,16 @@
+INFO decision_engine | Decision Engine: w1=0.50 w2=0.30 w3=0.20 | small < 0.30 | medium <= 0.70 | large > 0.70
+INFO decision_engine | Decisao calculada: score=0.000, cluster=small
+INFO decision_engine | Decisao calculada: score=0.442, cluster=medium
+INFO decision_engine | Decisao calculada: score=0.940, cluster=large
+INFO decision_engine | Decision Engine: w1=0.50 w2=0.30 w3=0.20 | small < 0.30 | medium <= 0.70 | large > 0.70
+INFO history_manager | Conectado ao PostgreSQL: gateway-db/dyrasql
+INFO httpx | HTTP Request: GET http://testserver/health "HTTP/1.1 200 OK"
+INFO app | Processando consulta: SELECT d.tenant_id, COUNT(*), SUM(d.valor) FROM iceberg.analytics.dados d JOIN iceberg.analytics.ten...
+INFO app | Analisando I/O da query com EXPLAIN (TYPE IO)...
+INFO app | Metadados de I/O obtidos: 1 tabelas, 1,342,177,280 bytes (1.25 GB) totais
+INFO decision_engine | Decisao calculada: score=0.442, cluster=medium
+INFO app | Decisão: cluster=medium, score=0.442
+INFO httpx | HTTP Request: POST http://testserver/api/v1/route "HTTP/1.1 200 OK"
+INFO app | Processando consulta: SELECT d.tenant_id, COUNT(*), SUM(d.valor) FROM iceberg.analytics.dados d JOIN iceberg.analytics.ten...
+INFO app | Cache hit para fingerprint: 00745e4f4b58d0c277749ab3e862efa345553abb59ee3af8114378b284575612
+INFO httpx | HTTP Request: POST http://testserver/api/v1/route "HTTP/1.1 200 OK"

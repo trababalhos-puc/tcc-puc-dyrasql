@@ -1,0 +1,11 @@
+{
+  "query": "SELECT d.tenant_id, COUNT(*), SUM(d.valor) FROM iceberg.analytics.dados d JOIN iceberg.analytics.tenant_info t ON d.tenant_id=t.tenant_id WHERE d.date >= TIMESTAMP '2024-01-01' AND t.nivel > 5 GROUP BY d.tenant_id",
+  "complexity": {
+    "joins": 1,
+    "aggregations": 2,
+    "subqueries": 0,
+    "partitioned_filters": 1,
+    "non_partitioned_filters": 1
+  },
+  "fingerprint": "00745e4f4b58d0c277749ab3e862efa345553abb59ee3af8114378b284575612"
+}

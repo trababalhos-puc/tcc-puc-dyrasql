@@ -1,0 +1,18 @@
+$ docker compose -f src/docker-compose.yml up -d minio iceberg-rest gateway-db trino-small trino-medium trino-large dyrasql-core trino-gateway-proxy
+ Image tabulario/iceberg-rest:1.6.0 Pulling 
+ Image trinodb/trino:latest Pulling 
+ Image minio/mc:latest Pulling 
+ Image minio/minio:latest Pulling 
+ Image trinodb/trino:latest Pulling 
+ Image trinodb/trino:latest Pulling 
+ Image postgres:16-alpine Pulling 
+ Image minio/mc:latest Error pull access denied for minio/mc, repository does not exist or may require 'docker login'
+ Image trinodb/trino:latest Interrupted 
+ Image minio/minio:latest Interrupted 
+ Image postgres:16-alpine Interrupted 
+ Image trinodb/trino:latest Interrupted 
+ Image tabulario/iceberg-rest:1.6.0 Interrupted 
+ Image trinodb/trino:latest Interrupted 
+Error response from daemon: pull access denied for minio/mc, repository does not exist or may require 'docker login'
+
+EXIT_CODE=1

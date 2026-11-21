@@ -1,0 +1,16 @@
+{
+  "focados": {
+    "tests": "43",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "1.338"
+  },
+  "completos": {
+    "tests": "120",
+    "failures": "13",
+    "errors": "0",
+    "skipped": "0",
+    "time": "3.301"
+  }
+}

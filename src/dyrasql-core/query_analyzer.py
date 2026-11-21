@@ -715,9 +715,27 @@ class QueryAnalyzer:
                 "subqueries": 0,
                 "partitioned_filters": 0,
                 "non_partitioned_filters": 0,
+                "memory_intensive": 0,
             }
 
         joins = len(list(tree.find_all(exp.Join)))
+
+        # Operadores intensivos em memoria: mantem estado proporcional a
+        # entrada (hash de valores distintos, particoes de janela, tabela de
+        # hash de um self-join) e sao a principal causa de falha por limite
+        # de memoria. Contados em qualquer nivel da consulta.
+        distinct_aggs = sum(
+            1 for agg in tree.find_all(exp.AggFunc) if agg.find(exp.Distinct) is not None
+        )
+        windows = len(list(tree.find_all(exp.Window)))
+        # Self-join: mesma tabela repetida no FROM/JOIN de um mesmo SELECT
+        # (uma subconsulta escalar sobre a mesma tabela nao conta).
+        self_joins = 0
+        for select in tree.find_all(exp.Select):
+            sources = [select.args.get("from")] + list(select.args.get("joins") or [])
+            names = [s.this.name for s in sources if s is not None and isinstance(s.this, exp.Table)]
+            self_joins += len(names) - len(set(names))
+        memory_intensive = distinct_aggs + windows + self_joins
 
         aggregations = sum(
             len(list(projection.find_all(exp.AggFunc))) for projection in tree.expressions
@@ -753,6 +771,7 @@ class QueryAnalyzer:
             "subqueries": subqueries,
             "partitioned_filters": partitioned_filters,
             "non_partitioned_filters": non_partitioned_filters,
+            "memory_intensive": memory_intensive,
         }
 
         logger.debug(f"Complexidade analisada: {complexity}")

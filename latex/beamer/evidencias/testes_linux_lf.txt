@@ -1,0 +1,25 @@
+$ wsl -d Ubuntu -- sh -c cd /tmp/dyrasql-pitch-lf-20261013 && git rev-parse HEAD && /tmp/dyrasql-pitch-venv/bin/python -m pytest -q --junitxml=/mnt/c/Users/arihenrique/developer/tcc-puc-dyrasql/latex/beamer/evidencias/linux_lf.xml
+8f9b8e58576a06f81479975923080206ce58ca4a
+........................................................................ [ 60%]
+................................................                         [100%]
+- generated xml file: /mnt/c/Users/arihenrique/developer/tcc-puc-dyrasql/latex/beamer/evidencias/linux_lf.xml -
+
+---------- coverage: platform linux, python 3.12.3-final-0 -----------
+Name                                     Stmts   Miss  Cover   Missing
+----------------------------------------------------------------------
+src/dyrasql-core/__init__.py                 0      0   100%
+src/dyrasql-core/app.py                    248     21    92%   304-305, 355, 384-385, 425-427, 451, 473-484, 522
+src/dyrasql-core/decision_engine.py         58      1    98%   27
+src/dyrasql-core/history_manager.py        118      3    97%   65, 148-149
+src/dyrasql-core/metadata_connector.py      12      0   100%
+src/dyrasql-core/query_analyzer.py         272     19    93%   103, 107-108, 114-117, 139, 163, 217-222, 271-273, 283, 354, 357, 360, 540-541, 569
+src/scripts/generate_data.py                92      0   100%
+src/trino-gateway-proxy/app.py             196      8    96%   93-97, 166-169, 308, 349, 373
+src/trino-gateway/add_h2_dependency.py      53      2    96%   35-36
+----------------------------------------------------------------------
+TOTAL                                     1049     54    95%
+
+Required test coverage of 90% reached. Total coverage: 94.85%
+120 passed in 2.10s
+
+EXIT_CODE=0
