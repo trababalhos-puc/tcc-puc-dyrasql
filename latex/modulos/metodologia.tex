@@ -257,7 +257,7 @@ Entrada: consulta, acesso ao mecanismo de consulta (plano de
 \fonte{Elaborado pelo autor.}
 \end{blocoalgoritmo}
 
-O Algoritmo \ref{alg:roteamento-dinamico} evidencia que o \textit{EXPLAIN (TYPE IO)}, etapa mais custosa da decisão, só é executado quando não há decisão válida em \textit{cache} (passos 2 e 3). Os passos 5 a 9 correspondem ao cálculo dos três fatores e do \textit{Score} descrito nesta seção, o passo 11 aplica o piso após falha, e o passo 12 registra a decisão que alimentará o Fator histórico. Apenas o passo 4 depende da disponibilidade do \textit{Trino}; os demais operam sobre o próprio \textit{DyraSQL Core} e o PostgreSQL, o que concentra nesse passo o risco de indisponibilidade e justifica a necessidade de uma estratégia de \textit{fallback}.
+O Algoritmo \ref{alg:roteamento-dinamico} evidencia que o \textit{EXPLAIN (TYPE IO)}, etapa mais custosa da decisão, só é executado quando não há decisão válida em \textit{cache} (passos 2 e 3). Os passos 5 a 9 correspondem ao cálculo dos três fatores e do \textit{Score} descrito nesta seção, o passo 11 aplica o piso após falha, e o passo 12 registra a decisão que alimentará o Fator histórico. Apenas o passo 4 depende da disponibilidade do \textit{Trino}; se a decisão não for obtida, o \textit{proxy} encaminha a consulta ao \textit{small}, o que evita o erro ao usuário, mas pode subdimensionar uma consulta pesada.
 
 \subsection{Sistema de Histórico e Aprendizado}
 
