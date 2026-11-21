@@ -2,7 +2,7 @@
 \section{Referencial Teórico}
 \label{sec:referencial-teorico}
 
-Esta seção apresenta os conceitos que embasam o \textit{DyraSQL}: \textit{data lakes}, \textit{big data}, o \textit{Trino}, catálogos de metadados, o \textit{Apache Iceberg}, o processamento em \textit{clusters}. Os tópicos seguem a ordem em que aparecem na solução: o armazenamento dos dados, o motor que os consulta, os metadados que descrevem as tabelas e, por fim, a organização da capacidade de processamento sobre a qual o roteamento atua.
+Esta seção apresenta os conceitos que embasam o \textit{DyraSQL}: \textit{data lakes}, \textit{big data}, o \textit{Trino}, catálogos de metadados, o \textit{Apache Iceberg}, o processamento em \textit{clusters}. Os tópicos seguem a ordem em que aparecem na solução: o armazenamento dos dados, o motor que os consulta, os metadados que descrevem as tabelas e, por fim, a organização da capacidade de processamento sobre a qual o roteamento atua. Os conceitos de metadados do \textit{Apache Iceberg} e de gerenciamento de memória do \textit{Trino} são os que mais diretamente fundamentam o Algoritmo de decisão, pois indicam, respectivamente, de onde vêm as estimativas de volume e o que limita a capacidade de um \textit{cluster}.
 
 \subsection{Arquiteturas de \textit{Data Lake}}
 
@@ -14,7 +14,7 @@ A análise de \textit{big data} envolve volumes que excedem a capacidade de banc
 
 \subsection{\textit{Trino}}
 
-O \textit{Trino} é um \textit{engine} de consultas SQL distribuído, capaz de consultar dados em diversos sistemas, incluindo \textit{data lakes} \cite{trinoconcepts}. Um nó coordenador recebe as consultas e distribui a execução entre nós trabalhadores (\textit{workers}), que processam porções dos dados em paralelo, permitindo escalar horizontalmente com a adição de nós \cite{trinoconcepts}. O \textit{Trino} possui conector nativo para o \textit{Apache Iceberg} \cite{trinoconcepts}, e o \textit{Trino Gateway} permite distribuir consultas entre múltiplos \textit{clusters} \cite{trinogateway}. Como o processamento é separado do armazenamento, vários \textit{clusters} independentes podem consultar os mesmos dados sem duplicá-los, o que viabiliza o roteamento entre \textit{clusters} de capacidades distintas.
+O \textit{Trino} é um \textit{engine} de consultas SQL distribuído, capaz de consultar dados em diversos sistemas, incluindo \textit{data lakes} \cite{trinoconcepts}. Um nó coordenador recebe as consultas e distribui a execução entre nós trabalhadores (\textit{workers}), que processam porções dos dados em paralelo, permitindo escalar horizontalmente com a adição de nós \cite{trinoconcepts}. O \textit{Trino} possui conector nativo para o \textit{Apache Iceberg} \cite{trinoconcepts}, e o \textit{Trino Gateway} permite distribuir consultas entre múltiplos \textit{clusters} \cite{trinogateway}. Como o processamento é separado do armazenamento, vários \textit{clusters} independentes podem consultar os mesmos dados sem duplicá-los, o que viabiliza o roteamento entre \textit{clusters} de capacidades distintas. Cada consulta é dividida em estágios e tarefas distribuídos entre os \textit{workers}, que trocam resultados intermediários entre si \cite{trinoconcepts}; junções e agregações exigem, assim, que parte dos dados permaneça em memória durante o processamento.
 
 \subsection{Catálogo de Metadados}
 

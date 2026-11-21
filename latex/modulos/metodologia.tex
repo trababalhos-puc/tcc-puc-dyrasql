@@ -36,7 +36,7 @@ A Figura \ref{fig:containers-sistema} detalha os \textit{containers}: o \textit{
 	\fonte{Elaborado pelo autor.}
 \end{figure}
 
-A Figura \ref{fig:componentes-sistema} apresenta os componentes internos do \textit{DyraSQL Core} e o fluxo da consulta, da interceptação ao registro no histórico. Ao receber uma consulta, o núcleo gera seu \textit{fingerprint} e verifica o \textit{cache}; na ausência de decisão válida, o \textit{Query Analyzer} obtém as estimativas de volume e a estrutura da consulta, o \textit{Decision Engine} calcula o \textit{Score} e a decisão é persistida no PostgreSQL antes de ser devolvida ao \textit{proxy}.
+A Figura \ref{fig:componentes-sistema} apresenta os componentes internos do \textit{DyraSQL Core} e o fluxo da consulta, da interceptação ao registro no histórico. Ao receber uma consulta, o núcleo gera seu \textit{fingerprint} e verifica o \textit{cache}; na ausência de decisão válida, o \textit{Query Analyzer} obtém as estimativas de volume e a estrutura da consulta, o \textit{Decision Engine} calcula o \textit{Score} e a decisão é persistida no PostgreSQL antes de ser devolvida ao \textit{proxy}. Esse registro permite que as execuções seguintes da mesma consulta sejam atendidas pelo \textit{cache}, sem nova chamada ao \textit{Trino}.
 
 \subsection{Extração de Metadados Relevantes}
 
@@ -257,7 +257,7 @@ Entrada: consulta, acesso ao mecanismo de consulta (plano de
 \fonte{Elaborado pelo autor.}
 \end{blocoalgoritmo}
 
-O Algoritmo \ref{alg:roteamento-dinamico} evidencia que o \textit{EXPLAIN (TYPE IO)}, etapa mais custosa da decisão, só é executado quando não há decisão válida em \textit{cache} (passos 2 e 3). Os passos 5 a 9 correspondem ao cálculo dos três fatores e do \textit{Score} descrito nesta seção, o passo 11 aplica o piso após falha, e o passo 12 registra a decisão que alimentará o Fator histórico.
+O Algoritmo \ref{alg:roteamento-dinamico} evidencia que o \textit{EXPLAIN (TYPE IO)}, etapa mais custosa da decisão, só é executado quando não há decisão válida em \textit{cache} (passos 2 e 3). Os passos 5 a 9 correspondem ao cálculo dos três fatores e do \textit{Score} descrito nesta seção, o passo 11 aplica o piso após falha, e o passo 12 registra a decisão que alimentará o Fator histórico. Apenas o passo 4 depende da disponibilidade do \textit{Trino}; os demais operam sobre o próprio \textit{DyraSQL Core} e o PostgreSQL, o que concentra nesse passo o risco de indisponibilidade e justifica a necessidade de uma estratégia de \textit{fallback}.
 
 \subsection{Sistema de Histórico e Aprendizado}
 
