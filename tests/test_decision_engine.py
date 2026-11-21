@@ -100,8 +100,13 @@ def test_volume_factor_sub_gb_not_negative():
 
 def test_complexity_factor_memory_intensive():
     engine = DecisionEngine()
-    base = {"joins": 0, "aggregations": 1, "subqueries": 0,
-            "partitioned_filters": 0, "non_partitioned_filters": 0}
+    base = {
+        "joins": 0,
+        "aggregations": 1,
+        "subqueries": 0,
+        "partitioned_filters": 0,
+        "non_partitioned_filters": 0,
+    }
     leve = engine._calculate_complexity_factor(base)
     pesada = engine._calculate_complexity_factor({**base, "memory_intensive": 1})
     assert abs((pesada - leve) - 0.75) < 1e-9

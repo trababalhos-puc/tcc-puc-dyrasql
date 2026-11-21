@@ -733,7 +733,9 @@ class QueryAnalyzer:
         self_joins = 0
         for select in tree.find_all(exp.Select):
             sources = [select.args.get("from")] + list(select.args.get("joins") or [])
-            names = [s.this.name for s in sources if s is not None and isinstance(s.this, exp.Table)]
+            names = [
+                s.this.name for s in sources if s is not None and isinstance(s.this, exp.Table)
+            ]
             self_joins += len(names) - len(set(names))
         memory_intensive = distinct_aggs + windows + self_joins
 
